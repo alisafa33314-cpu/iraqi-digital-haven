@@ -15,6 +15,7 @@ function Home() {
   const categories = useCatalog((s) => s.categories);
   const storeImages = useCatalog((s) => s.storeImages);
   const dbReviews = useCatalog((s) => s.reviews);
+  const settings = useCatalog((s) => s.settings);
   const bestsellers = products.slice(0, 8);
   const newArrivals = products.slice(0, 8);
   const allReviews = [
