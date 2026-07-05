@@ -115,6 +115,7 @@ function CheckoutPage() {
             qty: i.qty,
             price: i.product.price,
           })),
+          proofUrl,
         },
       }).catch(() => {});
 
