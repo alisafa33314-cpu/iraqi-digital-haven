@@ -105,7 +105,11 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
   const products = useCatalog((s) => s.products);
   const categories = useCatalog((s) => s.categories);
   const paymentMethods = useCatalog((s) => s.paymentMethods);
+  const socials = useCatalog((s) => s.socials);
+  const storeImages = useCatalog((s) => s.storeImages);
+  const reviews = useCatalog((s) => s.reviews);
   const refreshCatalog = useCatalog((s) => s.refresh);
+
 
   const fetchOrders = async () => {
     const { data, error } = await supabase.rpc("admin_list_orders" as any, { _code: adminCode });
@@ -189,10 +193,20 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 
         {/* Payment methods management */}
         <PaymentMethodsManager adminCode={adminCode} methods={paymentMethods} onChange={refreshCatalog} />
+
+        {/* Social links management */}
+        <SocialsManager adminCode={adminCode} socials={socials} onChange={refreshCatalog} />
+
+        {/* Store images management */}
+        <StoreImagesManager adminCode={adminCode} images={storeImages} onChange={refreshCatalog} />
+
+        {/* Reviews management */}
+        <ReviewsManager adminCode={adminCode} reviews={reviews} onChange={refreshCatalog} />
       </Container>
     </Layout>
   );
 }
+
 
 function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode: string; onChange: () => void; }) {
   const [open, setOpen] = useState(false);
