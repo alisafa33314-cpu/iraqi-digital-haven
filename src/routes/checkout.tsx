@@ -71,9 +71,11 @@ function CheckoutPage() {
           customer_phone: phone.trim(),
           customer_email: email.trim() || null,
           delivery_info: `طريقة الدفع: ${selected.name} — إثبات: ${proof.name}`,
+          payment_method_name: selected.name,
+          payment_proof_url: proof.name,
           total,
           status: "pending",
-        });
+        } as any);
       if (error) throw error;
 
       const rows = items.map((i) => ({
