@@ -278,6 +278,19 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
     onChange();
   };
 
+  const remove = async () => {
+    if (!confirm("هل أنت متأكد من حذف هذا الطلب نهائياً؟")) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_delete_order" as any, {
+      _code: adminCode, _order_id: order.id,
+    });
+    setBusy(false);
+    if (error) return toast.error("فشل الحذف: " + error.message);
+    toast.success("تم حذف الطلب");
+    onChange();
+  };
+
+
   const done = order.status === "completed";
 
   return (
