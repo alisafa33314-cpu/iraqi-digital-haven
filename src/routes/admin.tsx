@@ -216,6 +216,9 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
         {/* Marquee / announcement bar */}
         <MarqueeManager adminCode={adminCode} onChange={refreshCatalog} />
 
+        {/* Promo banner */}
+        <PromoManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
+
         {/* Change admin code */}
         <ChangeCodeManager adminCode={adminCode} onChanged={(c) => useAdmin.getState().setCode(c)} />
       </Container>
