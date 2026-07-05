@@ -101,6 +101,23 @@ function CheckoutPage() {
       addId(orderId);
       clear();
 
+      // إشعار الأدمن على تلغرام (لا يوقف نجاح الطلب في حال الفشل)
+      notifyAdminNewOrder({
+        data: {
+          orderId,
+          customerName: name.trim(),
+          customerPhone: phone.trim(),
+          customerEmail: email.trim() || null,
+          paymentMethod: selected.name,
+          total,
+          items: items.map((i) => ({
+            name: i.product.name,
+            qty: i.qty,
+            price: i.product.price,
+          })),
+        },
+      }).catch(() => {});
+
       toast.success("تم إرسال طلبك بنجاح — الحالة: قيد التنفيذ");
       nav({ to: "/orders" });
     } catch (err: any) {
