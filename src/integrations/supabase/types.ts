@@ -466,6 +466,8 @@ export type Database = {
           payment_method_name: string
           payment_proof_url: string
           status: Database["public"]["Enums"]["order_status"]
+          subscription_image_url: string
+          subscription_image_urls: string[]
           subscription_info: string
           total: number
         }[]
