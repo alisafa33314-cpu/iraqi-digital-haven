@@ -66,6 +66,13 @@ function CheckoutPage() {
     try {
       const orderId = crypto.randomUUID();
 
+      let proofUrl: string | null = null;
+      try {
+        proofUrl = await uploadImage(proof, "payment-proofs");
+      } catch (upErr: any) {
+        throw new Error("فشل رفع إثبات الدفع: " + (upErr?.message || ""));
+      }
+
       const { error } = await supabase
         .from("orders")
         .insert({
@@ -73,9 +80,9 @@ function CheckoutPage() {
           customer_name: name.trim(),
           customer_phone: phone.trim(),
           customer_email: email.trim() || null,
-          delivery_info: `طريقة الدفع: ${selected.name} — إثبات: ${proof.name}`,
+          delivery_info: `طريقة الدفع: ${selected.name}`,
           payment_method_name: selected.name,
-          payment_proof_url: proof.name,
+          payment_proof_url: proofUrl,
           total,
           status: "pending",
         } as any);
