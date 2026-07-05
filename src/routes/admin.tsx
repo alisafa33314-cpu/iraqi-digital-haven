@@ -4,10 +4,12 @@ import { formatIQD, type Product, type PaymentMethod, type Category } from "@/li
 import { useCatalog } from "@/lib/catalog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload } from "lucide-react";
+import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin, STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage } from "@/lib/upload";
+import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "لوحة الإدارة — FPI STOR" }] }),
@@ -23,11 +25,13 @@ type AdminOrder = {
   status: string;
   subscription_info: string | null;
   subscription_image_url: string | null;
+  subscription_image_urls: string[] | null;
   payment_proof_url: string | null;
   payment_method_name: string | null;
   created_at: string;
   items: { product_name: string; quantity: number; unit_price: number }[];
 };
+
 
 function ImagePicker({ value, onChange, folder }: {
   value: string; onChange: (url: string) => void; folder: string;
@@ -101,7 +105,11 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
   const products = useCatalog((s) => s.products);
   const categories = useCatalog((s) => s.categories);
   const paymentMethods = useCatalog((s) => s.paymentMethods);
+  const socials = useCatalog((s) => s.socials);
+  const storeImages = useCatalog((s) => s.storeImages);
+  const reviews = useCatalog((s) => s.reviews);
   const refreshCatalog = useCatalog((s) => s.refresh);
+
 
   const fetchOrders = async () => {
     const { data, error } = await supabase.rpc("admin_list_orders" as any, { _code: adminCode });
@@ -185,24 +193,40 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 
         {/* Payment methods management */}
         <PaymentMethodsManager adminCode={adminCode} methods={paymentMethods} onChange={refreshCatalog} />
+
+        {/* Social links management */}
+        <SocialsManager adminCode={adminCode} socials={socials} onChange={refreshCatalog} />
+
+        {/* Store images management */}
+        <StoreImagesManager adminCode={adminCode} images={storeImages} onChange={refreshCatalog} />
+
+        {/* Reviews management */}
+        <ReviewsManager adminCode={adminCode} reviews={reviews} onChange={refreshCatalog} />
       </Container>
     </Layout>
   );
 }
 
+
 function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode: string; onChange: () => void; }) {
   const [open, setOpen] = useState(false);
   const [info, setInfo] = useState(order.subscription_info || "");
-  const [imgUrl, setImgUrl] = useState<string | null>((order as any).subscription_image_url || null);
+  const initialImgs = order.subscription_image_urls && order.subscription_image_urls.length > 0
+    ? order.subscription_image_urls
+    : (order.subscription_image_url ? [order.subscription_image_url] : []);
+  const [imgs, setImgs] = useState<string[]>(initialImgs);
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [proofOpen, setProofOpen] = useState(false);
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = async (files: FileList) => {
     setUploading(true);
     try {
-      const url = await uploadImage(file, "subscriptions");
-      setImgUrl(url);
-      toast.success("تم رفع الصورة");
+      const arr = Array.from(files);
+      const urls: string[] = [];
+      for (const f of arr) urls.push(await uploadImage(f, "subscriptions"));
+      setImgs((prev) => [...prev, ...urls]);
+      toast.success(`تم رفع ${urls.length} صورة`);
     } catch (e: any) {
       toast.error("فشل الرفع: " + (e?.message || ""));
     } finally {
@@ -210,15 +234,17 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
     }
   };
 
+  const removeImg = (i: number) => setImgs((prev) => prev.filter((_, idx) => idx !== i));
+
   const complete = async () => {
-    if (!info.trim() && !imgUrl) return toast.error("أدخل معلومات الاشتراك أو أرفق صورة");
+    if (!info.trim() && imgs.length === 0) return toast.error("أدخل معلومات الاشتراك أو أرفق صورة");
     setBusy(true);
-    const { error } = await supabase.rpc("admin_complete_order" as any, {
-      _code: adminCode, _order_id: order.id, _info: info.trim(), _image_url: imgUrl,
+    const { error } = await supabase.rpc("admin_complete_order_v2" as any, {
+      _code: adminCode, _order_id: order.id, _info: info.trim(), _image_urls: imgs,
     });
     setBusy(false);
-    if (error) return toast.error("فشل إكمال الطلب");
-    toast.success("تم إكمال الطلب وإرسال المعلومات للزبون");
+    if (error) return toast.error("فشل إكمال الطلب: " + error.message);
+    toast.success("تم إكمال الطلب");
     onChange();
   };
 
@@ -264,9 +290,10 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
               <div>وسيلة الدفع: <span className="font-bold text-primary">{order.payment_method_name}</span></div>
             )}
             {order.payment_proof_url ? (
-              <div className="inline-flex items-center gap-1.5 mt-1 px-2 py-1 rounded-md bg-green-500/15 border border-green-500/30 text-green-400 font-bold">
-                ✓ واصل التحويل <span className="opacity-70 font-normal" dir="ltr">({order.payment_proof_url})</span>
-              </div>
+              <button type="button" onClick={() => setProofOpen(true)}
+                className="inline-flex items-center gap-1.5 mt-1 px-3 py-1.5 rounded-md bg-green-500/15 border border-green-500/30 text-green-400 font-bold hover:bg-green-500/25">
+                <Eye className="w-3.5 h-3.5" /> ✓ عرض إثبات التحويل
+              </button>
             ) : (
               <div className="inline-flex items-center gap-1.5 mt-1 px-2 py-1 rounded-md bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 font-bold">
                 ⚠ لم يصل إثبات التحويل
@@ -283,7 +310,7 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
             ))}
           </div>
           <div>
-            <label className="text-xs font-bold mb-1 block flex items-center gap-1">
+            <label className="text-xs font-bold mb-1 flex items-center gap-1">
               <KeyRound className="w-3 h-3" /> معلومات الاشتراك (تُرسل للزبون)
             </label>
             <textarea value={info} onChange={(e) => setInfo(e.target.value)} rows={4}
@@ -293,18 +320,30 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
               dir="ltr" />
           </div>
           <div>
-            <label className="text-xs font-bold mb-1 block flex items-center gap-1">
-              <Upload className="w-3 h-3" /> صورة مرفقة مع الاشتراك (اختياري)
+            <label className="text-xs font-bold mb-1 flex items-center gap-1">
+              <Upload className="w-3 h-3" /> صور مرفقة مع الاشتراك (يمكن اختيار أكثر من صورة)
             </label>
-            {imgUrl && (
-              <img src={imgUrl} alt="" className="w-32 h-32 rounded-lg object-cover border border-border mb-2" />
+            {imgs.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+                {imgs.map((u, i) => (
+                  <div key={i} className="relative">
+                    <img src={u} alt="" className="w-full h-24 rounded-lg object-cover border border-border" />
+                    {!done && (
+                      <button type="button" onClick={() => removeImg(i)}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-white text-xs flex items-center justify-center">
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
             {!done && (
               <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-2 border border-border cursor-pointer text-xs hover:border-primary/50">
                 <Upload className="w-3.5 h-3.5" />
-                {uploading ? "جاري الرفع…" : imgUrl ? "استبدال الصورة" : "رفع صورة من الجهاز"}
-                <input type="file" accept="image/*" className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+                {uploading ? "جاري الرفع…" : "إضافة صور من الجهاز"}
+                <input type="file" accept="image/*" multiple className="hidden"
+                  onChange={(e) => e.target.files && e.target.files.length > 0 && handleUpload(e.target.files)} />
               </label>
             )}
           </div>
@@ -322,14 +361,33 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
               </button>
             )}
             {done && (
-              <div className="text-xs text-green-400 font-bold">✓ تم إكمال الطلب — يستطيع الزبون رؤية المعلومات في «طلباتي»</div>
+              <div className="text-xs text-green-400 font-bold">✓ تم إكمال الطلب</div>
             )}
+          </div>
+        </div>
+      )}
+
+      {proofOpen && order.payment_proof_url && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setProofOpen(false)}>
+          <div className="max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between mb-2">
+              <div className="text-white font-bold">إثبات التحويل</div>
+              <button onClick={() => setProofOpen(false)} className="w-8 h-8 rounded-lg bg-white/10 text-white">
+                <X className="w-4 h-4 mx-auto" />
+              </button>
+            </div>
+            <img src={order.payment_proof_url} alt="إثبات التحويل"
+              className="w-full max-h-[80vh] object-contain rounded-xl bg-black" />
+            <a href={order.payment_proof_url} target="_blank" rel="noreferrer"
+              className="mt-2 inline-block text-xs text-primary underline">فتح في نافذة جديدة</a>
           </div>
         </div>
       )}
     </div>
   );
 }
+
 
 /* -------------------- Products Manager -------------------- */
 
@@ -808,3 +866,244 @@ function CategoryEditor({ form, adminCode, onClose, onSaved }: {
     </div>
   );
 }
+
+/* -------------------- Social Links Manager -------------------- */
+
+type SocialForm = {
+  id: string | null;
+  name: string;
+  url: string;
+  image_url: string;
+  sort_order: string;
+  is_active: boolean;
+};
+
+const emptySocial: SocialForm = { id: null, name: "", url: "", image_url: "", sort_order: "0", is_active: true };
+
+function SocialsManager({ adminCode, socials, onChange }: {
+  adminCode: string; socials: SocialLink[]; onChange: () => void;
+}) {
+  const [editing, setEditing] = useState<SocialForm | null>(null);
+
+  const remove = async (id: string, name: string) => {
+    if (!confirm(`حذف "${name}"؟`)) return;
+    const { error } = await supabase.rpc("admin_delete_social" as any, { _code: adminCode, _id: id });
+    if (error) return toast.error("فشل الحذف");
+    toast.success("تم الحذف");
+    onChange();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6 mt-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-black text-lg flex items-center gap-2"><Share2 className="w-5 h-5" /> منصات التواصل</h2>
+        <button onClick={() => setEditing({ ...emptySocial, sort_order: String(socials.length) })}
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
+          <Plus className="w-4 h-4" /> إضافة منصة
+        </button>
+      </div>
+      {socials.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">لم تُضف أي منصة بعد.</div>
+      ) : (
+        <div className="space-y-2">
+          {socials.map((s) => (
+            <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
+              {s.image_url ? (
+                <img src={s.image_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-border shrink-0" />
+              ) : (
+                <div className="w-10 h-10 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">🔗</div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm">{s.name}</div>
+                <div className="text-[11px] text-muted-foreground line-clamp-1" dir="ltr">{s.url}</div>
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => setEditing({
+                  id: s.id, name: s.name, url: s.url, image_url: s.image_url || "",
+                  sort_order: String(s.sort_order), is_active: true,
+                })}
+                  className="p-2 rounded-lg bg-surface-2 border border-border hover:border-primary/50">
+                  <Edit className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={() => remove(s.id, s.name)}
+                  className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {editing && (
+        <SocialEditor form={editing} adminCode={adminCode}
+          onClose={() => setEditing(null)} onSaved={() => { setEditing(null); onChange(); }} />
+      )}
+    </div>
+  );
+}
+
+function SocialEditor({ form, adminCode, onClose, onSaved }: {
+  form: SocialForm; adminCode: string; onClose: () => void; onSaved: () => void;
+}) {
+  const [f, setF] = useState<SocialForm>(form);
+  const [busy, setBusy] = useState(false);
+  const save = async () => {
+    if (!f.name.trim() || !f.url.trim()) return toast.error("أدخل الاسم والرابط");
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_upsert_social" as any, {
+      _code: adminCode, _id: f.id, _name: f.name.trim(), _image_url: f.image_url.trim() || null,
+      _url: f.url.trim(), _sort_order: Number(f.sort_order) || 0, _is_active: f.is_active,
+    });
+    setBusy(false);
+    if (error) return toast.error("فشل الحفظ: " + error.message);
+    toast.success(f.id ? "تم التعديل" : "تمت الإضافة");
+    onSaved();
+  };
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-black text-lg mb-4">{f.id ? "تعديل منصة" : "إضافة منصة"}</h3>
+        <div className="space-y-3">
+          <Field label="الاسم (مثال: واتساب / تليجرام / إنستغرام)">
+            <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className={inputCls} />
+          </Field>
+          <Field label="الرابط">
+            <input value={f.url} onChange={(e) => setF({ ...f, url: e.target.value })} className={inputCls} dir="ltr"
+              placeholder="https://..." />
+          </Field>
+          <Field label="صورة المنصة (شعار)">
+            <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="socials" />
+          </Field>
+          <Field label="الترتيب">
+            <input type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: e.target.value })}
+              className={inputCls} dir="ltr" />
+          </Field>
+        </div>
+        <div className="flex gap-2 mt-5">
+          <button onClick={save} disabled={busy}
+            className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+            {busy ? "جاري الحفظ…" : "حفظ"}
+          </button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">إلغاء</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Store Images Manager -------------------- */
+
+function StoreImagesManager({ adminCode, images, onChange }: {
+  adminCode: string; images: StoreImage[]; onChange: () => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+
+  const upload = async (files: FileList) => {
+    setUploading(true);
+    try {
+      for (const f of Array.from(files)) {
+        const url = await uploadImage(f, "store");
+        const { error } = await supabase.rpc("admin_add_store_image" as any, {
+          _code: adminCode, _image_url: url, _sort_order: images.length,
+        });
+        if (error) throw error;
+      }
+      toast.success("تمت الإضافة");
+      onChange();
+    } catch (e: any) { toast.error("فشل: " + (e?.message || "")); }
+    finally { setUploading(false); }
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("حذف الصورة؟")) return;
+    const { error } = await supabase.rpc("admin_delete_store_image" as any, { _code: adminCode, _id: id });
+    if (error) return toast.error("فشل الحذف");
+    toast.success("تم الحذف");
+    onChange();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-black text-lg flex items-center gap-2"><ImageIcon className="w-5 h-5" /> صور المتجر</h2>
+        <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow cursor-pointer">
+          <Upload className="w-4 h-4" /> {uploading ? "جاري الرفع…" : "رفع صور"}
+          <input type="file" accept="image/*" multiple className="hidden"
+            onChange={(e) => e.target.files && e.target.files.length > 0 && upload(e.target.files)} />
+        </label>
+      </div>
+      {images.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">لا توجد صور بعد.</div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {images.map((img) => (
+            <div key={img.id} className="relative rounded-xl overflow-hidden border border-border">
+              <img src={img.image_url} alt="" className="w-full h-32 object-cover" />
+              <button onClick={() => remove(img.id)}
+                className="absolute top-1 right-1 w-7 h-7 rounded-lg bg-destructive text-white flex items-center justify-center">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* -------------------- Reviews Manager -------------------- */
+
+function ReviewsManager({ adminCode, reviews, onChange }: {
+  adminCode: string; reviews: ReviewRow[]; onChange: () => void;
+}) {
+  const products = useCatalog((s) => s.products);
+
+  const remove = async (id: string) => {
+    if (!confirm("حذف التقييم؟")) return;
+    const { error } = await supabase.rpc("admin_delete_review" as any, { _code: adminCode, _id: id });
+    if (error) return toast.error("فشل الحذف");
+    toast.success("تم الحذف");
+    onChange();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-4 flex items-center gap-2">
+        <Star className="w-5 h-5 text-yellow-500" /> تقييمات الزبائن
+      </h2>
+      {reviews.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">لا توجد تقييمات بعد.</div>
+      ) : (
+        <div className="space-y-2">
+          {reviews.map((r) => {
+            const prod = products.find((p) => p.id === r.product_id);
+            return (
+              <div key={r.id} className="p-3 rounded-xl border border-border">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div>
+                    <div className="flex gap-0.5 mb-1">
+                      {Array.from({ length: r.rating }).map((_, j) => (
+                        <Star key={j} className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
+                      ))}
+                    </div>
+                    <div className="font-bold text-sm">{r.customer_name}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {new Date(r.created_at).toLocaleString("ar-IQ")}
+                      {prod && <> · <span className="text-primary">{prod.name}</span></>}
+                    </div>
+                  </div>
+                  <button onClick={() => remove(r.id)}
+                    className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive shrink-0">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {r.comment && <div className="text-sm text-muted-foreground">"{r.comment}"</div>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+

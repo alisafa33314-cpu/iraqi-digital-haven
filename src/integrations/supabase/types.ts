@@ -102,6 +102,7 @@ export type Database = {
           payment_proof_url: string | null
           status: Database["public"]["Enums"]["order_status"]
           subscription_image_url: string | null
+          subscription_image_urls: string[]
           subscription_info: string | null
           total: number
           updated_at: string
@@ -119,6 +120,7 @@ export type Database = {
           payment_proof_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subscription_image_url?: string | null
+          subscription_image_urls?: string[]
           subscription_info?: string | null
           total: number
           updated_at?: string
@@ -136,6 +138,7 @@ export type Database = {
           payment_proof_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subscription_image_url?: string | null
+          subscription_image_urls?: string[]
           subscription_info?: string | null
           total?: number
           updated_at?: string
@@ -256,6 +259,51 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          customer_name: string
+          id: string
+          order_id: string | null
+          product_id: string | null
+          rating: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          customer_name: string
+          id?: string
+          order_id?: string | null
+          product_id?: string | null
+          rating: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          customer_name?: string
+          id?: string
+          order_id?: string | null
+          product_id?: string | null
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_settings: {
         Row: {
           key: string
@@ -271,6 +319,60 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: string
+        }
+        Relationships: []
+      }
+      social_links: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          sort_order: number
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          sort_order?: number
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      store_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          sort_order?: number
         }
         Relationships: []
       }
@@ -300,6 +402,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_store_image: {
+        Args: { _code: string; _image_url: string; _sort_order: number }
+        Returns: string
+      }
       admin_check_code: { Args: { _code: string }; Returns: undefined }
       admin_complete_order:
         | {
@@ -315,6 +421,15 @@ export type Database = {
             }
             Returns: undefined
           }
+      admin_complete_order_v2: {
+        Args: {
+          _code: string
+          _image_urls: string[]
+          _info: string
+          _order_id: string
+        }
+        Returns: undefined
+      }
       admin_delete_category: {
         Args: { _code: string; _slug: string }
         Returns: undefined
@@ -324,6 +439,18 @@ export type Database = {
         Returns: undefined
       }
       admin_delete_product: {
+        Args: { _code: string; _id: string }
+        Returns: undefined
+      }
+      admin_delete_review: {
+        Args: { _code: string; _id: string }
+        Returns: undefined
+      }
+      admin_delete_social: {
+        Args: { _code: string; _id: string }
+        Returns: undefined
+      }
+      admin_delete_store_image: {
         Args: { _code: string; _id: string }
         Returns: undefined
       }
@@ -339,6 +466,8 @@ export type Database = {
           payment_method_name: string
           payment_proof_url: string
           status: Database["public"]["Enums"]["order_status"]
+          subscription_image_url: string
+          subscription_image_urls: string[]
           subscription_info: string
           total: number
         }[]
@@ -393,6 +522,18 @@ export type Database = {
         }
         Returns: string
       }
+      admin_upsert_social: {
+        Args: {
+          _code: string
+          _id: string
+          _image_url: string
+          _is_active: boolean
+          _name: string
+          _sort_order: number
+          _url: string
+        }
+        Returns: string
+      }
       get_orders_by_ids: {
         Args: { _ids: string[] }
         Returns: {
@@ -404,6 +545,7 @@ export type Database = {
           items: Json
           status: Database["public"]["Enums"]["order_status"]
           subscription_image_url: string
+          subscription_image_urls: string[]
           subscription_info: string
           total: number
         }[]

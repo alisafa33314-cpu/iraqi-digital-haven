@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
-import { reviews } from "@/lib/data";
+import { reviews as staticReviews } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ArrowLeft, Star, Zap, Shield, Clock, Search } from "lucide-react";
 import heroImg from "@/assets/hero-gaming.jpg";
@@ -13,8 +13,15 @@ export const Route = createFileRoute("/")({
 function Home() {
   const products = useCatalog((s) => s.products);
   const categories = useCatalog((s) => s.categories);
+  const storeImages = useCatalog((s) => s.storeImages);
+  const dbReviews = useCatalog((s) => s.reviews);
   const bestsellers = products.slice(0, 8);
   const newArrivals = products.slice(0, 8);
+  const allReviews = [
+    ...dbReviews.map((r) => ({ name: r.customer_name, text: r.comment || "", rating: r.rating })),
+    ...(dbReviews.length === 0 ? staticReviews : []),
+  ].slice(0, 8);
+
 
   return (
     <Layout>
@@ -116,6 +123,26 @@ function Home() {
         </Container>
       </section>
 
+
+
+      {/* Store gallery */}
+      {storeImages.length > 0 && (
+        <section className="py-8 border-t border-border">
+          <Container>
+            <SectionHeader title="من متجرنا" />
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {storeImages.map((img) => (
+                <a key={img.id} href={img.image_url} target="_blank" rel="noreferrer"
+                  className="block rounded-2xl overflow-hidden card-neon aspect-square">
+                  <img src={img.image_url} alt="" className="w-full h-full object-cover hover:scale-105 transition" />
+                </a>
+              ))}
+            </div>
+          </Container>
+        </section>
+      )}
+
+
       {/* Bestsellers */}
       <section className="py-10">
         <Container>
@@ -145,7 +172,7 @@ function Home() {
         <Container>
           <SectionHeader title="آراء عملائنا" subtitle="ثقتك شرفنا" />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {reviews.map((r, i) => (
+            {allReviews.map((r, i) => (
               <div key={i} className="card-neon rounded-2xl p-5">
                 <div className="flex gap-1 mb-3">
                   {Array.from({ length: r.rating }).map((_, j) => (

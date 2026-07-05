@@ -7,6 +7,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Upload, Check, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadImage } from "@/lib/upload";
+
+
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "إتمام الطلب — FPI STOR" }] }),
@@ -63,6 +66,13 @@ function CheckoutPage() {
     try {
       const orderId = crypto.randomUUID();
 
+      let proofUrl: string | null = null;
+      try {
+        proofUrl = await uploadImage(proof, "payment-proofs");
+      } catch (upErr: any) {
+        throw new Error("فشل رفع إثبات الدفع: " + (upErr?.message || ""));
+      }
+
       const { error } = await supabase
         .from("orders")
         .insert({
@@ -70,9 +80,9 @@ function CheckoutPage() {
           customer_name: name.trim(),
           customer_phone: phone.trim(),
           customer_email: email.trim() || null,
-          delivery_info: `طريقة الدفع: ${selected.name} — إثبات: ${proof.name}`,
+          delivery_info: `طريقة الدفع: ${selected.name}`,
           payment_method_name: selected.name,
-          payment_proof_url: proof.name,
+          payment_proof_url: proofUrl,
           total,
           status: "pending",
         } as any);
@@ -116,7 +126,8 @@ function CheckoutPage() {
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">رقم الهاتف</label>
-                  <input value={phone} onChange={(e) => setPhone(e.target.value)}
+                  <input value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ""))}
+                    inputMode="numeric" pattern="[0-9]*" type="tel" autoComplete="tel"
                     className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus:border-primary outline-none"
                     placeholder="07XXXXXXXXX" dir="ltr" />
                 </div>

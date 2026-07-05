@@ -76,6 +76,22 @@ export const useAdmin = create<AdminState>()(
   ),
 );
 
+// Track orders the user has already reviewed (local, per browser)
+type ReviewedState = {
+  ids: string[];
+  markReviewed: (id: string) => void;
+};
+
+export const useReviewedOrders = create<ReviewedState>()(
+  persist(
+    (set) => ({
+      ids: [],
+      markReviewed: (id) => set((s) => ({ ids: [id, ...s.ids.filter((x) => x !== id)] })),
+    }),
+    { name: "fpi-reviewed-orders" },
+  ),
+);
+
 export const STATUS_AR: Record<string, string> = {
   pending: "قيد التنفيذ",
   processing: "جاري التجهيز",
