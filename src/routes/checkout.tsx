@@ -46,7 +46,7 @@ function CheckoutPage() {
       items,
       total,
       method,
-      status: "قيد التنفيذ",
+      status: "مكتمل",
       createdAt: Date.now(),
       proofName: proof.name,
     });
