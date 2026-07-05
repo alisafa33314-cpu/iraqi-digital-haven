@@ -495,12 +495,14 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
   const save = async () => {
     if (!f.name.trim() || !f.price) return toast.error("أدخل الاسم والسعر");
     setBusy(true);
-    const { error } = await supabase.rpc("admin_upsert_product" as any, {
+    const { error } = await supabase.rpc("admin_upsert_product_v2" as any, {
       _code: adminCode,
       _id: f.id,
       _name: f.name.trim(),
       _description: f.description.trim(),
       _price: Number(f.price),
+      _old_price: f.old_price ? Number(f.old_price) : null,
+      _stock: Number(f.stock) || 0,
       _image_url: f.image_url.trim() || null,
       _category_slug: f.category_slug || null,
       _is_active: f.is_active,
@@ -527,6 +529,16 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
           <div className="grid grid-cols-2 gap-3">
             <Field label="السعر (د.ع)">
               <input type="number" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} className={inputCls} dir="ltr" />
+            </Field>
+            <Field label="السعر قبل الخصم (اختياري)">
+              <input type="number" value={f.old_price} onChange={(e) => setF({ ...f, old_price: e.target.value })}
+                className={inputCls} dir="ltr" placeholder="لعرض خصم" />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="الكمية المتوفرة">
+              <input type="number" value={f.stock} onChange={(e) => setF({ ...f, stock: e.target.value })}
+                className={inputCls} dir="ltr" />
             </Field>
             <Field label="القسم">
               <select value={f.category_slug} onChange={(e) => setF({ ...f, category_slug: e.target.value })} className={inputCls}>
