@@ -8,6 +8,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const count = useCart((s) => s.items.reduce((a, i) => a + i.qty, 0));
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const categories = useCatalog((s) => s.categories);
 
   const nav = [
     { to: "/", label: "الرئيسية" },
