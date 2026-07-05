@@ -164,13 +164,28 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode: string; onChange: () => void; }) {
   const [open, setOpen] = useState(false);
   const [info, setInfo] = useState(order.subscription_info || "");
+  const [imgUrl, setImgUrl] = useState<string | null>((order as any).subscription_image_url || null);
+  const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
 
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const url = await uploadImage(file, "subscriptions");
+      setImgUrl(url);
+      toast.success("تم رفع الصورة");
+    } catch (e: any) {
+      toast.error("فشل الرفع: " + (e?.message || ""));
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const complete = async () => {
-    if (!info.trim()) return toast.error("أدخل معلومات الاشتراك أولاً");
+    if (!info.trim() && !imgUrl) return toast.error("أدخل معلومات الاشتراك أو أرفق صورة");
     setBusy(true);
     const { error } = await supabase.rpc("admin_complete_order" as any, {
-      _code: adminCode, _order_id: order.id, _info: info.trim(),
+      _code: adminCode, _order_id: order.id, _info: info.trim(), _image_url: imgUrl,
     });
     setBusy(false);
     if (error) return toast.error("فشل إكمال الطلب");
@@ -188,6 +203,8 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
     toast.success("تم رفض الطلب");
     onChange();
   };
+
+  const done = order.status === "completed";
 
   return (
     <div className="border border-border rounded-xl overflow-hidden">
@@ -242,13 +259,29 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
             </label>
             <textarea value={info} onChange={(e) => setInfo(e.target.value)} rows={4}
               placeholder="مثال:&#10;Email: user@example.com&#10;Password: ******"
-              disabled={order.status === "completed"}
+              disabled={done}
               className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm font-mono focus:border-primary outline-none disabled:opacity-70"
               dir="ltr" />
           </div>
+          <div>
+            <label className="text-xs font-bold mb-1 block flex items-center gap-1">
+              <Upload className="w-3 h-3" /> صورة مرفقة مع الاشتراك (اختياري)
+            </label>
+            {imgUrl && (
+              <img src={imgUrl} alt="" className="w-32 h-32 rounded-lg object-cover border border-border mb-2" />
+            )}
+            {!done && (
+              <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-2 border border-border cursor-pointer text-xs hover:border-primary/50">
+                <Upload className="w-3.5 h-3.5" />
+                {uploading ? "جاري الرفع…" : imgUrl ? "استبدال الصورة" : "رفع صورة من الجهاز"}
+                <input type="file" accept="image/*" className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+              </label>
+            )}
+          </div>
           <div className="flex flex-wrap gap-2">
-            {order.status !== "completed" && (
-              <button onClick={complete} disabled={busy}
+            {!done && (
+              <button onClick={complete} disabled={busy || uploading}
                 className="px-4 py-2 rounded-lg bg-green-500 text-white font-bold text-sm disabled:opacity-60">
                 ✓ إكمال الطلب وإرسال المعلومات
               </button>
@@ -259,7 +292,7 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
                 رفض
               </button>
             )}
-            {order.status === "completed" && (
+            {done && (
               <div className="text-xs text-green-400 font-bold">✓ تم إكمال الطلب — يستطيع الزبون رؤية المعلومات في «طلباتي»</div>
             )}
           </div>
