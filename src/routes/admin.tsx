@@ -4,10 +4,12 @@ import { formatIQD, type Product, type PaymentMethod, type Category } from "@/li
 import { useCatalog } from "@/lib/catalog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload } from "lucide-react";
+import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin, STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage } from "@/lib/upload";
+import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "لوحة الإدارة — FPI STOR" }] }),
@@ -23,11 +25,13 @@ type AdminOrder = {
   status: string;
   subscription_info: string | null;
   subscription_image_url: string | null;
+  subscription_image_urls: string[] | null;
   payment_proof_url: string | null;
   payment_method_name: string | null;
   created_at: string;
   items: { product_name: string; quantity: number; unit_price: number }[];
 };
+
 
 function ImagePicker({ value, onChange, folder }: {
   value: string; onChange: (url: string) => void; folder: string;
