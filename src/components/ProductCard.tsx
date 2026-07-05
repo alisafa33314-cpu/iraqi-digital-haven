@@ -78,8 +78,8 @@ export function ProductCard({ product }: { product: Product }) {
         <button
           onClick={() => {
             if (!product.inStock) return;
-            add(product);
-            toast.success("تمت الإضافة إلى السلة");
+            if (add(product)) toast.success("تمت الإضافة إلى السلة");
+            else toast.error("لا يمكن إضافة أكثر من الكمية المتوفرة");
           }}
           disabled={!product.inStock}
           className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:btn-glow transition"
