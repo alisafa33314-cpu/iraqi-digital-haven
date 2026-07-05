@@ -197,16 +197,22 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode: string; onChange: () => void; }) {
   const [open, setOpen] = useState(false);
   const [info, setInfo] = useState(order.subscription_info || "");
-  const [imgUrl, setImgUrl] = useState<string | null>((order as any).subscription_image_url || null);
+  const initialImgs = order.subscription_image_urls && order.subscription_image_urls.length > 0
+    ? order.subscription_image_urls
+    : (order.subscription_image_url ? [order.subscription_image_url] : []);
+  const [imgs, setImgs] = useState<string[]>(initialImgs);
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [proofOpen, setProofOpen] = useState(false);
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = async (files: FileList) => {
     setUploading(true);
     try {
-      const url = await uploadImage(file, "subscriptions");
-      setImgUrl(url);
-      toast.success("تم رفع الصورة");
+      const arr = Array.from(files);
+      const urls: string[] = [];
+      for (const f of arr) urls.push(await uploadImage(f, "subscriptions"));
+      setImgs((prev) => [...prev, ...urls]);
+      toast.success(`تم رفع ${urls.length} صورة`);
     } catch (e: any) {
       toast.error("فشل الرفع: " + (e?.message || ""));
     } finally {
@@ -214,15 +220,17 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
     }
   };
 
+  const removeImg = (i: number) => setImgs((prev) => prev.filter((_, idx) => idx !== i));
+
   const complete = async () => {
-    if (!info.trim() && !imgUrl) return toast.error("أدخل معلومات الاشتراك أو أرفق صورة");
+    if (!info.trim() && imgs.length === 0) return toast.error("أدخل معلومات الاشتراك أو أرفق صورة");
     setBusy(true);
-    const { error } = await supabase.rpc("admin_complete_order" as any, {
-      _code: adminCode, _order_id: order.id, _info: info.trim(), _image_url: imgUrl,
+    const { error } = await supabase.rpc("admin_complete_order_v2" as any, {
+      _code: adminCode, _order_id: order.id, _info: info.trim(), _image_urls: imgs,
     });
     setBusy(false);
-    if (error) return toast.error("فشل إكمال الطلب");
-    toast.success("تم إكمال الطلب وإرسال المعلومات للزبون");
+    if (error) return toast.error("فشل إكمال الطلب: " + error.message);
+    toast.success("تم إكمال الطلب");
     onChange();
   };
 
@@ -268,9 +276,10 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
               <div>وسيلة الدفع: <span className="font-bold text-primary">{order.payment_method_name}</span></div>
             )}
             {order.payment_proof_url ? (
-              <div className="inline-flex items-center gap-1.5 mt-1 px-2 py-1 rounded-md bg-green-500/15 border border-green-500/30 text-green-400 font-bold">
-                ✓ واصل التحويل <span className="opacity-70 font-normal" dir="ltr">({order.payment_proof_url})</span>
-              </div>
+              <button type="button" onClick={() => setProofOpen(true)}
+                className="inline-flex items-center gap-1.5 mt-1 px-3 py-1.5 rounded-md bg-green-500/15 border border-green-500/30 text-green-400 font-bold hover:bg-green-500/25">
+                <Eye className="w-3.5 h-3.5" /> ✓ عرض إثبات التحويل
+              </button>
             ) : (
               <div className="inline-flex items-center gap-1.5 mt-1 px-2 py-1 rounded-md bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 font-bold">
                 ⚠ لم يصل إثبات التحويل
@@ -287,7 +296,7 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
             ))}
           </div>
           <div>
-            <label className="text-xs font-bold mb-1 block flex items-center gap-1">
+            <label className="text-xs font-bold mb-1 flex items-center gap-1">
               <KeyRound className="w-3 h-3" /> معلومات الاشتراك (تُرسل للزبون)
             </label>
             <textarea value={info} onChange={(e) => setInfo(e.target.value)} rows={4}
@@ -297,18 +306,30 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
               dir="ltr" />
           </div>
           <div>
-            <label className="text-xs font-bold mb-1 block flex items-center gap-1">
-              <Upload className="w-3 h-3" /> صورة مرفقة مع الاشتراك (اختياري)
+            <label className="text-xs font-bold mb-1 flex items-center gap-1">
+              <Upload className="w-3 h-3" /> صور مرفقة مع الاشتراك (يمكن اختيار أكثر من صورة)
             </label>
-            {imgUrl && (
-              <img src={imgUrl} alt="" className="w-32 h-32 rounded-lg object-cover border border-border mb-2" />
+            {imgs.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+                {imgs.map((u, i) => (
+                  <div key={i} className="relative">
+                    <img src={u} alt="" className="w-full h-24 rounded-lg object-cover border border-border" />
+                    {!done && (
+                      <button type="button" onClick={() => removeImg(i)}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-white text-xs flex items-center justify-center">
+                        <X className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
             {!done && (
               <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-2 border border-border cursor-pointer text-xs hover:border-primary/50">
                 <Upload className="w-3.5 h-3.5" />
-                {uploading ? "جاري الرفع…" : imgUrl ? "استبدال الصورة" : "رفع صورة من الجهاز"}
-                <input type="file" accept="image/*" className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+                {uploading ? "جاري الرفع…" : "إضافة صور من الجهاز"}
+                <input type="file" accept="image/*" multiple className="hidden"
+                  onChange={(e) => e.target.files && e.target.files.length > 0 && handleUpload(e.target.files)} />
               </label>
             )}
           </div>
@@ -326,14 +347,33 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
               </button>
             )}
             {done && (
-              <div className="text-xs text-green-400 font-bold">✓ تم إكمال الطلب — يستطيع الزبون رؤية المعلومات في «طلباتي»</div>
+              <div className="text-xs text-green-400 font-bold">✓ تم إكمال الطلب</div>
             )}
+          </div>
+        </div>
+      )}
+
+      {proofOpen && order.payment_proof_url && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setProofOpen(false)}>
+          <div className="max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between mb-2">
+              <div className="text-white font-bold">إثبات التحويل</div>
+              <button onClick={() => setProofOpen(false)} className="w-8 h-8 rounded-lg bg-white/10 text-white">
+                <X className="w-4 h-4 mx-auto" />
+              </button>
+            </div>
+            <img src={order.payment_proof_url} alt="إثبات التحويل"
+              className="w-full max-h-[80vh] object-contain rounded-xl bg-black" />
+            <a href={order.payment_proof_url} target="_blank" rel="noreferrer"
+              className="mt-2 inline-block text-xs text-primary underline">فتح في نافذة جديدة</a>
           </div>
         </div>
       )}
     </div>
   );
 }
+
 
 /* -------------------- Products Manager -------------------- */
 
