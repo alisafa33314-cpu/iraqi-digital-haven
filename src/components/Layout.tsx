@@ -20,19 +20,8 @@ export function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Announcement bar */}
-      <div className="bg-primary/10 border-b border-primary/20 text-xs overflow-hidden">
-        <div className="flex whitespace-nowrap animate-marquee py-2">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="flex gap-8 px-4 shrink-0">
-              <span>⚡ تسليم فوري خلال دقائق</span>
-              <span>🔥 عروض على كيم باس</span>
-              <span>🎮 حسابات ستيم بأسعار منافسة</span>
-              <span>💳 4 طرق دفع مختلفة</span>
-              <span>🇮🇶 خدمة داخل العراق</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <MarqueeBar />
+
 
       {/* Header */}
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/80 border-b border-border">
