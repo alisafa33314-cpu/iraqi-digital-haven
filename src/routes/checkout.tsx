@@ -45,31 +45,33 @@ function CheckoutPage() {
     if (!proof) return toast.error("الرجاء رفع صورة إثبات الدفع لإكمال الطلب");
     setSubmitting(true);
     try {
-      // Insert order
-      const { data: order, error } = await supabase
+      const orderId = crypto.randomUUID();
+
+      // Insert order without requesting the row back, because guests can create orders but cannot read all order details directly.
+      const { error } = await supabase
         .from("orders")
         .insert({
+          id: orderId,
           customer_name: name.trim(),
           customer_phone: phone.trim(),
           customer_email: email.trim() || null,
           delivery_info: `طريقة الدفع: ${method} — إثبات: ${proof.name}`,
           total,
           status: "pending",
-        })
-        .select("id")
-        .single();
-      if (error || !order) throw error;
+        });
+      if (error) throw error;
 
       // Insert items
       const rows = items.map((i) => ({
-        order_id: order.id,
+        order_id: orderId,
         product_name: i.product.name,
         quantity: i.qty,
         unit_price: i.product.price,
       }));
-      await supabase.from("order_items").insert(rows);
+      const { error: itemsError } = await supabase.from("order_items").insert(rows);
+      if (itemsError) throw itemsError;
 
-      addId(order.id);
+      addId(orderId);
       clear();
 
       // Notify admin via WhatsApp
@@ -91,7 +93,7 @@ function CheckoutPage() {
           `المنتجات:`,
           ...items.map((i) => `• ${i.product.name} × ${i.qty}`),
           ``,
-          `رقم الطلب: ${order.id}`,
+          `رقم الطلب: ${orderId}`,
         ]
           .filter(Boolean)
           .join("\n");
