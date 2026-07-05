@@ -82,8 +82,18 @@ function AdminPage() {
               dir="ltr" />
             <button
               onClick={async () => {
-                const { error } = await supabase.rpc("admin_list_orders" as any, { _code: input });
-                if (error) return toast.error("رمز غير صحيح");
+                const { error } = await supabase.rpc("admin_login" as any, { _code: input });
+                if (error) {
+                  const msg = error.message || "";
+                  const lock = msg.match(/locked:(\d+)/);
+                  const invalid = msg.match(/invalid:(\d+)/);
+                  if (lock) {
+                    const mins = Math.ceil(Number(lock[1]) / 60);
+                    return toast.error(`تم حظر الدخول مؤقتاً — حاول بعد ${mins} دقيقة`);
+                  }
+                  if (invalid) return toast.error(`رمز غير صحيح — تبقى ${invalid[1]} محاولة`);
+                  return toast.error("رمز غير صحيح");
+                }
                 setCode(input);
                 toast.success("مرحباً بك في لوحة الإدارة");
               }}
@@ -202,6 +212,12 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 
         {/* Reviews management */}
         <ReviewsManager adminCode={adminCode} reviews={reviews} onChange={refreshCatalog} />
+
+        {/* Marquee / announcement bar */}
+        <MarqueeManager adminCode={adminCode} onChange={refreshCatalog} />
+
+        {/* Change admin code */}
+        <ChangeCodeManager adminCode={adminCode} onChanged={(c) => useAdmin.getState().setCode(c)} />
       </Container>
     </Layout>
   );
@@ -396,13 +412,16 @@ type ProductForm = {
   name: string;
   description: string;
   price: string;
+  old_price: string;
+  stock: string;
   image_url: string;
   category_slug: string;
   is_active: boolean;
 };
 
 const emptyProduct: ProductForm = {
-  id: null, name: "", description: "", price: "", image_url: "", category_slug: "", is_active: true,
+  id: null, name: "", description: "", price: "", old_price: "", stock: "0",
+  image_url: "", category_slug: "", is_active: true,
 };
 
 function ProductsManager({ adminCode, products, categories, onChange }: {
@@ -413,6 +432,8 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
   const startNew = () => setEditing({ ...emptyProduct, category_slug: categories[0]?.slug || "" });
   const startEdit = (p: Product) => setEditing({
     id: p.id, name: p.name, description: p.description, price: String(p.price),
+    old_price: p.oldPrice != null ? String(p.oldPrice) : "",
+    stock: p.stock != null ? String(p.stock) : "0",
     image_url: p.image, category_slug: p.categorySlug, is_active: p.inStock,
   });
 
@@ -480,12 +501,14 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
   const save = async () => {
     if (!f.name.trim() || !f.price) return toast.error("أدخل الاسم والسعر");
     setBusy(true);
-    const { error } = await supabase.rpc("admin_upsert_product" as any, {
+    const { error } = await supabase.rpc("admin_upsert_product_v2" as any, {
       _code: adminCode,
       _id: f.id,
       _name: f.name.trim(),
       _description: f.description.trim(),
       _price: Number(f.price),
+      _old_price: f.old_price ? Number(f.old_price) : null,
+      _stock: Number(f.stock) || 0,
       _image_url: f.image_url.trim() || null,
       _category_slug: f.category_slug || null,
       _is_active: f.is_active,
@@ -512,6 +535,16 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
           <div className="grid grid-cols-2 gap-3">
             <Field label="السعر (د.ع)">
               <input type="number" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} className={inputCls} dir="ltr" />
+            </Field>
+            <Field label="السعر قبل الخصم (اختياري)">
+              <input type="number" value={f.old_price} onChange={(e) => setF({ ...f, old_price: e.target.value })}
+                className={inputCls} dir="ltr" placeholder="لعرض خصم" />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="الكمية المتوفرة">
+              <input type="number" value={f.stock} onChange={(e) => setF({ ...f, stock: e.target.value })}
+                className={inputCls} dir="ltr" />
             </Field>
             <Field label="القسم">
               <select value={f.category_slug} onChange={(e) => setF({ ...f, category_slug: e.target.value })} className={inputCls}>
@@ -1103,6 +1136,112 @@ function ReviewsManager({ adminCode, reviews, onChange }: {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+/* -------------------- Marquee Manager -------------------- */
+
+function MarqueeManager({ adminCode, onChange }: { adminCode: string; onChange: () => void }) {
+  const settings = useCatalog((s) => s.settings);
+  const initialItems: string[] = (() => {
+    try { const v = JSON.parse(settings["marquee_items"] || "[]"); return Array.isArray(v) ? v : []; } catch { return []; }
+  })();
+  const [items, setItems] = useState<string[]>(initialItems);
+  const [enabled, setEnabled] = useState<boolean>(settings["marquee_enabled"] !== "false");
+  const [newItem, setNewItem] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    try { const v = JSON.parse(settings["marquee_items"] || "[]"); setItems(Array.isArray(v) ? v : []); } catch {}
+    setEnabled(settings["marquee_enabled"] !== "false");
+  }, [settings]);
+
+  const save = async () => {
+    setBusy(true);
+    const r1 = await supabase.rpc("admin_set_setting" as any, {
+      _code: adminCode, _key: "marquee_items", _value: JSON.stringify(items),
+    });
+    const r2 = await supabase.rpc("admin_set_setting" as any, {
+      _code: adminCode, _key: "marquee_enabled", _value: enabled ? "true" : "false",
+    });
+    setBusy(false);
+    if (r1.error || r2.error) return toast.error("فشل الحفظ");
+    toast.success("تم الحفظ");
+    onChange();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-4 flex items-center gap-2">📣 الشريط المتحرك</h2>
+      <label className="flex items-center gap-2 text-sm mb-3">
+        <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="accent-primary" />
+        إظهار الشريط للزبائن
+      </label>
+      <div className="space-y-2 mb-3">
+        {items.length === 0 && <div className="text-xs text-muted-foreground">لا توجد رسائل — أضف واحدة أدناه.</div>}
+        {items.map((t, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <input value={t}
+              onChange={(e) => setItems(items.map((x, idx) => idx === i ? e.target.value : x))}
+              className={inputCls} />
+            <button onClick={() => setItems(items.filter((_, idx) => idx !== i))}
+              className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive shrink-0">
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-2 mb-3">
+        <input value={newItem} onChange={(e) => setNewItem(e.target.value)}
+          placeholder="نص جديد للشريط…" className={inputCls} />
+        <button onClick={() => { if (newItem.trim()) { setItems([...items, newItem.trim()]); setNewItem(""); } }}
+          className="p-2 rounded-lg bg-primary text-primary-foreground shrink-0">
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
+      <button onClick={save} disabled={busy}
+        className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+        {busy ? "جاري الحفظ…" : "حفظ الشريط"}
+      </button>
+    </div>
+  );
+}
+
+/* -------------------- Change Admin Code -------------------- */
+
+function ChangeCodeManager({ adminCode, onChanged }: { adminCode: string; onChanged: (c: string) => void }) {
+  const [next, setNext] = useState("");
+  const [confirmNext, setConfirmNext] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (next.length < 4) return toast.error("الرمز الجديد يجب أن يكون 4 خانات فأكثر");
+    if (next !== confirmNext) return toast.error("الرمز غير متطابق");
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_change_code" as any, { _current: adminCode, _new: next });
+    setBusy(false);
+    if (error) return toast.error("فشل: " + error.message);
+    toast.success("تم تغيير رمز الإدارة");
+    onChanged(next);
+    setNext(""); setConfirmNext("");
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-4 flex items-center gap-2"><KeyRound className="w-5 h-5" /> تغيير رمز الإدارة</h2>
+      <div className="space-y-3">
+        <Field label="الرمز الجديد">
+          <input type="password" value={next} onChange={(e) => setNext(e.target.value)} className={inputCls} dir="ltr" />
+        </Field>
+        <Field label="تأكيد الرمز الجديد">
+          <input type="password" value={confirmNext} onChange={(e) => setConfirmNext(e.target.value)} className={inputCls} dir="ltr" />
+        </Field>
+        <button onClick={submit} disabled={busy}
+          className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? "جاري الحفظ…" : "تغيير الرمز"}
+        </button>
+      </div>
     </div>
   );
 }

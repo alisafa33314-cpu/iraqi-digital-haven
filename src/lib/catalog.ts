@@ -34,6 +34,7 @@ type CatalogState = {
   socials: SocialLink[];
   storeImages: StoreImage[];
   reviews: ReviewRow[];
+  settings: Record<string, string>;
   refresh: () => Promise<void>;
 };
 
@@ -45,14 +46,16 @@ export const useCatalog = create<CatalogState>((set) => ({
   socials: [],
   storeImages: [],
   reviews: [],
+  settings: {},
   refresh: async () => {
-    const [pRes, cRes, mRes, sRes, iRes, rRes] = await Promise.all([
+    const [pRes, cRes, mRes, sRes, iRes, rRes, stRes] = await Promise.all([
       supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("categories").select("*").order("sort_order", { ascending: true }),
       supabase.from("payment_methods" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
       supabase.from("social_links" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
       supabase.from("store_images" as any).select("*").order("sort_order", { ascending: true }),
       supabase.from("reviews" as any).select("*").order("created_at", { ascending: false }),
+      supabase.from("site_settings" as any).select("key,value"),
     ]);
 
     const cats: Category[] = ((cRes.data as any[]) || []).map((c) => ({
@@ -67,6 +70,8 @@ export const useCatalog = create<CatalogState>((set) => ({
       name: p.name,
       description: p.description || "",
       price: Number(p.price),
+      oldPrice: p.old_price != null ? Number(p.old_price) : undefined,
+      stock: p.stock != null ? Number(p.stock) : undefined,
       image: p.image_url || "https://placehold.co/600x600/222/fff?text=No+Image",
       categorySlug: p.category_slug || "",
       inStock: p.is_active !== false,
@@ -93,7 +98,10 @@ export const useCatalog = create<CatalogState>((set) => ({
 
     const reviews: ReviewRow[] = ((rRes.data as any[]) || []) as ReviewRow[];
 
-    set({ ready: true, products: prods, categories: cats, paymentMethods: pms, socials, storeImages, reviews });
+    const settings: Record<string, string> = {};
+    for (const row of (stRes.data as any[]) || []) settings[row.key] = row.value;
+
+    set({ ready: true, products: prods, categories: cats, paymentMethods: pms, socials, storeImages, reviews, settings });
   },
 }));
 

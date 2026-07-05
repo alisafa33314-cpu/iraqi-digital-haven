@@ -195,6 +195,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean
           name: string
+          old_price: number | null
           price: number
           stock: number
           updated_at: string
@@ -208,6 +209,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           name: string
+          old_price?: number | null
           price: number
           stock?: number
           updated_at?: string
@@ -221,6 +223,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean
           name?: string
+          old_price?: number | null
           price?: number
           stock?: number
           updated_at?: string
@@ -406,6 +409,10 @@ export type Database = {
         Args: { _code: string; _image_url: string; _sort_order: number }
         Returns: string
       }
+      admin_change_code: {
+        Args: { _current: string; _new: string }
+        Returns: undefined
+      }
       admin_check_code: { Args: { _code: string }; Returns: undefined }
       admin_complete_order:
         | {
@@ -472,8 +479,13 @@ export type Database = {
           total: number
         }[]
       }
+      admin_login: { Args: { _code: string }; Returns: undefined }
       admin_reorder_category: {
         Args: { _code: string; _slug: string; _sort_order: number }
+        Returns: undefined
+      }
+      admin_set_setting: {
+        Args: { _code: string; _key: string; _value: string }
         Returns: undefined
       }
       admin_update_status: {
@@ -519,6 +531,21 @@ export type Database = {
           _is_active: boolean
           _name: string
           _price: number
+        }
+        Returns: string
+      }
+      admin_upsert_product_v2: {
+        Args: {
+          _category_slug: string
+          _code: string
+          _description: string
+          _id: string
+          _image_url: string
+          _is_active: boolean
+          _name: string
+          _old_price: number
+          _price: number
+          _stock: number
         }
         Returns: string
       }
