@@ -89,6 +89,7 @@ export type Database = {
       orders: {
         Row: {
           created_at: string
+          customer_email: string | null
           customer_name: string
           customer_notes: string | null
           customer_phone: string
@@ -96,12 +97,14 @@ export type Database = {
           id: string
           payment_proof_url: string | null
           status: Database["public"]["Enums"]["order_status"]
+          subscription_info: string | null
           total: number
           updated_at: string
           user_id: string | null
         }
         Insert: {
           created_at?: string
+          customer_email?: string | null
           customer_name: string
           customer_notes?: string | null
           customer_phone: string
@@ -109,12 +112,14 @@ export type Database = {
           id?: string
           payment_proof_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          subscription_info?: string | null
           total: number
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           created_at?: string
+          customer_email?: string | null
           customer_name?: string
           customer_notes?: string | null
           customer_phone?: string
@@ -122,6 +127,7 @@ export type Database = {
           id?: string
           payment_proof_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          subscription_info?: string | null
           total?: number
           updated_at?: string
           user_id?: string | null
@@ -199,6 +205,24 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -225,6 +249,47 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_complete_order: {
+        Args: { _code: string; _info: string; _order_id: string }
+        Returns: undefined
+      }
+      admin_list_orders: {
+        Args: { _code: string }
+        Returns: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          items: Json
+          payment_proof_url: string
+          status: Database["public"]["Enums"]["order_status"]
+          subscription_info: string
+          total: number
+        }[]
+      }
+      admin_update_status: {
+        Args: {
+          _code: string
+          _order_id: string
+          _status: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: undefined
+      }
+      get_orders_by_ids: {
+        Args: { _ids: string[] }
+        Returns: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          id: string
+          items: Json
+          status: Database["public"]["Enums"]["order_status"]
+          subscription_info: string
+          total: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
