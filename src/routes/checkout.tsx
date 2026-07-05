@@ -119,7 +119,8 @@ function CheckoutPage() {
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">رقم الهاتف</label>
-                  <input value={phone} onChange={(e) => setPhone(e.target.value)}
+                  <input value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ""))}
+                    inputMode="numeric" pattern="[0-9]*" type="tel" autoComplete="tel"
                     className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus:border-primary outline-none"
                     placeholder="07XXXXXXXXX" dir="ltr" />
                 </div>
