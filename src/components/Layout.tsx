@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { ShoppingCart, Search, Menu, X, MessageCircle, Send } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useCart } from "@/lib/cart";
-import { categories } from "@/lib/data";
+import { useCatalog } from "@/lib/catalog";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
