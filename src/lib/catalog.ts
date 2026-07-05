@@ -17,7 +17,7 @@ export const useCatalog = create<CatalogState>((set, get) => ({
   paymentMethods: [],
   refresh: async () => {
     const [pRes, cRes, mRes] = await Promise.all([
-      supabase.from("products").select("*").eq("is_active", true).order("created_at", { ascending: false }),
+      supabase.from("products").select("*").order("created_at", { ascending: false }),
       supabase.from("categories").select("*").order("sort_order", { ascending: true }),
       supabase.from("payment_methods" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
     ]);
@@ -36,7 +36,7 @@ export const useCatalog = create<CatalogState>((set, get) => ({
       price: Number(p.price),
       image: p.image_url || "https://placehold.co/600x600/222/fff?text=No+Image",
       categorySlug: p.category_slug || cats.find((c) => c.slug === (p.category_slug))?.slug || "",
-      inStock: (p.stock ?? 1) > 0,
+      inStock: p.is_active !== false,
     }));
 
     for (const c of cats) c.count = prods.filter((p) => p.categorySlug === c.slug).length;
