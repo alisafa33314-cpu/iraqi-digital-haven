@@ -6,7 +6,7 @@ export type CartItem = { product: Product; qty: number };
 
 type CartState = {
   items: CartItem[];
-  add: (p: Product) => void;
+  add: (p: Product) => boolean;
   remove: (id: string) => void;
   setQty: (id: string, qty: number) => void;
   clear: () => void;
@@ -18,22 +18,32 @@ export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
-      add: (p) =>
+      add: (p) => {
+        const max = typeof p.stock === "number" ? p.stock : Infinity;
+        const existing = get().items.find((i) => i.product.id === p.id);
+        const currentQty = existing?.qty ?? 0;
+        if (currentQty + 1 > max) return false;
         set((s) => {
-          const existing = s.items.find((i) => i.product.id === p.id);
-          if (existing)
+          const ex = s.items.find((i) => i.product.id === p.id);
+          if (ex)
             return {
               items: s.items.map((i) =>
-                i.product.id === p.id ? { ...i, qty: i.qty + 1 } : i,
+                i.product.id === p.id ? { ...i, qty: i.qty + 1, product: p } : i,
               ),
             };
           return { items: [...s.items, { product: p, qty: 1 }] };
-        }),
+        });
+        return true;
+      },
       remove: (id) => set((s) => ({ items: s.items.filter((i) => i.product.id !== id) })),
       setQty: (id, qty) =>
         set((s) => ({
           items: s.items
-            .map((i) => (i.product.id === id ? { ...i, qty: Math.max(1, qty) } : i))
+            .map((i) => {
+              if (i.product.id !== id) return i;
+              const max = typeof i.product.stock === "number" ? i.product.stock : Infinity;
+              return { ...i, qty: Math.min(max, Math.max(1, qty)) };
+            })
             .filter((i) => i.qty > 0),
         })),
       clear: () => set({ items: [] }),
