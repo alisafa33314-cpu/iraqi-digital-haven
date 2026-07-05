@@ -191,6 +191,59 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
+function SocialsFooter() {
+  const socials = useCatalog((s) => s.socials);
+  if (socials.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground space-y-2">
+        <div>واتساب: 07770586502</div>
+        <div>تليجرام: @FPI101</div>
+      </div>
+    );
+  }
+  return (
+    <div className="flex flex-wrap gap-2">
+      {socials.map((s) => (
+        <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-border hover:border-primary/50 text-xs">
+          {s.image_url ? (
+            <img src={s.image_url} alt="" className="w-5 h-5 rounded object-cover" />
+          ) : (
+            <MessageCircle className="w-4 h-4" />
+          )}
+          {s.name}
+        </a>
+      ))}
+    </div>
+  );
+}
+
+function SocialsFloating() {
+  const socials = useCatalog((s) => s.socials);
+  const list = socials.length > 0 ? socials : [
+    { id: "wa", name: "واتساب", url: "https://wa.me/9647770586502", image_url: null as string | null },
+    { id: "tg", name: "تليجرام", url: "https://t.me/FPI101", image_url: null as string | null },
+  ];
+  return (
+    <div className="fixed bottom-5 left-5 z-30 flex flex-col gap-3">
+      {list.map((s) => (
+        <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer"
+          aria-label={s.name}
+          className="w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center overflow-hidden border-2 border-white/20">
+          {s.image_url ? (
+            <img src={s.image_url} alt={s.name} className="w-full h-full object-cover" />
+          ) : s.name.includes("تليجرام") || /telegram/i.test(s.url) ? (
+            <Send className="w-6 h-6 text-white" />
+          ) : (
+            <MessageCircle className="w-6 h-6 text-white" />
+          )}
+        </a>
+      ))}
+    </div>
+  );
+}
+
 export function Container({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`container mx-auto px-4 ${className}`}>{children}</div>;
 }
+
