@@ -107,27 +107,38 @@ function OrdersPage() {
               </div>
 
               {/* Subscription info shown when admin completed the order */}
-              {o.status === "completed" && o.subscription_info && (
-                <div className="mb-4 p-4 rounded-xl border border-green-500/40 bg-green-500/5">
-                  <div className="flex items-center gap-2 mb-2 text-green-400 font-bold text-sm">
+              {o.status === "completed" && (o.subscription_info || o.subscription_image_url) && (
+                <div className="mb-4 p-4 rounded-xl border border-green-500/40 bg-green-500/5 space-y-3">
+                  <div className="flex items-center gap-2 text-green-400 font-bold text-sm">
                     <KeyRound className="w-4 h-4" />
                     معلومات الاشتراك
                   </div>
-                  <pre
-                    dir="ltr"
-                    className="text-xs whitespace-pre-wrap break-words bg-surface-2 rounded-lg p-3 font-mono"
-                  >
-                    {o.subscription_info}
-                  </pre>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(o.subscription_info || "");
-                      toast.success("تم النسخ");
-                    }}
-                    className="mt-2 inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-primary/15 text-primary border border-primary/30 font-bold"
-                  >
-                    <Copy className="w-3 h-3" /> نسخ
-                  </button>
+                  {o.subscription_info && (
+                    <>
+                      <pre
+                        dir="ltr"
+                        className="text-xs whitespace-pre-wrap break-words bg-surface-2 rounded-lg p-3 font-mono"
+                      >
+                        {o.subscription_info}
+                      </pre>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(o.subscription_info || "");
+                          toast.success("تم النسخ");
+                        }}
+                        className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-primary/15 text-primary border border-primary/30 font-bold"
+                      >
+                        <Copy className="w-3 h-3" /> نسخ
+                      </button>
+                    </>
+                  )}
+                  {o.subscription_image_url && (
+                    <a href={o.subscription_image_url} target="_blank" rel="noreferrer" className="block">
+                      <img src={o.subscription_image_url} alt="صورة الاشتراك"
+                        className="max-h-80 rounded-lg border border-border object-contain bg-surface-2" />
+                      <div className="text-[11px] text-muted-foreground mt-1">اضغط لفتح الصورة</div>
+                    </a>
+                  )}
                 </div>
               )}
 
