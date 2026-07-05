@@ -147,6 +147,9 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
           )}
         </div>
 
+        {/* Categories management */}
+        <CategoriesManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
+
         {/* Products management */}
         <ProductsManager adminCode={adminCode} products={products} categories={categories} onChange={refreshCatalog} />
 
