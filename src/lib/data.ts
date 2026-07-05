@@ -16,6 +16,7 @@ export type Product = {
   image: string;
   description: string;
   inStock: boolean;
+  stock?: number;
   // Optional legacy fields, kept for cart-persisted items
   oldPrice?: number;
   bestseller?: boolean;
