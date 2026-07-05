@@ -1,43 +1,40 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
-import { formatIQD, getProduct, paymentMethods, products } from "@/lib/data";
+import { formatIQD } from "@/lib/data";
+import { useCatalog } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/lib/cart";
-import { Star, ShoppingCart, Shield, Zap } from "lucide-react";
+import { ShoppingCart, Shield, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
-  notFoundComponent: () => (
-    <Layout><Container className="py-20 text-center">المنتج غير موجود</Container></Layout>
-  ),
   errorComponent: () => (
     <Layout><Container className="py-20 text-center">حدث خطأ</Container></Layout>
   ),
-  loader: ({ params }) => {
-    const product = getProduct(params.id);
-    if (!product) throw notFound();
-    return { product };
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.product.name} — FPI STOR` },
-          { name: "description", content: loaderData.product.description },
-          { property: "og:title", content: loaderData.product.name },
-          { property: "og:description", content: loaderData.product.description },
-          { property: "og:image", content: loaderData.product.image },
-        ]
-      : [{ title: "منتج — FPI STOR" }],
-  }),
+  head: () => ({ meta: [{ title: "منتج — FPI STOR" }] }),
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { id } = Route.useParams();
+  const products = useCatalog((s) => s.products);
+  const paymentMethods = useCatalog((s) => s.paymentMethods);
+  const product = products.find((p) => p.id === id);
   const add = useCart((s) => s.add);
-  const related = products.filter(
-    (p) => p.categorySlug === product.categorySlug && p.id !== product.id,
-  ).slice(0, 4);
+
+  if (!product) {
+    return (
+      <Layout>
+        <Container className="py-20 text-center">
+          <h1 className="text-2xl font-black">المنتج غير موجود</h1>
+        </Container>
+      </Layout>
+    );
+  }
+
+  const related = products
+    .filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id)
+    .slice(0, 4);
 
   return (
     <Layout>
@@ -60,29 +57,12 @@ function ProductPage() {
               ← عودة إلى القسم
             </Link>
             <h1 className="text-2xl md:text-3xl font-black mt-3 mb-3">{product.name}</h1>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center gap-1 text-sm">
-                <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                <span className="font-bold">{product.rating}</span>
-                <span className="text-muted-foreground">({product.reviews} تقييم)</span>
-              </div>
-              <span className={`text-xs px-2 py-1 rounded-md font-bold ${
-                product.inStock
-                  ? "bg-green-500/15 text-green-400 border border-green-500/30"
-                  : "bg-destructive/15 text-destructive border border-destructive/30"
-              }`}>
-                {product.inStock ? "متوفر" : "غير متوفر"}
-              </span>
-            </div>
 
             <div className="flex items-baseline gap-3 mb-6">
               <span className="text-4xl font-black text-primary text-glow">{formatIQD(product.price)}</span>
-              {product.oldPrice && (
-                <span className="text-lg text-muted-foreground line-through">{formatIQD(product.oldPrice)}</span>
-              )}
             </div>
 
-            <p className="text-muted-foreground leading-relaxed mb-6">{product.description}</p>
+            <p className="text-muted-foreground leading-relaxed mb-6 whitespace-pre-wrap">{product.description}</p>
 
             <div className="flex gap-3 mb-6">
               <button
@@ -123,7 +103,8 @@ function ProductPage() {
               <div className="text-sm font-bold mb-3">طرق الدفع المتاحة</div>
               <div className="flex flex-wrap gap-2">
                 {paymentMethods.map((m) => (
-                  <span key={m.name} className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border">
+                  <span key={m.id} className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border inline-flex items-center gap-2">
+                    {m.image_url && <img src={m.image_url} alt="" className="w-4 h-4 rounded object-cover" />}
                     {m.name}
                   </span>
                 ))}
