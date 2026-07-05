@@ -212,6 +212,12 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 
         {/* Reviews management */}
         <ReviewsManager adminCode={adminCode} reviews={reviews} onChange={refreshCatalog} />
+
+        {/* Marquee / announcement bar */}
+        <MarqueeManager adminCode={adminCode} onChange={refreshCatalog} />
+
+        {/* Change admin code */}
+        <ChangeCodeManager adminCode={adminCode} onChanged={(c) => useAdmin.getState().setCode(c)} />
       </Container>
     </Layout>
   );
