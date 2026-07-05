@@ -82,9 +82,10 @@ function AdminPage() {
               dir="ltr" />
             <button
               onClick={async () => {
-                const { error } = await supabase.rpc("admin_login" as any, { _code: input });
-                if (error) {
-                  const msg = error.message || "";
+                const { data, error } = await supabase.rpc("admin_login" as any, { _code: input });
+                const result = typeof data === "string" ? data : "";
+                if (error || result.startsWith("invalid:") || result.startsWith("locked:")) {
+                  const msg = result || error?.message || "";
                   const lock = msg.match(/locked:(\d+)/);
                   const invalid = msg.match(/invalid:(\d+)/);
                   if (lock) {
