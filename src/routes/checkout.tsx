@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { useCart, useMyOrderIds } from "@/lib/cart";
-import { formatIQD, paymentMethods } from "@/lib/data";
-import { useState } from "react";
+import { formatIQD } from "@/lib/data";
+import { useCatalog } from "@/lib/catalog";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Upload, Check } from "lucide-react";
+import { Upload, Check, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/checkout")({
@@ -17,17 +18,22 @@ function CheckoutPage() {
   const items = useCart((s) => s.items);
   const clear = useCart((s) => s.clear);
   const addId = useMyOrderIds((s) => s.addId);
+  const paymentMethods = useCatalog((s) => s.paymentMethods);
 
-  const [method, setMethod] = useState(paymentMethods[0].name);
+  const [methodId, setMethodId] = useState<string>("");
   const [proof, setProof] = useState<File | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (!methodId && paymentMethods[0]) setMethodId(paymentMethods[0].id);
+  }, [paymentMethods, methodId]);
+
   const subtotal = items.reduce((a, i) => a + i.qty * i.product.price, 0);
-  const selected = paymentMethods.find((m) => m.name === method)!;
-  const tax = selected.tax ? subtotal * selected.tax : 0;
+  const selected = paymentMethods.find((m) => m.id === methodId);
+  const tax = selected?.tax ? subtotal * selected.tax : 0;
   const total = subtotal + tax;
 
   if (items.length === 0)
@@ -39,15 +45,24 @@ function CheckoutPage() {
       </Layout>
     );
 
+  const copyNumber = async (n: string) => {
+    try {
+      await navigator.clipboard.writeText(n);
+      toast.success("تم نسخ الرقم");
+    } catch {
+      toast.error("تعذر النسخ");
+    }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) return toast.error("الرجاء إدخال الاسم ورقم الهاتف");
+    if (!selected) return toast.error("اختر طريقة الدفع");
     if (!proof) return toast.error("الرجاء رفع صورة إثبات الدفع لإكمال الطلب");
     setSubmitting(true);
     try {
       const orderId = crypto.randomUUID();
 
-      // Insert order without requesting the row back, because guests can create orders but cannot read all order details directly.
       const { error } = await supabase
         .from("orders")
         .insert({
@@ -55,13 +70,12 @@ function CheckoutPage() {
           customer_name: name.trim(),
           customer_phone: phone.trim(),
           customer_email: email.trim() || null,
-          delivery_info: `طريقة الدفع: ${method} — إثبات: ${proof.name}`,
+          delivery_info: `طريقة الدفع: ${selected.name} — إثبات: ${proof.name}`,
           total,
           status: "pending",
         });
       if (error) throw error;
 
-      // Insert items
       const rows = items.map((i) => ({
         order_id: orderId,
         product_name: i.product.name,
@@ -89,99 +103,95 @@ function CheckoutPage() {
         <h1 className="text-3xl font-black mb-6">إتمام الطلب</h1>
         <form onSubmit={submit} className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-5">
-            {/* Customer info */}
             <div className="card-neon rounded-2xl p-5">
               <h2 className="font-black mb-4">معلومات الزبون</h2>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">الاسم الكامل</label>
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                  <input value={name} onChange={(e) => setName(e.target.value)}
                     className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus:border-primary outline-none"
-                    placeholder="اسمك الكامل"
-                  />
+                    placeholder="اسمك الكامل" />
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">رقم الهاتف</label>
-                  <input
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                  <input value={phone} onChange={(e) => setPhone(e.target.value)}
                     className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus:border-primary outline-none"
-                    placeholder="07XXXXXXXXX"
-                    dir="ltr"
-                  />
+                    placeholder="07XXXXXXXXX" dir="ltr" />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="text-xs text-muted-foreground mb-1 block">
                     البريد الإلكتروني <span className="opacity-60">(اختياري)</span>
                   </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus:border-primary outline-none"
-                    placeholder="you@example.com"
-                    dir="ltr"
-                  />
+                    placeholder="you@example.com" dir="ltr" />
                 </div>
               </div>
             </div>
 
-            {/* Payment methods */}
             <div className="card-neon rounded-2xl p-5">
               <h2 className="font-black mb-4">اختر طريقة الدفع</h2>
               <div className="space-y-2">
                 {paymentMethods.map((m) => (
-                  <label
-                    key={m.name}
+                  <label key={m.id}
                     className={`flex items-center justify-between gap-3 p-4 rounded-xl cursor-pointer border transition ${
-                      method === m.name
-                        ? "border-primary bg-primary/10"
-                        : "border-border bg-surface-2 hover:border-primary/50"
-                    }`}
-                  >
+                      methodId === m.id ? "border-primary bg-primary/10" : "border-border bg-surface-2 hover:border-primary/50"
+                    }`}>
                     <div className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        name="method"
-                        checked={method === m.name}
-                        onChange={() => setMethod(m.name)}
-                        className="accent-primary"
-                      />
+                      <input type="radio" name="method" checked={methodId === m.id}
+                        onChange={() => setMethodId(m.id)} className="accent-primary" />
+                      {m.image_url ? (
+                        <img src={m.image_url} alt={m.name} className="w-10 h-10 rounded-lg object-cover border border-border" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center text-lg">💳</div>
+                      )}
                       <div>
                         <div className="font-bold text-sm">{m.name}</div>
                         <div className="text-xs text-muted-foreground" dir="ltr">{m.number}</div>
                       </div>
                     </div>
-                    {m.tax && (
+                    {m.tax ? (
                       <span className="text-[10px] px-2 py-1 rounded-md bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 font-bold">
-                        + ضريبة 20%
+                        + ضريبة {Math.round(m.tax * 100)}%
                       </span>
-                    )}
+                    ) : null}
                   </label>
                 ))}
               </div>
-              <div className="mt-4 p-3 rounded-lg bg-surface-2 text-xs text-muted-foreground">
-                💳 قم بتحويل المبلغ إلى {selected.name} على الرقم:
-                <span className="text-primary font-bold mx-1" dir="ltr">{selected.number}</span>
-                ثم ارفع صورة الإيصال.
-              </div>
+
+              {selected && (
+                <div className="mt-4 p-4 rounded-xl bg-surface-2 border border-primary/30 space-y-3">
+                  <div className="text-xs text-muted-foreground">حوّل المبلغ إلى:</div>
+                  <div className="flex items-center gap-3">
+                    {selected.image_url && (
+                      <img src={selected.image_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border" />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-black text-primary">{selected.name}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-base font-black tracking-wide" dir="ltr">{selected.number}</span>
+                        <button type="button" onClick={() => copyNumber(selected.number)}
+                          className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-primary text-primary-foreground font-bold">
+                          <Copy className="w-3 h-3" /> نسخ
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  {selected.note && (
+                    <div className="text-xs text-yellow-400">📌 {selected.note}</div>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* Proof upload */}
             <div className="card-neon rounded-2xl p-5">
               <h2 className="font-black mb-1">صورة إثبات الدفع</h2>
               <p className="text-xs text-muted-foreground mb-3">
                 مطلوبة لإكمال الطلب — من الاستوديو أو الملفات.
               </p>
               <label className="block cursor-pointer">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => setProof(e.target.files?.[0] || null)}
-                />
+                <input type="file" accept="image/*" className="hidden"
+                  onChange={(e) => setProof(e.target.files?.[0] || null)} />
                 <div className={`border-2 border-dashed rounded-xl p-8 text-center transition ${
                   proof ? "border-green-500/50 bg-green-500/5" : "border-border hover:border-primary/50"
                 }`}>
@@ -203,7 +213,6 @@ function CheckoutPage() {
             </div>
           </div>
 
-          {/* Summary */}
           <aside className="card-neon rounded-2xl p-5 h-fit lg:sticky lg:top-24">
             <h2 className="font-black text-lg mb-4">ملخص الطلب</h2>
             <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
@@ -221,7 +230,7 @@ function CheckoutPage() {
               </div>
               {tax > 0 && (
                 <div className="flex justify-between text-yellow-400">
-                  <span>ضريبة (20%)</span>
+                  <span>ضريبة</span>
                   <span className="font-bold">{formatIQD(tax)}</span>
                 </div>
               )}
@@ -230,11 +239,8 @@ function CheckoutPage() {
               <span>الإجمالي</span>
               <span className="text-primary text-glow">{formatIQD(total)}</span>
             </div>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="mt-5 w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60"
-            >
+            <button type="submit" disabled={submitting}
+              className="mt-5 w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
               {submitting ? "جاري الإرسال…" : "إرسال الطلب"}
             </button>
           </aside>

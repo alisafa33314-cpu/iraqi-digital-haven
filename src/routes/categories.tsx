@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
-import { categories } from "@/lib/data";
+import { useCatalog } from "@/lib/catalog";
 
 export const Route = createFileRoute("/categories")({
   head: () => ({
@@ -13,6 +13,7 @@ export const Route = createFileRoute("/categories")({
 });
 
 function CategoriesPage() {
+  const categories = useCatalog((s) => s.categories);
   return (
     <Layout>
       <Container className="py-10">

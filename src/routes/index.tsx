@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
-import { categories, products, reviews } from "@/lib/data";
+import { reviews } from "@/lib/data";
+import { useCatalog } from "@/lib/catalog";
 import { ArrowLeft, Star, Zap, Shield, Clock, Search } from "lucide-react";
 import heroImg from "@/assets/hero-gaming.jpg";
 
@@ -10,8 +11,10 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const bestsellers = products.filter((p) => p.bestseller);
-  const newArrivals = products.filter((p) => p.isNew);
+  const products = useCatalog((s) => s.products);
+  const categories = useCatalog((s) => s.categories);
+  const bestsellers = products.slice(0, 8);
+  const newArrivals = products.slice(0, 8);
 
   return (
     <Layout>

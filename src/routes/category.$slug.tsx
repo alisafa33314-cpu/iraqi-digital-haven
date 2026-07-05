@@ -1,33 +1,38 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
-import { getCategory, productsByCategory, type Product } from "@/lib/data";
+import { useCatalog } from "@/lib/catalog";
 
 export const Route = createFileRoute("/category/$slug")({
   component: CategoryPage,
-  notFoundComponent: () => (
-    <Layout><Container className="py-20 text-center">القسم غير موجود</Container></Layout>
-  ),
   errorComponent: () => (
     <Layout><Container className="py-20 text-center">حدث خطأ</Container></Layout>
   ),
-  loader: ({ params }) => {
-    const cat = getCategory(params.slug);
-    if (!cat) throw notFound();
-    return { cat, items: productsByCategory(params.slug) };
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.cat.name} — FPI STOR` },
-          { name: "description", content: `تصفح منتجات قسم ${loaderData.cat.name} في متجر FPI STOR بالدينار العراقي.` },
-        ]
-      : [{ title: "قسم — FPI STOR" }],
+  head: ({ params }) => ({
+    meta: [
+      { title: `قسم — FPI STOR` },
+      { name: "description", content: `تصفح منتجات القسم في متجر FPI STOR بالدينار العراقي.` },
+    ],
   }),
 });
 
 function CategoryPage() {
-  const { cat, items } = Route.useLoaderData();
+  const { slug } = Route.useParams();
+  const categories = useCatalog((s) => s.categories);
+  const products = useCatalog((s) => s.products);
+  const cat = categories.find((c) => c.slug === slug);
+  const items = products.filter((p) => p.categorySlug === slug);
+
+  if (!cat) {
+    return (
+      <Layout>
+        <Container className="py-20 text-center">
+          <h1 className="text-2xl font-black">القسم غير موجود</h1>
+        </Container>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <Container className="py-10">
@@ -44,7 +49,7 @@ function CategoryPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {items.map((p: Product) => (
+            {items.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
