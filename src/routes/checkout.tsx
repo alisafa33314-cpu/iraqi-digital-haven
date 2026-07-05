@@ -74,33 +74,6 @@ function CheckoutPage() {
       addId(orderId);
       clear();
 
-      // Notify admin via WhatsApp
-      const { data: setting } = await supabase
-        .from("site_settings")
-        .select("value")
-        .eq("key", "admin_whatsapp")
-        .maybeSingle();
-      const adminNum = (setting?.value || "").replace(/\D/g, "");
-      if (adminNum) {
-        const summary = [
-          `🛒 طلب جديد — FPI STOR`,
-          `الاسم: ${name.trim()}`,
-          `الهاتف: ${phone.trim()}`,
-          email ? `الإيميل: ${email.trim()}` : "",
-          `طريقة الدفع: ${method}`,
-          `الإجمالي: ${formatIQD(total)}`,
-          ``,
-          `المنتجات:`,
-          ...items.map((i) => `• ${i.product.name} × ${i.qty}`),
-          ``,
-          `رقم الطلب: ${orderId}`,
-        ]
-          .filter(Boolean)
-          .join("\n");
-        const url = `https://wa.me/${adminNum}?text=${encodeURIComponent(summary)}`;
-        window.open(url, "_blank");
-      }
-
       toast.success("تم إرسال طلبك بنجاح — الحالة: قيد التنفيذ");
       nav({ to: "/orders" });
     } catch (err: any) {
