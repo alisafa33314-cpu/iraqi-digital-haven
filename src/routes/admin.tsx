@@ -4,9 +4,10 @@ import { formatIQD, type Product, type PaymentMethod, type Category } from "@/li
 import { useCatalog } from "@/lib/catalog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard } from "lucide-react";
+import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdmin, STATUS_AR, STATUS_STYLES } from "@/lib/cart";
+import { uploadImage } from "@/lib/upload";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "لوحة الإدارة — FPI STOR" }] }),
