@@ -70,6 +70,11 @@ export function ProductCard({ product }: { product: Product }) {
             </span>
           )}
         </div>
+        {product.inStock && typeof product.stock === "number" && (
+          <div className={`text-[11px] font-bold ${product.stock === 0 ? "text-destructive" : product.stock <= 5 ? "text-orange-500" : "text-emerald-500"}`}>
+            {product.stock === 0 ? "نفذت الكمية" : `متوفر: ${product.stock}`}
+          </div>
+        )}
         <button
           onClick={() => {
             if (!product.inStock) return;
