@@ -20,6 +20,7 @@ type OrderRow = {
   total: number;
   status: string;
   subscription_info: string | null;
+  subscription_image_url: string | null;
   created_at: string;
   items: { product_name: string; quantity: number; unit_price: number }[];
 };
