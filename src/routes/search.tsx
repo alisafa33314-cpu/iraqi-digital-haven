@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
-import { categories, products } from "@/lib/data";
+import { useCatalog } from "@/lib/catalog";
 import { Search as SearchIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -12,6 +12,8 @@ export const Route = createFileRoute("/search")({
 
 function SearchPage() {
   const [q, setQ] = useState("");
+  const products = useCatalog((s) => s.products);
+  const categories = useCatalog((s) => s.categories);
   const query = q.trim().toLowerCase();
   const results = query
     ? products.filter(
