@@ -600,3 +600,156 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
+
+/* -------------------- Categories Manager -------------------- */
+
+type CatForm = {
+  original_slug: string | null;
+  slug: string;
+  name: string;
+  icon: string;
+  sort_order: string;
+};
+
+const emptyCat: CatForm = { original_slug: null, slug: "", name: "", icon: "📦", sort_order: "0" };
+
+function CategoriesManager({ adminCode, categories, onChange }: {
+  adminCode: string; categories: Category[]; onChange: () => void;
+}) {
+  const [editing, setEditing] = useState<CatForm | null>(null);
+  const [busySlug, setBusySlug] = useState<string | null>(null);
+
+  const remove = async (slug: string, name: string) => {
+    if (!confirm(`حذف القسم "${name}"؟ سيتم فصل المنتجات التابعة له.`)) return;
+    const { error } = await supabase.rpc("admin_delete_category" as any, { _code: adminCode, _slug: slug });
+    if (error) return toast.error("فشل الحذف: " + error.message);
+    toast.success("تم الحذف");
+    onChange();
+  };
+
+  const move = async (slug: string, delta: number) => {
+    const sorted = [...categories].sort((a, b) => (a as any).sort_order - (b as any).sort_order);
+    const idx = sorted.findIndex((c) => c.slug === slug);
+    const target = idx + delta;
+    if (target < 0 || target >= sorted.length) return;
+    setBusySlug(slug);
+    // swap sort_order using index positions
+    const a = sorted[idx]; const b = sorted[target];
+    await supabase.rpc("admin_reorder_category" as any, { _code: adminCode, _slug: a.slug, _sort_order: target });
+    await supabase.rpc("admin_reorder_category" as any, { _code: adminCode, _slug: b.slug, _sort_order: idx });
+    setBusySlug(null);
+    onChange();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-black text-lg flex items-center gap-2"><Users className="w-5 h-5" /> الأقسام</h2>
+        <button onClick={() => setEditing({ ...emptyCat, sort_order: String(categories.length) })}
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
+          <Plus className="w-4 h-4" /> إضافة قسم
+        </button>
+      </div>
+
+      {categories.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">لا توجد أقسام.</div>
+      ) : (
+        <div className="space-y-2">
+          {categories.map((c, i) => (
+            <div key={c.slug} className="flex items-center gap-3 p-3 rounded-xl border border-border">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xl shrink-0">
+                {c.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm line-clamp-1">{c.name}</div>
+                <div className="text-[11px] text-muted-foreground" dir="ltr">/{c.slug} · {c.count} منتج</div>
+              </div>
+              <div className="flex flex-col gap-0.5 shrink-0">
+                <button disabled={i === 0 || busySlug === c.slug} onClick={() => move(c.slug, -1)}
+                  className="px-1.5 py-0.5 rounded bg-surface-2 border border-border text-[10px] disabled:opacity-30">▲</button>
+                <button disabled={i === categories.length - 1 || busySlug === c.slug} onClick={() => move(c.slug, 1)}
+                  className="px-1.5 py-0.5 rounded bg-surface-2 border border-border text-[10px] disabled:opacity-30">▼</button>
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => setEditing({
+                  original_slug: c.slug, slug: c.slug, name: c.name, icon: c.icon, sort_order: String(i),
+                })}
+                  className="p-2 rounded-lg bg-surface-2 border border-border hover:border-primary/50">
+                  <Edit className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={() => remove(c.slug, c.name)}
+                  className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {editing && (
+        <CategoryEditor form={editing} adminCode={adminCode}
+          onClose={() => setEditing(null)} onSaved={() => { setEditing(null); onChange(); }} />
+      )}
+    </div>
+  );
+}
+
+function CategoryEditor({ form, adminCode, onClose, onSaved }: {
+  form: CatForm; adminCode: string; onClose: () => void; onSaved: () => void;
+}) {
+  const [f, setF] = useState<CatForm>(form);
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    if (!f.name.trim() || !f.slug.trim()) return toast.error("أدخل الاسم والمعرف (slug)");
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_upsert_category" as any, {
+      _code: adminCode,
+      _slug: f.original_slug,
+      _new_slug: f.slug.trim().toLowerCase().replace(/\s+/g, "-"),
+      _name: f.name.trim(),
+      _icon: f.icon.trim() || "📦",
+      _sort_order: Number(f.sort_order) || 0,
+    });
+    setBusy(false);
+    if (error) return toast.error("فشل الحفظ: " + error.message);
+    toast.success(f.original_slug ? "تم التعديل" : "تمت الإضافة");
+    onSaved();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-black text-lg mb-4">{f.original_slug ? "تعديل قسم" : "إضافة قسم"}</h3>
+        <div className="space-y-3">
+          <Field label="الاسم بالعربية">
+            <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className={inputCls} />
+          </Field>
+          <Field label="المعرف (slug) — إنكليزي بدون مسافات">
+            <input value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value })}
+              className={inputCls} dir="ltr" placeholder="games" />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="الأيقونة (إيموجي)">
+              <input value={f.icon} onChange={(e) => setF({ ...f, icon: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="الترتيب">
+              <input type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: e.target.value })}
+                className={inputCls} dir="ltr" />
+            </Field>
+          </div>
+        </div>
+        <div className="flex gap-2 mt-5">
+          <button onClick={save} disabled={busy}
+            className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+            {busy ? "جاري الحفظ…" : "حفظ"}
+          </button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">
+            إلغاء
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
