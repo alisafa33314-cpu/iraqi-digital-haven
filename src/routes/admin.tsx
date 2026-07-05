@@ -22,6 +22,7 @@ type AdminOrder = {
   status: string;
   subscription_info: string | null;
   payment_proof_url: string | null;
+  payment_method_name: string | null;
   created_at: string;
   items: { product_name: string; quantity: number; unit_price: number }[];
 };
