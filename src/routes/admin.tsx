@@ -278,6 +278,19 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
     onChange();
   };
 
+  const remove = async () => {
+    if (!confirm("هل أنت متأكد من حذف هذا الطلب نهائياً؟")) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_delete_order" as any, {
+      _code: adminCode, _order_id: order.id,
+    });
+    setBusy(false);
+    if (error) return toast.error("فشل الحذف: " + error.message);
+    toast.success("تم حذف الطلب");
+    onChange();
+  };
+
+
   const done = order.status === "completed";
 
   return (
@@ -382,9 +395,14 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
             {done && (
               <div className="text-xs text-green-400 font-bold">✓ تم إكمال الطلب</div>
             )}
+            <button onClick={remove} disabled={busy}
+              className="px-4 py-2 rounded-lg bg-destructive/20 border border-destructive text-destructive font-bold text-sm disabled:opacity-60 mr-auto">
+              🗑 حذف الطلب
+            </button>
           </div>
         </div>
       )}
+
 
       {proofOpen && order.payment_proof_url && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
