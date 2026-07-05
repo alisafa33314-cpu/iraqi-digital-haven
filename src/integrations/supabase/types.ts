@@ -134,9 +134,49 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_methods: {
+        Row: {
+          account_number: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          note: string | null
+          sort_order: number
+          tax: number
+          updated_at: string
+        }
+        Insert: {
+          account_number: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          note?: string | null
+          sort_order?: number
+          tax?: number
+          updated_at?: string
+        }
+        Update: {
+          account_number?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          note?: string | null
+          sort_order?: number
+          tax?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category_id: string | null
+          category_slug: string | null
           created_at: string
           description: string | null
           id: string
@@ -149,6 +189,7 @@ export type Database = {
         }
         Insert: {
           category_id?: string | null
+          category_slug?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -161,6 +202,7 @@ export type Database = {
         }
         Update: {
           category_id?: string | null
+          category_slug?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -249,8 +291,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_check_code: { Args: { _code: string }; Returns: undefined }
       admin_complete_order: {
         Args: { _code: string; _info: string; _order_id: string }
+        Returns: undefined
+      }
+      admin_delete_payment_method: {
+        Args: { _code: string; _id: string }
+        Returns: undefined
+      }
+      admin_delete_product: {
+        Args: { _code: string; _id: string }
         Returns: undefined
       }
       admin_list_orders: {
@@ -275,6 +326,33 @@ export type Database = {
           _status: Database["public"]["Enums"]["order_status"]
         }
         Returns: undefined
+      }
+      admin_upsert_payment_method: {
+        Args: {
+          _account_number: string
+          _code: string
+          _id: string
+          _image_url: string
+          _is_active: boolean
+          _name: string
+          _note: string
+          _sort_order: number
+          _tax: number
+        }
+        Returns: string
+      }
+      admin_upsert_product: {
+        Args: {
+          _category_slug: string
+          _code: string
+          _description: string
+          _id: string
+          _image_url: string
+          _is_active: boolean
+          _name: string
+          _price: number
+        }
+        Returns: string
       }
       get_orders_by_ids: {
         Args: { _ids: string[] }
