@@ -866,3 +866,244 @@ function CategoryEditor({ form, adminCode, onClose, onSaved }: {
     </div>
   );
 }
+
+/* -------------------- Social Links Manager -------------------- */
+
+type SocialForm = {
+  id: string | null;
+  name: string;
+  url: string;
+  image_url: string;
+  sort_order: string;
+  is_active: boolean;
+};
+
+const emptySocial: SocialForm = { id: null, name: "", url: "", image_url: "", sort_order: "0", is_active: true };
+
+function SocialsManager({ adminCode, socials, onChange }: {
+  adminCode: string; socials: SocialLink[]; onChange: () => void;
+}) {
+  const [editing, setEditing] = useState<SocialForm | null>(null);
+
+  const remove = async (id: string, name: string) => {
+    if (!confirm(`حذف "${name}"؟`)) return;
+    const { error } = await supabase.rpc("admin_delete_social" as any, { _code: adminCode, _id: id });
+    if (error) return toast.error("فشل الحذف");
+    toast.success("تم الحذف");
+    onChange();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6 mt-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-black text-lg flex items-center gap-2"><Share2 className="w-5 h-5" /> منصات التواصل</h2>
+        <button onClick={() => setEditing({ ...emptySocial, sort_order: String(socials.length) })}
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
+          <Plus className="w-4 h-4" /> إضافة منصة
+        </button>
+      </div>
+      {socials.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">لم تُضف أي منصة بعد.</div>
+      ) : (
+        <div className="space-y-2">
+          {socials.map((s) => (
+            <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
+              {s.image_url ? (
+                <img src={s.image_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-border shrink-0" />
+              ) : (
+                <div className="w-10 h-10 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">🔗</div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm">{s.name}</div>
+                <div className="text-[11px] text-muted-foreground line-clamp-1" dir="ltr">{s.url}</div>
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => setEditing({
+                  id: s.id, name: s.name, url: s.url, image_url: s.image_url || "",
+                  sort_order: String(s.sort_order), is_active: true,
+                })}
+                  className="p-2 rounded-lg bg-surface-2 border border-border hover:border-primary/50">
+                  <Edit className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={() => remove(s.id, s.name)}
+                  className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {editing && (
+        <SocialEditor form={editing} adminCode={adminCode}
+          onClose={() => setEditing(null)} onSaved={() => { setEditing(null); onChange(); }} />
+      )}
+    </div>
+  );
+}
+
+function SocialEditor({ form, adminCode, onClose, onSaved }: {
+  form: SocialForm; adminCode: string; onClose: () => void; onSaved: () => void;
+}) {
+  const [f, setF] = useState<SocialForm>(form);
+  const [busy, setBusy] = useState(false);
+  const save = async () => {
+    if (!f.name.trim() || !f.url.trim()) return toast.error("أدخل الاسم والرابط");
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_upsert_social" as any, {
+      _code: adminCode, _id: f.id, _name: f.name.trim(), _image_url: f.image_url.trim() || null,
+      _url: f.url.trim(), _sort_order: Number(f.sort_order) || 0, _is_active: f.is_active,
+    });
+    setBusy(false);
+    if (error) return toast.error("فشل الحفظ: " + error.message);
+    toast.success(f.id ? "تم التعديل" : "تمت الإضافة");
+    onSaved();
+  };
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-black text-lg mb-4">{f.id ? "تعديل منصة" : "إضافة منصة"}</h3>
+        <div className="space-y-3">
+          <Field label="الاسم (مثال: واتساب / تليجرام / إنستغرام)">
+            <input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className={inputCls} />
+          </Field>
+          <Field label="الرابط">
+            <input value={f.url} onChange={(e) => setF({ ...f, url: e.target.value })} className={inputCls} dir="ltr"
+              placeholder="https://..." />
+          </Field>
+          <Field label="صورة المنصة (شعار)">
+            <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="socials" />
+          </Field>
+          <Field label="الترتيب">
+            <input type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: e.target.value })}
+              className={inputCls} dir="ltr" />
+          </Field>
+        </div>
+        <div className="flex gap-2 mt-5">
+          <button onClick={save} disabled={busy}
+            className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+            {busy ? "جاري الحفظ…" : "حفظ"}
+          </button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">إلغاء</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Store Images Manager -------------------- */
+
+function StoreImagesManager({ adminCode, images, onChange }: {
+  adminCode: string; images: StoreImage[]; onChange: () => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+
+  const upload = async (files: FileList) => {
+    setUploading(true);
+    try {
+      for (const f of Array.from(files)) {
+        const url = await uploadImage(f, "store");
+        const { error } = await supabase.rpc("admin_add_store_image" as any, {
+          _code: adminCode, _image_url: url, _sort_order: images.length,
+        });
+        if (error) throw error;
+      }
+      toast.success("تمت الإضافة");
+      onChange();
+    } catch (e: any) { toast.error("فشل: " + (e?.message || "")); }
+    finally { setUploading(false); }
+  };
+
+  const remove = async (id: string) => {
+    if (!confirm("حذف الصورة؟")) return;
+    const { error } = await supabase.rpc("admin_delete_store_image" as any, { _code: adminCode, _id: id });
+    if (error) return toast.error("فشل الحذف");
+    toast.success("تم الحذف");
+    onChange();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-black text-lg flex items-center gap-2"><ImageIcon className="w-5 h-5" /> صور المتجر</h2>
+        <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow cursor-pointer">
+          <Upload className="w-4 h-4" /> {uploading ? "جاري الرفع…" : "رفع صور"}
+          <input type="file" accept="image/*" multiple className="hidden"
+            onChange={(e) => e.target.files && e.target.files.length > 0 && upload(e.target.files)} />
+        </label>
+      </div>
+      {images.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">لا توجد صور بعد.</div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {images.map((img) => (
+            <div key={img.id} className="relative rounded-xl overflow-hidden border border-border">
+              <img src={img.image_url} alt="" className="w-full h-32 object-cover" />
+              <button onClick={() => remove(img.id)}
+                className="absolute top-1 right-1 w-7 h-7 rounded-lg bg-destructive text-white flex items-center justify-center">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* -------------------- Reviews Manager -------------------- */
+
+function ReviewsManager({ adminCode, reviews, onChange }: {
+  adminCode: string; reviews: ReviewRow[]; onChange: () => void;
+}) {
+  const products = useCatalog((s) => s.products);
+
+  const remove = async (id: string) => {
+    if (!confirm("حذف التقييم؟")) return;
+    const { error } = await supabase.rpc("admin_delete_review" as any, { _code: adminCode, _id: id });
+    if (error) return toast.error("فشل الحذف");
+    toast.success("تم الحذف");
+    onChange();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-4 flex items-center gap-2">
+        <Star className="w-5 h-5 text-yellow-500" /> تقييمات الزبائن
+      </h2>
+      {reviews.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">لا توجد تقييمات بعد.</div>
+      ) : (
+        <div className="space-y-2">
+          {reviews.map((r) => {
+            const prod = products.find((p) => p.id === r.product_id);
+            return (
+              <div key={r.id} className="p-3 rounded-xl border border-border">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div>
+                    <div className="flex gap-0.5 mb-1">
+                      {Array.from({ length: r.rating }).map((_, j) => (
+                        <Star key={j} className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
+                      ))}
+                    </div>
+                    <div className="font-bold text-sm">{r.customer_name}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {new Date(r.created_at).toLocaleString("ar-IQ")}
+                      {prod && <> · <span className="text-primary">{prod.name}</span></>}
+                    </div>
+                  </div>
+                  <button onClick={() => remove(r.id)}
+                    className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive shrink-0">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {r.comment && <div className="text-sm text-muted-foreground">"{r.comment}"</div>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
