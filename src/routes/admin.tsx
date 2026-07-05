@@ -89,7 +89,7 @@ function AdminPage() {
                   const invalid = msg.match(/invalid:(\d+)/);
                   if (lock) {
                     const mins = Math.ceil(Number(lock[1]) / 60);
-                    return toast.error(`تم حظر الدخول مؤقتاً — حاول بعد ${mins} دقيقة`);
+                    return toast.error(`تم حظرك من تسجيل دخول الإدارة لمدة ${mins} دقيقة`);
                   }
                   if (invalid) return toast.error(`رمز غير صحيح — تبقى ${invalid[1]} محاولة`);
                   return toast.error("رمز غير صحيح");
