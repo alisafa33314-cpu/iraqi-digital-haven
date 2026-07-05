@@ -12,6 +12,7 @@ type Payload = {
   paymentMethod: string;
   total: number;
   items: Item[];
+  proofUrl?: string | null;
 };
 
 function fmt(n: number) {
@@ -32,7 +33,7 @@ export const notifyAdminNewOrder = createServerFn({ method: "POST" })
       .map((i) => `• ${i.name} × ${i.qty} — ${fmt(i.price * i.qty)}`)
       .join("\n");
 
-    const text =
+    const caption =
       `🛒 <b>طلب جديد — FPI STOR</b>\n\n` +
       `🆔 <code>#${shortId}</code>\n` +
       `👤 ${data.customerName}\n` +
@@ -42,17 +43,48 @@ export const notifyAdminNewOrder = createServerFn({ method: "POST" })
       `<b>المنتجات:</b>\n${itemsLines}\n\n` +
       `💰 <b>الإجمالي:</b> ${fmt(data.total)}`;
 
+    const headers = {
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "X-Connection-Api-Key": TELEGRAM_API_KEY,
+      "Content-Type": "application/json",
+    };
+
     try {
+      if (data.proofUrl) {
+        // إرسال صورة إثبات الدفع مع تفاصيل الطلب في التسمية التوضيحية
+        const res = await fetch(`${GATEWAY_URL}/sendPhoto`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            chat_id: ADMIN_CHAT_ID,
+            photo: data.proofUrl,
+            caption,
+            parse_mode: "HTML",
+          }),
+        });
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          // fallback: أرسل الرسالة نصياً مع رابط الصورة
+          await fetch(`${GATEWAY_URL}/sendMessage`, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              chat_id: ADMIN_CHAT_ID,
+              text: caption + `\n\n🧾 <a href="${data.proofUrl}">إثبات الدفع</a>`,
+              parse_mode: "HTML",
+            }),
+          });
+          return { ok: true, fallback: true, body };
+        }
+        return { ok: true };
+      }
+
       const res = await fetch(`${GATEWAY_URL}/sendMessage`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "X-Connection-Api-Key": TELEGRAM_API_KEY,
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({
           chat_id: ADMIN_CHAT_ID,
-          text,
+          text: caption,
           parse_mode: "HTML",
         }),
       });
