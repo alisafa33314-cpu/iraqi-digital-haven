@@ -156,10 +156,13 @@ export function Layout({ children }: { children: ReactNode }) {
             </div>
           </div>
           <div>
-            <div className="font-bold mb-3">التواصل</div>
+            <div className="font-bold mb-3">الدعم الفني</div>
             <div className="space-y-2 text-sm text-muted-foreground">
-              <div>واتساب: 07770586502</div>
-              <div>تليجرام: @FPI101</div>
+              <a href="https://wa.me/9647770586502" target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-primary text-primary-foreground font-bold hover:btn-glow transition">
+                <MessageCircle className="w-4 h-4" /> تواصل عبر واتساب
+              </a>
+              <div className="text-xs">واتساب: 07770586502</div>
             </div>
           </div>
           <div>

@@ -3,6 +3,7 @@ import { Layout, Container } from "@/components/Layout";
 import { useCart } from "@/lib/cart";
 import { formatIQD } from "@/lib/data";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -54,7 +55,13 @@ function CartPage() {
                         <Minus className="w-3 h-3" />
                       </button>
                       <span className="w-8 text-center font-bold text-sm">{i.qty}</span>
-                      <button onClick={() => setQty(i.product.id, i.qty + 1)} className="w-7 h-7 rounded-md hover:bg-surface flex items-center justify-center">
+                      <button
+                        onClick={() => {
+                          const max = typeof i.product.stock === "number" ? i.product.stock : Infinity;
+                          if (i.qty + 1 > max) { toast.error("لا يمكن إضافة أكثر من الكمية المتوفرة"); return; }
+                          setQty(i.product.id, i.qty + 1);
+                        }}
+                        className="w-7 h-7 rounded-md hover:bg-surface flex items-center justify-center">
                         <Plus className="w-3 h-3" />
                       </button>
                     </div>
