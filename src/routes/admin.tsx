@@ -427,6 +427,52 @@ const emptyProduct: ProductForm = {
   image_url: "", category_slug: "", is_active: true,
 };
 
+function StockQuickEdit({ product, adminCode, onSaved }: {
+  product: Product; adminCode: string; onSaved: () => void;
+}) {
+  const [val, setVal] = useState<string>(String(product.stock ?? 0));
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { setVal(String(product.stock ?? 0)); }, [product.stock]);
+
+  const save = async (next: number) => {
+    if (next < 0) next = 0;
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_upsert_product_v2" as any, {
+      _code: adminCode,
+      _id: product.id,
+      _name: product.name,
+      _description: product.description || "",
+      _price: product.price,
+      _old_price: product.oldPrice ?? null,
+      _stock: next,
+      _image_url: product.image || null,
+      _category_slug: product.categorySlug || null,
+      _is_active: product.inStock,
+    });
+    setBusy(false);
+    if (error) return toast.error("فشل تحديث الكمية");
+    toast.success("تم تحديث الكمية");
+    onSaved();
+  };
+
+  const current = Number(product.stock ?? 0);
+  return (
+    <div className="flex items-center gap-1 mt-1.5">
+      <span className="text-[11px] text-muted-foreground">الكمية:</span>
+      <button disabled={busy} onClick={() => save(current - 1)}
+        className="w-6 h-6 rounded-md bg-surface-2 border border-border text-sm font-bold disabled:opacity-50">−</button>
+      <input
+        type="number" inputMode="numeric" value={val} disabled={busy}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={() => { const n = Number(val); if (!Number.isNaN(n) && n !== current) save(n); }}
+        onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+        className="w-14 h-6 text-center rounded-md bg-surface-2 border border-border text-xs font-bold" dir="ltr" />
+      <button disabled={busy} onClick={() => save(current + 1)}
+        className="w-6 h-6 rounded-md bg-surface-2 border border-border text-sm font-bold disabled:opacity-50">+</button>
+    </div>
+  );
+}
+
 function ProductsManager({ adminCode, products, categories, onChange }: {
   adminCode: string; products: Product[]; categories: Category[]; onChange: () => void;
 }) {
