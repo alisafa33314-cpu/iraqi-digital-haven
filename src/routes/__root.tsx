@@ -113,6 +113,8 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const refreshCatalog = useCatalog((s) => s.refresh);
+  useEffect(() => { refreshCatalog(); }, [refreshCatalog]);
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
