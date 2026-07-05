@@ -1,10 +1,11 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
-import { useCart, useOrders } from "@/lib/cart";
+import { useCart, useMyOrderIds } from "@/lib/cart";
 import { formatIQD, paymentMethods } from "@/lib/data";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Upload, Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "إتمام الطلب — FPI STOR" }] }),
@@ -15,12 +16,14 @@ function CheckoutPage() {
   const nav = useNavigate();
   const items = useCart((s) => s.items);
   const clear = useCart((s) => s.clear);
-  const addOrder = useOrders((s) => s.add);
+  const addId = useMyOrderIds((s) => s.addId);
 
   const [method, setMethod] = useState(paymentMethods[0].name);
   const [proof, setProof] = useState<File | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const subtotal = items.reduce((a, i) => a + i.qty * i.product.price, 0);
   const selected = paymentMethods.find((m) => m.name === method)!;
@@ -36,23 +39,73 @@ function CheckoutPage() {
       </Layout>
     );
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) return toast.error("الرجاء إدخال الاسم ورقم الهاتف");
     if (!proof) return toast.error("الرجاء رفع صورة إثبات الدفع لإكمال الطلب");
-    const id = "FPI-" + Math.floor(100000 + Math.random() * 900000);
-    addOrder({
-      id,
-      items,
-      total,
-      method,
-      status: "مكتمل",
-      createdAt: Date.now(),
-      proofName: proof.name,
-    });
-    clear();
-    toast.success(`تم إرسال طلبك بنجاح! رقم الطلب: ${id}`);
-    nav({ to: "/orders" });
+    setSubmitting(true);
+    try {
+      // Insert order
+      const { data: order, error } = await supabase
+        .from("orders")
+        .insert({
+          customer_name: name.trim(),
+          customer_phone: phone.trim(),
+          customer_email: email.trim() || null,
+          delivery_info: `طريقة الدفع: ${method} — إثبات: ${proof.name}`,
+          total,
+          status: "pending",
+        })
+        .select("id")
+        .single();
+      if (error || !order) throw error;
+
+      // Insert items
+      const rows = items.map((i) => ({
+        order_id: order.id,
+        product_name: i.product.name,
+        quantity: i.qty,
+        unit_price: i.product.price,
+      }));
+      await supabase.from("order_items").insert(rows);
+
+      addId(order.id);
+      clear();
+
+      // Notify admin via WhatsApp
+      const { data: setting } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "admin_whatsapp")
+        .maybeSingle();
+      const adminNum = (setting?.value || "").replace(/\D/g, "");
+      if (adminNum) {
+        const summary = [
+          `🛒 طلب جديد — FPI STOR`,
+          `الاسم: ${name.trim()}`,
+          `الهاتف: ${phone.trim()}`,
+          email ? `الإيميل: ${email.trim()}` : "",
+          `طريقة الدفع: ${method}`,
+          `الإجمالي: ${formatIQD(total)}`,
+          ``,
+          `المنتجات:`,
+          ...items.map((i) => `• ${i.product.name} × ${i.qty}`),
+          ``,
+          `رقم الطلب: ${order.id}`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+        const url = `https://wa.me/${adminNum}?text=${encodeURIComponent(summary)}`;
+        window.open(url, "_blank");
+      }
+
+      toast.success("تم إرسال طلبك بنجاح — الحالة: قيد التنفيذ");
+      nav({ to: "/orders" });
+    } catch (err: any) {
+      toast.error("فشل إرسال الطلب: " + (err?.message || "خطأ"));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -81,6 +134,19 @@ function CheckoutPage() {
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus:border-primary outline-none"
                     placeholder="07XXXXXXXXX"
+                    dir="ltr"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="text-xs text-muted-foreground mb-1 block">
+                    البريد الإلكتروني <span className="opacity-60">(اختياري)</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus:border-primary outline-none"
+                    placeholder="you@example.com"
                     dir="ltr"
                   />
                 </div>
@@ -132,7 +198,7 @@ function CheckoutPage() {
             <div className="card-neon rounded-2xl p-5">
               <h2 className="font-black mb-1">صورة إثبات الدفع</h2>
               <p className="text-xs text-muted-foreground mb-3">
-                مطلوبة لإكمال الطلب — من الاستوديو أو الملفات أو الكاميرا.
+                مطلوبة لإكمال الطلب — من الاستوديو أو الملفات.
               </p>
               <label className="block cursor-pointer">
                 <input
@@ -189,8 +255,12 @@ function CheckoutPage() {
               <span>الإجمالي</span>
               <span className="text-primary text-glow">{formatIQD(total)}</span>
             </div>
-            <button type="submit" className="mt-5 w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow">
-              إرسال الطلب
+            <button
+              type="submit"
+              disabled={submitting}
+              className="mt-5 w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60"
+            >
+              {submitting ? "جاري الإرسال…" : "إرسال الطلب"}
             </button>
           </aside>
         </form>

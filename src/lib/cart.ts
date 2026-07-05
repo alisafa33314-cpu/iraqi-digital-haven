@@ -44,27 +44,48 @@ export const useCart = create<CartState>()(
   ),
 );
 
-export type Order = {
-  id: string;
-  items: CartItem[];
-  total: number;
-  method: string;
-  status: "قيد التنفيذ" | "جاري التجهيز" | "مكتمل" | "مرفوض";
-  createdAt: number;
-  proofName?: string;
+// Store IDs of orders placed by this browser so we can fetch them back
+type MyOrdersState = {
+  ids: string[];
+  addId: (id: string) => void;
 };
 
-type OrdersState = {
-  orders: Order[];
-  add: (o: Order) => void;
-};
-
-export const useOrders = create<OrdersState>()(
+export const useMyOrderIds = create<MyOrdersState>()(
   persist(
     (set) => ({
-      orders: [],
-      add: (o) => set((s) => ({ orders: [o, ...s.orders] })),
+      ids: [],
+      addId: (id) => set((s) => ({ ids: [id, ...s.ids.filter((x) => x !== id)] })),
     }),
-    { name: "fpi-orders" },
+    { name: "fpi-my-order-ids" },
   ),
 );
+
+// Persist admin unlock
+type AdminState = {
+  code: string | null;
+  setCode: (c: string | null) => void;
+};
+
+export const useAdmin = create<AdminState>()(
+  persist(
+    (set) => ({
+      code: null,
+      setCode: (c) => set({ code: c }),
+    }),
+    { name: "fpi-admin" },
+  ),
+);
+
+export const STATUS_AR: Record<string, string> = {
+  pending: "قيد التنفيذ",
+  processing: "جاري التجهيز",
+  completed: "مكتمل",
+  cancelled: "مرفوض",
+};
+
+export const STATUS_STYLES: Record<string, string> = {
+  pending: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+  processing: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+  completed: "bg-green-500/15 text-green-400 border-green-500/30",
+  cancelled: "bg-destructive/15 text-destructive border-destructive/30",
+};
