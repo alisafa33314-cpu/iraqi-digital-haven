@@ -90,7 +90,10 @@ function ProductPage() {
             <div className="flex gap-3 mb-6">
               <button
                 disabled={!product.inStock}
-                onClick={() => { add(product); toast.success("تمت الإضافة إلى السلة"); }}
+                onClick={() => {
+                  if (add(product)) toast.success("تمت الإضافة إلى السلة");
+                  else toast.error("لا يمكن إضافة أكثر من الكمية المتوفرة");
+                }}
                 className="flex-1 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2 disabled:opacity-40 btn-glow"
               >
                 <ShoppingCart className="w-5 h-5" />
@@ -98,7 +101,7 @@ function ProductPage() {
               </button>
               <Link
                 to="/cart"
-                onClick={() => product.inStock && add(product)}
+                onClick={() => { if (product.inStock) add(product); }}
                 className="flex-1 py-3.5 rounded-xl bg-surface border border-border font-bold text-center hover:border-primary/50 transition"
               >
                 اشترِ الآن
