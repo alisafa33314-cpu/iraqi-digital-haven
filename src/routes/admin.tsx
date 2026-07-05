@@ -615,13 +615,9 @@ function PMEditor({ form, adminCode, onClose, onSaved }: {
           <Field label="ملاحظة للزبون (اختياري)">
             <input value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} className={inputCls} />
           </Field>
-          <Field label="رابط صورة الشعار">
-            <input value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })}
-              className={inputCls} dir="ltr" placeholder="https://..." />
+          <Field label="صورة الشعار">
+            <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="payments" />
           </Field>
-          {f.image_url && (
-            <img src={f.image_url} alt="" className="w-16 h-16 rounded-lg object-cover border border-border" />
-          )}
           <div className="grid grid-cols-2 gap-3">
             <Field label="ضريبة % (0 = بدون)">
               <input type="number" value={f.tax} onChange={(e) => setF({ ...f, tax: e.target.value })} className={inputCls} dir="ltr" />
