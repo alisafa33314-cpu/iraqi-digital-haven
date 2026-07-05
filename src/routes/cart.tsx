@@ -3,6 +3,7 @@ import { Layout, Container } from "@/components/Layout";
 import { useCart } from "@/lib/cart";
 import { formatIQD } from "@/lib/data";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
