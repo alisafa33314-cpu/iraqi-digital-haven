@@ -483,7 +483,7 @@ export type Database = {
           total: number
         }[]
       }
-      admin_login: { Args: { _code: string }; Returns: undefined }
+      admin_login: { Args: { _code: string }; Returns: string }
       admin_reorder_category: {
         Args: { _code: string; _slug: string; _sort_order: number }
         Returns: undefined
