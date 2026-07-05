@@ -180,6 +180,28 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
+function MarqueeBar() {
+  const settings = useCatalog((s) => s.settings);
+  const enabled = settings["marquee_enabled"] !== "false";
+  let items: string[] = [];
+  try {
+    items = JSON.parse(settings["marquee_items"] || "[]");
+    if (!Array.isArray(items)) items = [];
+  } catch { items = []; }
+  if (!enabled || items.length === 0) return null;
+  return (
+    <div className="bg-primary/10 border-b border-primary/20 text-xs overflow-hidden">
+      <div className="flex whitespace-nowrap animate-marquee py-2">
+        {Array.from({ length: 2 }).map((_, i) => (
+          <div key={i} className="flex gap-8 px-4 shrink-0">
+            {items.map((t, j) => <span key={j}>{t}</span>)}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SocialsFooter() {
   const socials = useCatalog((s) => s.socials);
   if (socials.length === 0) {
