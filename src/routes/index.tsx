@@ -121,6 +121,9 @@ function Home() {
             </div>
           </div>
         </Container>
+      </section>
+
+
 
       {/* Store gallery */}
       {storeImages.length > 0 && (
