@@ -82,8 +82,18 @@ function AdminPage() {
               dir="ltr" />
             <button
               onClick={async () => {
-                const { error } = await supabase.rpc("admin_list_orders" as any, { _code: input });
-                if (error) return toast.error("رمز غير صحيح");
+                const { error } = await supabase.rpc("admin_login" as any, { _code: input });
+                if (error) {
+                  const msg = error.message || "";
+                  const lock = msg.match(/locked:(\d+)/);
+                  const invalid = msg.match(/invalid:(\d+)/);
+                  if (lock) {
+                    const mins = Math.ceil(Number(lock[1]) / 60);
+                    return toast.error(`تم حظر الدخول مؤقتاً — حاول بعد ${mins} دقيقة`);
+                  }
+                  if (invalid) return toast.error(`رمز غير صحيح — تبقى ${invalid[1]} محاولة`);
+                  return toast.error("رمز غير صحيح");
+                }
                 setCode(input);
                 toast.success("مرحباً بك في لوحة الإدارة");
               }}
