@@ -7,6 +7,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Upload, Check, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { uploadImage } from "@/lib/upload";
+
+
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "إتمام الطلب — FPI STOR" }] }),
