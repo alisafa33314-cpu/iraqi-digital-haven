@@ -174,42 +174,19 @@ export function Layout({ children }: { children: ReactNode }) {
             </div>
           </div>
           <div>
-            <div className="font-bold mb-3">طرق الدفع</div>
-            <div className="flex flex-wrap gap-2 text-xs">
-              {["آسيا سيل", "ماستر رافدين", "زين كاش", "USDT"].map((p) => (
-                <span key={p} className="px-2.5 py-1 rounded-md bg-surface border border-border">
-                  {p}
-                </span>
-              ))}
-            </div>
+            <div className="font-bold mb-3">تابعنا</div>
+            <SocialsFooter />
           </div>
+
         </div>
         <div className="border-t border-border py-4 text-center text-xs text-muted-foreground">
           © {new Date().getFullYear()} FPI STOR — جميع الحقوق محفوظة
         </div>
       </footer>
 
-      {/* Floating action buttons */}
-      <div className="fixed bottom-5 left-5 z-30 flex flex-col gap-3">
-        <a
-          href="https://wa.me/9647770586502"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-14 h-14 rounded-full bg-[#25D366] shadow-lg flex items-center justify-center animate-pulse-red"
-          aria-label="واتساب"
-        >
-          <MessageCircle className="w-6 h-6 text-white" />
-        </a>
-        <a
-          href="https://t.me/FPI101"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-14 h-14 rounded-full bg-[#229ED9] shadow-lg flex items-center justify-center"
-          aria-label="تليجرام"
-        >
-          <Send className="w-6 h-6 text-white" />
-        </a>
-      </div>
+      {/* Floating action buttons: dynamic socials */}
+      <SocialsFloating />
+
     </div>
   );
 }

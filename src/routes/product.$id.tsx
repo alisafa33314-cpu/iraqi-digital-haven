@@ -4,8 +4,9 @@ import { formatIQD } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/lib/cart";
-import { ShoppingCart, Shield, Zap } from "lucide-react";
+import { ShoppingCart, Shield, Zap, Star } from "lucide-react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
@@ -19,8 +20,11 @@ function ProductPage() {
   const { id } = Route.useParams();
   const products = useCatalog((s) => s.products);
   const paymentMethods = useCatalog((s) => s.paymentMethods);
+  const allReviews = useCatalog((s) => s.reviews);
   const product = products.find((p) => p.id === id);
   const add = useCart((s) => s.add);
+  const productReviews = allReviews.filter((r) => r.product_id === id);
+
 
   if (!product) {
     return (
@@ -124,6 +128,35 @@ function ProductPage() {
           </div>
         </div>
 
+        {/* Product reviews */}
+        <div className="mt-14">
+          <h2 className="text-2xl font-black mb-5 flex items-center gap-2">
+            <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" /> تقييمات الزبائن
+          </h2>
+          {productReviews.length === 0 ? (
+            <div className="text-sm text-muted-foreground p-6 card-neon rounded-2xl text-center">
+              لا توجد تقييمات لهذا المنتج بعد.
+            </div>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2">
+              {productReviews.map((r) => (
+                <div key={r.id} className="card-neon rounded-2xl p-4">
+                  <div className="flex gap-1 mb-2">
+                    {Array.from({ length: r.rating }).map((_, j) => (
+                      <Star key={j} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                    ))}
+                  </div>
+                  {r.comment && <p className="text-sm text-muted-foreground leading-relaxed mb-3">"{r.comment}"</p>}
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="font-bold">{r.customer_name}</div>
+                    <div className="text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ar-IQ")}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {related.length > 0 && (
           <div className="mt-16">
             <h2 className="text-2xl font-black mb-5">منتجات مشابهة</h2>
@@ -132,6 +165,7 @@ function ProductPage() {
             </div>
           </div>
         )}
+
       </Container>
     </Layout>
   );
