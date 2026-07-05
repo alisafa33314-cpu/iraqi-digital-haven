@@ -463,16 +463,16 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
       ) : (
         <div className="space-y-2">
           {products.map((p) => (
-            <div key={p.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
+            <div key={p.id} className="flex items-center gap-2 p-3 rounded-xl border border-border">
               <img src={p.image} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm line-clamp-1">{p.name}</div>
                 <div className="text-[11px] text-muted-foreground line-clamp-1">
-                  {categories.find((c) => c.slug === p.categorySlug)?.name || "—"}
+                  {categories.find((c) => c.slug === p.categorySlug)?.name || "—"} · <span className="text-primary font-bold">{formatIQD(p.price)}</span>
                 </div>
+                <StockQuickEdit product={p} adminCode={adminCode} onSaved={onChange} />
               </div>
-              <div className="text-primary font-bold text-sm shrink-0">{formatIQD(p.price)}</div>
-              <div className="flex gap-1 shrink-0">
+              <div className="flex flex-col gap-1 shrink-0">
                 <button onClick={() => startEdit(p)}
                   className="p-2 rounded-lg bg-surface-2 border border-border hover:border-primary/50">
                   <Edit className="w-3.5 h-3.5" />
