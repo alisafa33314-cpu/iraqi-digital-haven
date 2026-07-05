@@ -216,6 +216,9 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
         {/* Marquee / announcement bar */}
         <MarqueeManager adminCode={adminCode} onChange={refreshCatalog} />
 
+        {/* Promo banner */}
+        <PromoManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
+
         {/* Change admin code */}
         <ChangeCodeManager adminCode={adminCode} onChanged={(c) => useAdmin.getState().setCode(c)} />
       </Container>
@@ -1241,6 +1244,99 @@ function ChangeCodeManager({ adminCode, onChanged }: { adminCode: string; onChan
           className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
           {busy ? "جاري الحفظ…" : "تغيير الرمز"}
         </button>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Promo Banner Manager -------------------- */
+
+function PromoManager({ adminCode, categories, onChange }: {
+  adminCode: string; categories: Category[]; onChange: () => void;
+}) {
+  const settings = useCatalog((s) => s.settings);
+  const [enabled, setEnabled] = useState(settings["promo_enabled"] !== "false");
+  const [subtitle, setSubtitle] = useState(settings["promo_subtitle"] || "");
+  const [title, setTitle] = useState(settings["promo_title"] || "");
+  const [ctaLabel, setCtaLabel] = useState(settings["promo_cta_label"] || "");
+  const [ctaSlug, setCtaSlug] = useState(settings["promo_cta_slug"] || "");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setEnabled(settings["promo_enabled"] !== "false");
+    setSubtitle(settings["promo_subtitle"] || "");
+    setTitle(settings["promo_title"] || "");
+    setCtaLabel(settings["promo_cta_label"] || "");
+    setCtaSlug(settings["promo_cta_slug"] || "");
+  }, [settings]);
+
+  const setOne = async (key: string, value: string) => {
+    const { error } = await supabase.rpc("admin_set_setting" as any, { _code: adminCode, _key: key, _value: value });
+    if (error) throw error;
+  };
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      await setOne("promo_enabled", enabled ? "true" : "false");
+      await setOne("promo_subtitle", subtitle);
+      await setOne("promo_title", title);
+      await setOne("promo_cta_label", ctaLabel);
+      await setOne("promo_cta_slug", ctaSlug);
+      toast.success("تم الحفظ");
+      onChange();
+    } catch (e: any) { toast.error("فشل: " + (e?.message || "")); }
+    finally { setBusy(false); }
+  };
+
+  const remove = async () => {
+    if (!confirm("حذف/إخفاء بانر العروض؟")) return;
+    setBusy(true);
+    try {
+      await setOne("promo_enabled", "false");
+      await setOne("promo_title", "");
+      await setOne("promo_subtitle", "");
+      toast.success("تم الحذف");
+      onChange();
+    } catch (e: any) { toast.error("فشل: " + (e?.message || "")); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-4 flex items-center gap-2">🎁 بانر العروض (الصفحة الرئيسية)</h2>
+      <div className="space-y-3">
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="accent-primary" />
+          إظهار البانر
+        </label>
+        <Field label="النص العلوي الصغير (مثال: عروض حصرية)">
+          <input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} className={inputCls} />
+        </Field>
+        <Field label="العنوان الرئيسي">
+          <input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="نص الزر">
+            <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} className={inputCls} />
+          </Field>
+          <Field label="القسم عند الضغط">
+            <select value={ctaSlug} onChange={(e) => setCtaSlug(e.target.value)} className={inputCls}>
+              <option value="">— بدون —</option>
+              {categories.map((c) => <option key={c.slug} value={c.slug}>{c.name}</option>)}
+            </select>
+          </Field>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={save} disabled={busy}
+            className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+            {busy ? "جاري الحفظ…" : "حفظ"}
+          </button>
+          <button onClick={remove} disabled={busy}
+            className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive font-bold">
+            حذف
+          </button>
+        </div>
       </div>
     </div>
   );

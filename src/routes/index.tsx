@@ -15,6 +15,7 @@ function Home() {
   const categories = useCatalog((s) => s.categories);
   const storeImages = useCatalog((s) => s.storeImages);
   const dbReviews = useCatalog((s) => s.reviews);
+  const settings = useCatalog((s) => s.settings);
   const bestsellers = products.slice(0, 8);
   const newArrivals = products.slice(0, 8);
   const allReviews = [
@@ -100,28 +101,34 @@ function Home() {
       </section>
 
       {/* Promo banner */}
-      <section className="py-6">
-        <Container>
-          <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 bg-gradient-to-l from-primary via-red-700 to-red-900">
-            <div className="absolute inset-0 bg-grid opacity-20" />
-            <div className="relative flex flex-col md:flex-row items-center justify-between gap-4">
-              <div>
-                <div className="text-white/80 text-sm mb-2">عروض حصرية</div>
-                <div className="text-3xl md:text-4xl font-black text-white">
-                  خصم يصل إلى 25% على الكيم باس
+      {settings["promo_enabled"] !== "false" && (settings["promo_title"] || settings["promo_subtitle"]) && (
+        <section className="py-6">
+          <Container>
+            <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 bg-gradient-to-l from-primary via-red-700 to-red-900">
+              <div className="absolute inset-0 bg-grid opacity-20" />
+              <div className="relative flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                  {settings["promo_subtitle"] && (
+                    <div className="text-white/80 text-sm mb-2">{settings["promo_subtitle"]}</div>
+                  )}
+                  <div className="text-3xl md:text-4xl font-black text-white">
+                    {settings["promo_title"] || ""}
+                  </div>
                 </div>
+                {settings["promo_cta_slug"] && (
+                  <Link
+                    to="/category/$slug"
+                    params={{ slug: settings["promo_cta_slug"] }}
+                    className="px-6 py-3 rounded-xl bg-white text-primary font-black shrink-0"
+                  >
+                    {settings["promo_cta_label"] || "اطلب الآن"}
+                  </Link>
+                )}
               </div>
-              <Link
-                to="/category/$slug"
-                params={{ slug: "kim-pass" }}
-                className="px-6 py-3 rounded-xl bg-white text-primary font-black shrink-0"
-              >
-                اطلب الآن
-              </Link>
             </div>
-          </div>
-        </Container>
-      </section>
+          </Container>
+        </section>
+      )}
 
 
 
