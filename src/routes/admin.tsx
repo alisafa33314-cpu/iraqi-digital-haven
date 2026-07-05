@@ -22,11 +22,40 @@ type AdminOrder = {
   total: number;
   status: string;
   subscription_info: string | null;
+  subscription_image_url: string | null;
   payment_proof_url: string | null;
   payment_method_name: string | null;
   created_at: string;
   items: { product_name: string; quantity: number; unit_price: number }[];
 };
+
+function ImagePicker({ value, onChange, folder }: {
+  value: string; onChange: (url: string) => void; folder: string;
+}) {
+  const [busy, setBusy] = useState(false);
+  const handle = async (f: File) => {
+    setBusy(true);
+    try {
+      const url = await uploadImage(f, folder);
+      onChange(url);
+      toast.success("تم رفع الصورة");
+    } catch (e: any) { toast.error("فشل الرفع: " + (e?.message || "")); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div className="space-y-2">
+      <input value={value} onChange={(e) => onChange(e.target.value)}
+        className={inputCls} dir="ltr" placeholder="https://... أو ارفع صورة" />
+      <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-2 border border-border cursor-pointer text-xs hover:border-primary/50">
+        <Upload className="w-3.5 h-3.5" />
+        {busy ? "جاري الرفع…" : "رفع من الجهاز"}
+        <input type="file" accept="image/*" className="hidden"
+          onChange={(e) => e.target.files?.[0] && handle(e.target.files[0])} />
+      </label>
+      {value && <img src={value} alt="" className="w-24 h-24 rounded-lg object-cover border border-border" />}
+    </div>
+  );
+}
 
 function AdminPage() {
   const code = useAdmin((s) => s.code);
