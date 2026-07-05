@@ -73,9 +73,17 @@ function ProductPage() {
             </Link>
             <h1 className="text-2xl md:text-3xl font-black mt-3 mb-3">{product.name}</h1>
 
-            <div className="flex items-baseline gap-3 mb-6">
+            <div className="flex items-baseline gap-3 mb-3">
               <span className="text-4xl font-black text-primary text-glow">{formatIQD(product.price)}</span>
+              {product.oldPrice && (
+                <span className="text-lg text-muted-foreground line-through">{formatIQD(product.oldPrice)}</span>
+              )}
             </div>
+            {product.inStock && typeof product.stock === "number" && (
+              <div className={`text-sm font-bold mb-6 ${product.stock === 0 ? "text-destructive" : product.stock <= 5 ? "text-orange-500" : "text-emerald-500"}`}>
+                {product.stock === 0 ? "نفذت الكمية" : `الكمية المتوفرة: ${product.stock}`}
+              </div>
+            )}
 
             <p className="text-muted-foreground leading-relaxed mb-6 whitespace-pre-wrap">{product.description}</p>
 

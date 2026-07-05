@@ -132,22 +132,6 @@ function Home() {
 
 
 
-      {/* Store gallery */}
-      {storeImages.length > 0 && (
-        <section className="py-8 border-t border-border">
-          <Container>
-            <SectionHeader title="من متجرنا" />
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {storeImages.map((img) => (
-                <a key={img.id} href={img.image_url} target="_blank" rel="noreferrer"
-                  className="block rounded-2xl overflow-hidden card-neon aspect-square">
-                  <img src={img.image_url} alt="" className="w-full h-full object-cover hover:scale-105 transition" />
-                </a>
-              ))}
-            </div>
-          </Container>
-        </section>
-      )}
 
 
       {/* Bestsellers */}
