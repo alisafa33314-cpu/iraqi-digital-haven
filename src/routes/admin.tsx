@@ -1140,3 +1140,109 @@ function ReviewsManager({ adminCode, reviews, onChange }: {
   );
 }
 
+/* -------------------- Marquee Manager -------------------- */
+
+function MarqueeManager({ adminCode, onChange }: { adminCode: string; onChange: () => void }) {
+  const settings = useCatalog((s) => s.settings);
+  const initialItems: string[] = (() => {
+    try { const v = JSON.parse(settings["marquee_items"] || "[]"); return Array.isArray(v) ? v : []; } catch { return []; }
+  })();
+  const [items, setItems] = useState<string[]>(initialItems);
+  const [enabled, setEnabled] = useState<boolean>(settings["marquee_enabled"] !== "false");
+  const [newItem, setNewItem] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    try { const v = JSON.parse(settings["marquee_items"] || "[]"); setItems(Array.isArray(v) ? v : []); } catch {}
+    setEnabled(settings["marquee_enabled"] !== "false");
+  }, [settings]);
+
+  const save = async () => {
+    setBusy(true);
+    const r1 = await supabase.rpc("admin_set_setting" as any, {
+      _code: adminCode, _key: "marquee_items", _value: JSON.stringify(items),
+    });
+    const r2 = await supabase.rpc("admin_set_setting" as any, {
+      _code: adminCode, _key: "marquee_enabled", _value: enabled ? "true" : "false",
+    });
+    setBusy(false);
+    if (r1.error || r2.error) return toast.error("فشل الحفظ");
+    toast.success("تم الحفظ");
+    onChange();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-4 flex items-center gap-2">📣 الشريط المتحرك</h2>
+      <label className="flex items-center gap-2 text-sm mb-3">
+        <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="accent-primary" />
+        إظهار الشريط للزبائن
+      </label>
+      <div className="space-y-2 mb-3">
+        {items.length === 0 && <div className="text-xs text-muted-foreground">لا توجد رسائل — أضف واحدة أدناه.</div>}
+        {items.map((t, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <input value={t}
+              onChange={(e) => setItems(items.map((x, idx) => idx === i ? e.target.value : x))}
+              className={inputCls} />
+            <button onClick={() => setItems(items.filter((_, idx) => idx !== i))}
+              className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive shrink-0">
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-2 mb-3">
+        <input value={newItem} onChange={(e) => setNewItem(e.target.value)}
+          placeholder="نص جديد للشريط…" className={inputCls} />
+        <button onClick={() => { if (newItem.trim()) { setItems([...items, newItem.trim()]); setNewItem(""); } }}
+          className="p-2 rounded-lg bg-primary text-primary-foreground shrink-0">
+          <Plus className="w-4 h-4" />
+        </button>
+      </div>
+      <button onClick={save} disabled={busy}
+        className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+        {busy ? "جاري الحفظ…" : "حفظ الشريط"}
+      </button>
+    </div>
+  );
+}
+
+/* -------------------- Change Admin Code -------------------- */
+
+function ChangeCodeManager({ adminCode, onChanged }: { adminCode: string; onChanged: (c: string) => void }) {
+  const [next, setNext] = useState("");
+  const [confirmNext, setConfirmNext] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (next.length < 4) return toast.error("الرمز الجديد يجب أن يكون 4 خانات فأكثر");
+    if (next !== confirmNext) return toast.error("الرمز غير متطابق");
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_change_code" as any, { _current: adminCode, _new: next });
+    setBusy(false);
+    if (error) return toast.error("فشل: " + error.message);
+    toast.success("تم تغيير رمز الإدارة");
+    onChanged(next);
+    setNext(""); setConfirmNext("");
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-4 flex items-center gap-2"><KeyRound className="w-5 h-5" /> تغيير رمز الإدارة</h2>
+      <div className="space-y-3">
+        <Field label="الرمز الجديد">
+          <input type="password" value={next} onChange={(e) => setNext(e.target.value)} className={inputCls} dir="ltr" />
+        </Field>
+        <Field label="تأكيد الرمز الجديد">
+          <input type="password" value={confirmNext} onChange={(e) => setConfirmNext(e.target.value)} className={inputCls} dir="ltr" />
+        </Field>
+        <button onClick={submit} disabled={busy}
+          className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? "جاري الحفظ…" : "تغيير الرمز"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
