@@ -42,6 +42,17 @@ function ProductPage() {
         <div className="grid md:grid-cols-2 gap-8">
           <div className="relative rounded-3xl overflow-hidden bg-surface aspect-square card-neon">
             <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+            <div className="absolute top-3 right-3">
+              {product.inStock ? (
+                <span className="px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-black shadow-lg">
+                  ✓ متوفر
+                </span>
+              ) : (
+                <span className="px-3 py-1.5 rounded-lg bg-destructive text-white text-xs font-black shadow-lg">
+                  غير متوفر
+                </span>
+              )}
+            </div>
             {!product.inStock && (
               <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
                 <span className="px-4 py-2 rounded-lg bg-destructive font-bold">غير متوفر</span>
