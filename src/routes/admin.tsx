@@ -210,6 +210,18 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
             {order.customer_email && (
               <div>الإيميل: <span dir="ltr" className="font-bold">{order.customer_email}</span></div>
             )}
+            {order.payment_method_name && (
+              <div>وسيلة الدفع: <span className="font-bold text-primary">{order.payment_method_name}</span></div>
+            )}
+            {order.payment_proof_url ? (
+              <div className="inline-flex items-center gap-1.5 mt-1 px-2 py-1 rounded-md bg-green-500/15 border border-green-500/30 text-green-400 font-bold">
+                ✓ واصل التحويل <span className="opacity-70 font-normal" dir="ltr">({order.payment_proof_url})</span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 mt-1 px-2 py-1 rounded-md bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 font-bold">
+                ⚠ لم يصل إثبات التحويل
+              </div>
+            )}
           </div>
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">المنتجات:</div>
