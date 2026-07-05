@@ -462,13 +462,9 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
               </select>
             </Field>
           </div>
-          <Field label="رابط الصورة (URL)">
-            <input value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })}
-              className={inputCls} dir="ltr" placeholder="https://..." />
+          <Field label="صورة المنتج">
+            <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="products" />
           </Field>
-          {f.image_url && (
-            <img src={f.image_url} alt="" className="w-24 h-24 rounded-lg object-cover border border-border" />
-          )}
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={f.is_active} onChange={(e) => setF({ ...f, is_active: e.target.checked })} className="accent-primary" />
             متوفر (يظهر للزبائن)
