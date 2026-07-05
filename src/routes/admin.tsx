@@ -406,13 +406,16 @@ type ProductForm = {
   name: string;
   description: string;
   price: string;
+  old_price: string;
+  stock: string;
   image_url: string;
   category_slug: string;
   is_active: boolean;
 };
 
 const emptyProduct: ProductForm = {
-  id: null, name: "", description: "", price: "", image_url: "", category_slug: "", is_active: true,
+  id: null, name: "", description: "", price: "", old_price: "", stock: "0",
+  image_url: "", category_slug: "", is_active: true,
 };
 
 function ProductsManager({ adminCode, products, categories, onChange }: {
@@ -423,6 +426,8 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
   const startNew = () => setEditing({ ...emptyProduct, category_slug: categories[0]?.slug || "" });
   const startEdit = (p: Product) => setEditing({
     id: p.id, name: p.name, description: p.description, price: String(p.price),
+    old_price: p.oldPrice != null ? String(p.oldPrice) : "",
+    stock: p.stock != null ? String(p.stock) : "0",
     image_url: p.image, category_slug: p.categorySlug, is_active: p.inStock,
   });
 
