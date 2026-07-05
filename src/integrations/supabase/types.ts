@@ -95,6 +95,7 @@ export type Database = {
           customer_phone: string
           delivery_info: string | null
           id: string
+          payment_method_name: string | null
           payment_proof_url: string | null
           status: Database["public"]["Enums"]["order_status"]
           subscription_info: string | null
@@ -110,6 +111,7 @@ export type Database = {
           customer_phone: string
           delivery_info?: string | null
           id?: string
+          payment_method_name?: string | null
           payment_proof_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subscription_info?: string | null
@@ -125,6 +127,7 @@ export type Database = {
           customer_phone?: string
           delivery_info?: string | null
           id?: string
+          payment_method_name?: string | null
           payment_proof_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subscription_info?: string | null
@@ -296,6 +299,10 @@ export type Database = {
         Args: { _code: string; _info: string; _order_id: string }
         Returns: undefined
       }
+      admin_delete_category: {
+        Args: { _code: string; _slug: string }
+        Returns: undefined
+      }
       admin_delete_payment_method: {
         Args: { _code: string; _id: string }
         Returns: undefined
@@ -313,17 +320,33 @@ export type Database = {
           customer_phone: string
           id: string
           items: Json
+          payment_method_name: string
           payment_proof_url: string
           status: Database["public"]["Enums"]["order_status"]
           subscription_info: string
           total: number
         }[]
       }
+      admin_reorder_category: {
+        Args: { _code: string; _slug: string; _sort_order: number }
+        Returns: undefined
+      }
       admin_update_status: {
         Args: {
           _code: string
           _order_id: string
           _status: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: undefined
+      }
+      admin_upsert_category: {
+        Args: {
+          _code: string
+          _icon: string
+          _name: string
+          _new_slug: string
+          _slug: string
+          _sort_order: number
         }
         Returns: undefined
       }
