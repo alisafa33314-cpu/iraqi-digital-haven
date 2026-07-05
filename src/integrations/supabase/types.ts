@@ -101,6 +101,7 @@ export type Database = {
           payment_method_name: string | null
           payment_proof_url: string | null
           status: Database["public"]["Enums"]["order_status"]
+          subscription_image_url: string | null
           subscription_info: string | null
           total: number
           updated_at: string
@@ -117,6 +118,7 @@ export type Database = {
           payment_method_name?: string | null
           payment_proof_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          subscription_image_url?: string | null
           subscription_info?: string | null
           total: number
           updated_at?: string
@@ -133,6 +135,7 @@ export type Database = {
           payment_method_name?: string | null
           payment_proof_url?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          subscription_image_url?: string | null
           subscription_info?: string | null
           total?: number
           updated_at?: string
@@ -298,10 +301,20 @@ export type Database = {
     }
     Functions: {
       admin_check_code: { Args: { _code: string }; Returns: undefined }
-      admin_complete_order: {
-        Args: { _code: string; _info: string; _order_id: string }
-        Returns: undefined
-      }
+      admin_complete_order:
+        | {
+            Args: { _code: string; _info: string; _order_id: string }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _code: string
+              _image_url: string
+              _info: string
+              _order_id: string
+            }
+            Returns: undefined
+          }
       admin_delete_category: {
         Args: { _code: string; _slug: string }
         Returns: undefined
@@ -390,6 +403,7 @@ export type Database = {
           id: string
           items: Json
           status: Database["public"]["Enums"]["order_status"]
+          subscription_image_url: string
           subscription_info: string
           total: number
         }[]
