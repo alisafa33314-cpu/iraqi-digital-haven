@@ -91,7 +91,11 @@ function Home() {
                 params={{ slug: c.slug }}
                 className="card-neon rounded-2xl p-5 text-center flex flex-col items-center gap-2"
               >
-                <div className="text-4xl">{c.icon}</div>
+                {c.image_url ? (
+                  <img src={c.image_url} alt={c.name} className="w-14 h-14 rounded-xl object-cover" />
+                ) : (
+                  <div className="text-4xl">{c.icon}</div>
+                )}
                 <div className="font-bold text-sm">{c.name}</div>
                 <div className="text-[11px] text-muted-foreground">{c.count} منتج</div>
               </Link>
