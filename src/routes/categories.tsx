@@ -27,7 +27,11 @@ function CategoriesPage() {
               params={{ slug: c.slug }}
               className="card-neon rounded-2xl p-6 flex flex-col items-center text-center gap-2"
             >
-              <div className="text-5xl mb-2">{c.icon}</div>
+              {c.image_url ? (
+                <img src={c.image_url} alt={c.name} className="w-20 h-20 rounded-xl object-cover mb-1" />
+              ) : (
+                <div className="text-5xl mb-2">{c.icon}</div>
+              )}
               <div className="font-bold text-lg">{c.name}</div>
               <div className="text-xs text-muted-foreground">{c.count} منتج متاح</div>
             </Link>
