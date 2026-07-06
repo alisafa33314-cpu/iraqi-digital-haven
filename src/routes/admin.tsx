@@ -933,6 +933,7 @@ function CategoryEditor({ form, adminCode, onClose, onSaved }: {
       _name: f.name.trim(),
       _icon: f.icon.trim() || "📦",
       _sort_order: Number(f.sort_order) || 0,
+      _image_url: f.image_url.trim() || null,
     });
     setBusy(false);
     if (error) return toast.error("فشل الحفظ: " + error.message);
