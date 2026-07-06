@@ -37,7 +37,11 @@ function CategoryPage() {
     <Layout>
       <Container className="py-10">
         <div className="mb-8 flex items-center gap-4">
-          <div className="text-5xl">{cat.icon}</div>
+          {cat.image_url ? (
+            <img src={cat.image_url} alt={cat.name} className="w-16 h-16 rounded-xl object-cover" />
+          ) : (
+            <div className="text-5xl">{cat.icon}</div>
+          )}
           <div>
             <h1 className="text-3xl font-black">{cat.name}</h1>
             <div className="text-sm text-muted-foreground">{items.length} منتج</div>

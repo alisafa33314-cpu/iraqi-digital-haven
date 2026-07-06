@@ -3,10 +3,17 @@ import { getRequest } from "@tanstack/react-start/server";
 
 function detectDevice(ua: string): string {
   const s = (ua || "").toLowerCase();
-  if (/ipad|tablet/.test(s)) return "tablet";
-  if (/mobi|iphone|android/.test(s)) return "mobile";
-  if (/bot|crawler|spider/.test(s)) return "bot";
-  return "desktop";
+  if (/bot|crawler|spider|slurp|bingpreview|facebookexternalhit/.test(s)) return "bot";
+  if (/iphone/.test(s)) return "iPhone";
+  if (/ipad/.test(s)) return "iPad";
+  if (/ipod/.test(s)) return "iPod";
+  if (/android/.test(s)) return /mobi/.test(s) ? "Android" : "Android Tablet";
+  if (/windows phone/.test(s)) return "Windows Phone";
+  if (/mobi/.test(s)) return "Mobile";
+  if (/macintosh|mac os x/.test(s)) return "Mac";
+  if (/windows/.test(s)) return "Windows";
+  if (/linux/.test(s)) return "Linux";
+  return "Desktop";
 }
 
 async function hashIp(ip: string): Promise<string> {

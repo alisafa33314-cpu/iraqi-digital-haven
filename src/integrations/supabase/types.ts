@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           icon: string | null
           id: string
+          image_url: string | null
           name: string
           slug: string
           sort_order: number
@@ -28,6 +29,7 @@ export type Database = {
           created_at?: string
           icon?: string | null
           id?: string
+          image_url?: string | null
           name: string
           slug: string
           sort_order?: number
@@ -37,6 +39,7 @@ export type Database = {
           created_at?: string
           icon?: string | null
           id?: string
+          image_url?: string | null
           name?: string
           slug?: string
           sort_order?: number
@@ -572,17 +575,30 @@ export type Database = {
         }
         Returns: undefined
       }
-      admin_upsert_category: {
-        Args: {
-          _code: string
-          _icon: string
-          _name: string
-          _new_slug: string
-          _slug: string
-          _sort_order: number
-        }
-        Returns: undefined
-      }
+      admin_upsert_category:
+        | {
+            Args: {
+              _code: string
+              _icon: string
+              _name: string
+              _new_slug: string
+              _slug: string
+              _sort_order: number
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              _code: string
+              _icon: string
+              _image_url?: string
+              _name: string
+              _new_slug: string
+              _slug: string
+              _sort_order: number
+            }
+            Returns: undefined
+          }
       admin_upsert_payment_method: {
         Args: {
           _account_number: string

@@ -826,10 +826,11 @@ type CatForm = {
   slug: string;
   name: string;
   icon: string;
+  image_url: string;
   sort_order: string;
 };
 
-const emptyCat: CatForm = { original_slug: null, slug: "", name: "", icon: "📦", sort_order: "0" };
+const emptyCat: CatForm = { original_slug: null, slug: "", name: "", icon: "📦", image_url: "", sort_order: "0" };
 
 function CategoriesManager({ adminCode, categories, onChange }: {
   adminCode: string; categories: Category[]; onChange: () => void;
@@ -875,8 +876,10 @@ function CategoriesManager({ adminCode, categories, onChange }: {
         <div className="space-y-2">
           {categories.map((c, i) => (
             <div key={c.slug} className="flex items-center gap-3 p-3 rounded-xl border border-border">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xl shrink-0">
-                {c.icon}
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xl shrink-0 overflow-hidden">
+                {c.image_url ? (
+                  <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
+                ) : c.icon}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm line-clamp-1">{c.name}</div>
@@ -890,7 +893,8 @@ function CategoriesManager({ adminCode, categories, onChange }: {
               </div>
               <div className="flex gap-1 shrink-0">
                 <button onClick={() => setEditing({
-                  original_slug: c.slug, slug: c.slug, name: c.name, icon: c.icon, sort_order: String(i),
+                  original_slug: c.slug, slug: c.slug, name: c.name, icon: c.icon,
+                  image_url: c.image_url || "", sort_order: String(i),
                 })}
                   className="p-2 rounded-lg bg-surface-2 border border-border hover:border-primary/50">
                   <Edit className="w-3.5 h-3.5" />
@@ -929,6 +933,7 @@ function CategoryEditor({ form, adminCode, onClose, onSaved }: {
       _name: f.name.trim(),
       _icon: f.icon.trim() || "📦",
       _sort_order: Number(f.sort_order) || 0,
+      _image_url: f.image_url.trim() || null,
     });
     setBusy(false);
     if (error) return toast.error("فشل الحفظ: " + error.message);
@@ -957,6 +962,9 @@ function CategoryEditor({ form, adminCode, onClose, onSaved }: {
                 className={inputCls} dir="ltr" />
             </Field>
           </div>
+          <Field label="صورة القسم (اختياري — تُستخدم بدل الأيقونة)">
+            <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="categories" />
+          </Field>
         </div>
         <div className="flex gap-2 mt-5">
           <button onClick={save} disabled={busy}
