@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useCatalog } from "@/lib/catalog";
+import { useAnalytics } from "@/lib/analytics";
 
 function NotFoundComponent() {
   return (
