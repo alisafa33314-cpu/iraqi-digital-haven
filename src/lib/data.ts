@@ -5,6 +5,7 @@ export type Category = {
   slug: string;
   name: string;
   icon: string;
+  image_url?: string | null;
   count: number;
 };
 
