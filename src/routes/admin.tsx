@@ -962,6 +962,9 @@ function CategoryEditor({ form, adminCode, onClose, onSaved }: {
                 className={inputCls} dir="ltr" />
             </Field>
           </div>
+          <Field label="صورة القسم (اختياري — تُستخدم بدل الأيقونة)">
+            <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="categories" />
+          </Field>
         </div>
         <div className="flex gap-2 mt-5">
           <button onClick={save} disabled={busy}
