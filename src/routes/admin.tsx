@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdmin, STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage } from "@/lib/upload";
 import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
+import { adminAnalytics } from "@/lib/track.functions";
 
 
 export const Route = createFileRoute("/admin")({
