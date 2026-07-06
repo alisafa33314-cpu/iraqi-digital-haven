@@ -876,8 +876,10 @@ function CategoriesManager({ adminCode, categories, onChange }: {
         <div className="space-y-2">
           {categories.map((c, i) => (
             <div key={c.slug} className="flex items-center gap-3 p-3 rounded-xl border border-border">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xl shrink-0">
-                {c.icon}
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xl shrink-0 overflow-hidden">
+                {c.image_url ? (
+                  <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
+                ) : c.icon}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm line-clamp-1">{c.name}</div>
@@ -891,7 +893,8 @@ function CategoriesManager({ adminCode, categories, onChange }: {
               </div>
               <div className="flex gap-1 shrink-0">
                 <button onClick={() => setEditing({
-                  original_slug: c.slug, slug: c.slug, name: c.name, icon: c.icon, sort_order: String(i),
+                  original_slug: c.slug, slug: c.slug, name: c.name, icon: c.icon,
+                  image_url: c.image_url || "", sort_order: String(i),
                 })}
                   className="p-2 rounded-lg bg-surface-2 border border-border hover:border-primary/50">
                   <Edit className="w-3.5 h-3.5" />
