@@ -181,6 +181,9 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
           ))}
         </div>
 
+        {/* Analytics */}
+        <AnalyticsPanel adminCode={adminCode} />
+
         {/* Orders */}
         <div className="card-neon rounded-2xl p-5 mb-6">
           <h2 className="font-black text-lg mb-4">الطلبات</h2>
