@@ -62,6 +62,7 @@ export const useCatalog = create<CatalogState>((set) => ({
       slug: c.slug,
       name: c.name,
       icon: c.icon || "📦",
+      image_url: c.image_url || null,
       count: 0,
     }));
 
