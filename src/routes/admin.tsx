@@ -826,10 +826,11 @@ type CatForm = {
   slug: string;
   name: string;
   icon: string;
+  image_url: string;
   sort_order: string;
 };
 
-const emptyCat: CatForm = { original_slug: null, slug: "", name: "", icon: "📦", sort_order: "0" };
+const emptyCat: CatForm = { original_slug: null, slug: "", name: "", icon: "📦", image_url: "", sort_order: "0" };
 
 function CategoriesManager({ adminCode, categories, onChange }: {
   adminCode: string; categories: Category[]; onChange: () => void;
