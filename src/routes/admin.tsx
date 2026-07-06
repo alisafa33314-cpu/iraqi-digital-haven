@@ -1411,3 +1411,169 @@ function PromoManager({ adminCode, categories, onChange }: {
   );
 }
 
+
+type AnalyticsData = Awaited<ReturnType<typeof adminAnalytics>>;
+
+function AnalyticsPanel({ adminCode }: { adminCode: string }) {
+  const [d, setD] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+
+  const load = async () => {
+    try {
+      const res = await adminAnalytics({ data: { code: adminCode } });
+      setD(res); setErr("");
+    } catch (e: any) { setErr(e?.message || "فشل التحميل"); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 15000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminCode]);
+
+  const fmtMs = (ms: number) => {
+    if (!ms) return "0ث";
+    const s = Math.round(ms / 1000);
+    if (s < 60) return `${s}ث`;
+    const m = Math.floor(s / 60); const r = s % 60;
+    return `${m}د ${r}ث`;
+  };
+  const deviceLabel = (k: string) => k === "mobile" ? "📱 موبايل" : k === "desktop" ? "💻 كمبيوتر" : k === "tablet" ? "📱 تابلت" : k === "bot" ? "🤖 بوت" : "❓ غير معروف";
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-black text-lg">إحصائيات الزوار</h2>
+        <div className="text-xs text-muted-foreground">تحديث كل 15ث</div>
+      </div>
+
+      {loading && !d ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">جاري التحميل…</div>
+      ) : err ? (
+        <div className="text-center py-4 text-sm text-destructive">{err}</div>
+      ) : d ? (
+        <div className="space-y-5">
+          {/* Top cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label="زوار الآن" value={d.liveUsers} accent="text-green-400" pulse />
+            <StatCard label="زوار اليوم" value={d.visitors24h} sub={`${d.views24h} مشاهدة`} accent="text-primary" />
+            <StatCard label="زوار الأسبوع" value={d.visitors7d} sub={`${d.views7d} مشاهدة`} accent="text-blue-400" />
+            <StatCard label="أجهزة" value={d.devices.reduce((a, x) => a + x.n, 0)} sub={d.devices.map((x) => `${deviceLabel(x.k)}: ${x.n}`).join(" · ")} accent="text-yellow-400" />
+          </div>
+
+          {/* Live pages */}
+          {d.livePages.length > 0 && (
+            <Section title="الصفحات المفتوحة الآن">
+              <ul className="space-y-1.5">
+                {d.livePages.map((p) => (
+                  <li key={p.path} className="flex justify-between items-center text-sm bg-surface-2/60 rounded-lg px-3 py-2">
+                    <span className="truncate">{p.path}</span>
+                    <span className="text-green-400 font-bold">{p.n}</span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <Section title="الصفحات الأكثر زيارة (7 أيام)">
+              {d.topPages.length === 0 ? <Empty /> : (
+                <ul className="space-y-1.5">
+                  {d.topPages.map((p) => (
+                    <li key={p.path} className="flex justify-between items-center gap-3 text-sm bg-surface-2/60 rounded-lg px-3 py-2">
+                      <span className="truncate flex-1">{p.path}</span>
+                      <span className="text-xs text-muted-foreground">{fmtMs(p.avgMs)}</span>
+                      <span className="font-bold text-primary">{p.views}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Section>
+
+            <Section title="الأجهزة">
+              {d.devices.length === 0 ? <Empty /> : (
+                <ul className="space-y-1.5">
+                  {d.devices.map((x) => (
+                    <li key={x.k} className="flex justify-between items-center text-sm bg-surface-2/60 rounded-lg px-3 py-2">
+                      <span>{deviceLabel(x.k)}</span>
+                      <span className="font-bold">{x.n}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Section>
+
+            <Section title="الدول">
+              {d.countries.length === 0 ? <Empty /> : (
+                <ul className="space-y-1.5">
+                  {d.countries.map((x) => (
+                    <li key={x.k} className="flex justify-between items-center text-sm bg-surface-2/60 rounded-lg px-3 py-2">
+                      <span>{x.k}</span>
+                      <span className="font-bold">{x.n}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Section>
+
+            <Section title="المدن">
+              {d.cities.length === 0 ? <Empty /> : (
+                <ul className="space-y-1.5">
+                  {d.cities.map((x) => (
+                    <li key={x.k} className="flex justify-between items-center text-sm bg-surface-2/60 rounded-lg px-3 py-2">
+                      <span>{x.k}</span>
+                      <span className="font-bold">{x.n}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Section>
+          </div>
+
+          <Section title="آخر الأحداث (نقرات وشراء)">
+            {d.recentEvents.length === 0 ? (
+              <div className="text-xs text-muted-foreground">لا توجد أحداث بعد. استخدم <code className="px-1 rounded bg-surface-2">logEvent(name, data)</code> لتتبع النقرات.</div>
+            ) : (
+              <ul className="space-y-1.5 max-h-64 overflow-y-auto">
+                {d.recentEvents.map((e: any, i: number) => (
+                  <li key={i} className="text-xs bg-surface-2/60 rounded-lg px-3 py-2 flex justify-between gap-2">
+                    <span className="font-bold text-primary">{e.name}</span>
+                    <span className="truncate text-muted-foreground flex-1">{e.path || ""}</span>
+                    <span className="text-muted-foreground">{new Date(e.created_at).toLocaleTimeString("ar-IQ")}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Section>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function StatCard({ label, value, sub, accent, pulse }: { label: string; value: number | string; sub?: string; accent?: string; pulse?: boolean }) {
+  return (
+    <div className="rounded-xl bg-surface-2/70 border border-border p-3">
+      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+        {pulse && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" /><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" /></span>}
+        {label}
+      </div>
+      <div className={`text-2xl font-black ${accent || ""}`}>{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground mt-1 truncate">{sub}</div>}
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-sm font-bold mb-2">{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function Empty() { return <div className="text-xs text-muted-foreground py-4 text-center">لا توجد بيانات</div>; }
