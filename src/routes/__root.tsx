@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useCatalog } from "@/lib/catalog";
+import { useAnalytics } from "@/lib/analytics";
 
 function NotFoundComponent() {
   return (
@@ -115,6 +116,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const refreshCatalog = useCatalog((s) => s.refresh);
   useEffect(() => { refreshCatalog(); }, [refreshCatalog]);
+  useAnalytics();
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />

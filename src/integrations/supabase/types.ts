@@ -146,6 +146,78 @@ export type Database = {
         }
         Relationships: []
       }
+      page_events: {
+        Row: {
+          created_at: string
+          data: Json | null
+          id: string
+          name: string
+          path: string | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          name: string
+          path?: string | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          id?: string
+          name?: string
+          path?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
+      page_views: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          device: string | null
+          duration_ms: number
+          id: string
+          ip_hash: string | null
+          last_ping_at: string
+          path: string
+          referrer: string | null
+          session_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          duration_ms?: number
+          id?: string
+          ip_hash?: string | null
+          last_ping_at?: string
+          path: string
+          referrer?: string | null
+          session_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          device?: string | null
+          duration_ms?: number
+          id?: string
+          ip_hash?: string | null
+          last_ping_at?: string
+          path?: string
+          referrer?: string | null
+          session_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       payment_methods: {
         Row: {
           account_number: string
