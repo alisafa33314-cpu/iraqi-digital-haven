@@ -13,8 +13,17 @@ export const Route = createFileRoute("/product/$id")({
   errorComponent: () => (
     <Layout><Container className="py-20 text-center">حدث خطأ</Container></Layout>
   ),
-  head: () => ({ meta: [{ title: "منتج — FPI STOR" }] }),
+  head: ({ params }) => ({
+    meta: [
+      { title: `منتج — FPI STOR` },
+      { name: "description", content: "اطلب منتجك الرقمي من FPI STOR بالدينار العراقي مع تسليم فوري." },
+      { property: "og:type", content: "product" },
+      { property: "og:url", content: `https://iraqi-digital-haven.lovable.app/product/${params.id}` },
+    ],
+    links: [{ rel: "canonical", href: `https://iraqi-digital-haven.lovable.app/product/${params.id}` }],
+  }),
 });
+
 
 function ProductPage() {
   const { id } = Route.useParams();
