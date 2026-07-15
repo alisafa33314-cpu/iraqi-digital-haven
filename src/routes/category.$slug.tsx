@@ -10,11 +10,16 @@ export const Route = createFileRoute("/category/$slug")({
   ),
   head: ({ params }) => ({
     meta: [
-      { title: `قسم — FPI STOR` },
-      { name: "description", content: `تصفح منتجات القسم في متجر FPI STOR بالدينار العراقي.` },
+      { title: `قسم ${params.slug} — FPI STOR` },
+      { name: "description", content: `تصفح منتجات قسم ${params.slug} في متجر FPI STOR بالدينار العراقي مع تسليم فوري.` },
+      { property: "og:title", content: `قسم ${params.slug} — FPI STOR` },
+      { property: "og:description", content: `منتجات قسم ${params.slug} بالدينار العراقي.` },
+      { property: "og:url", content: `https://iraqi-digital-haven.lovable.app/category/${params.slug}` },
     ],
+    links: [{ rel: "canonical", href: `https://iraqi-digital-haven.lovable.app/category/${params.slug}` }],
   }),
 });
+
 
 function CategoryPage() {
   const { slug } = Route.useParams();

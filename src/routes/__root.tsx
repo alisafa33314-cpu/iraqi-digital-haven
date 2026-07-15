@@ -83,6 +83,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:description", content: "متجر FPI STOR الرقمي: اشتراكات، حسابات، ألعاب، كفت كارد وخدمات ذكاء اصطناعي بالدينار العراقي. تسليم فوري." },
       { property: "og:image", content: "https://iraqi-digital-haven.lovable.app/__l5e/assets-v1/51bf0f38-abc1-4134-90f5-25e16673c9be/fpi-store-logo.png" },
       { name: "twitter:image", content: "https://iraqi-digital-haven.lovable.app/__l5e/assets-v1/51bf0f38-abc1-4134-90f5-25e16673c9be/fpi-store-logo.png" },
+      { property: "og:site_name", content: "FPI STOR" },
+      { property: "og:locale", content: "ar_IQ" },
+      { name: "robots", content: "index, follow" },
+      { name: "keywords", content: "FPI STOR, متجر رقمي, اشتراكات, ألعاب, كفت كارد, بلايستيشن, اكس بوكس, ستيم, العراق, دينار عراقي" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -91,6 +95,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "OnlineStore",
+          name: "FPI STOR",
+          url: "https://iraqi-digital-haven.lovable.app",
+          logo: "https://iraqi-digital-haven.lovable.app/__l5e/assets-v1/51bf0f38-abc1-4134-90f5-25e16673c9be/fpi-store-logo.png",
+          description: "متجر FPI STOR الرقمي: اشتراكات، حسابات، ألعاب، كفت كارد وخدمات ذكاء اصطناعي بالدينار العراقي.",
+          areaServed: "IQ",
+          currenciesAccepted: "IQD",
+        }),
+      },
+    ],
+
   }),
   shellComponent: RootShell,
   component: RootComponent,

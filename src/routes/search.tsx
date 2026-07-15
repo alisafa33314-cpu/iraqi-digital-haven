@@ -6,9 +6,18 @@ import { Search as SearchIcon } from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/search")({
-  head: () => ({ meta: [{ title: "بحث — FPI STOR" }] }),
+  head: () => ({
+    meta: [
+      { title: "بحث — FPI STOR" },
+      { name: "description", content: "ابحث عن اشتراكات، ألعاب، حسابات وكفت كارد في متجر FPI STOR." },
+      { name: "robots", content: "noindex, follow" },
+      { property: "og:url", content: "https://iraqi-digital-haven.lovable.app/search" },
+    ],
+    links: [{ rel: "canonical", href: "https://iraqi-digital-haven.lovable.app/search" }],
+  }),
   component: SearchPage,
 });
+
 
 function SearchPage() {
   const [q, setQ] = useState("");
