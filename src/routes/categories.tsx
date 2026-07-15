@@ -6,11 +6,16 @@ export const Route = createFileRoute("/categories")({
   head: () => ({
     meta: [
       { title: "الأقسام — FPI STOR" },
-      { name: "description", content: "تصفح جميع أقسام المتجر: كيم باس، اكس بوكس، بث، كفت كارد، ستيم، وذكاء اصطناعي." },
+      { name: "description", content: "تصفح جميع أقسام متجر FPI STOR: بلايستيشن، اكس بوكس، بث، كفت كارد، ستيم، وخدمات ذكاء اصطناعي بالدينار العراقي." },
+      { property: "og:title", content: "الأقسام — FPI STOR" },
+      { property: "og:description", content: "جميع أقسام المتجر الرقمي بالدينار العراقي." },
+      { property: "og:url", content: "https://iraqi-digital-haven.lovable.app/categories" },
     ],
+    links: [{ rel: "canonical", href: "https://iraqi-digital-haven.lovable.app/categories" }],
   }),
   component: CategoriesPage,
 });
+
 
 function CategoriesPage() {
   const categories = useCatalog((s) => s.categories);
