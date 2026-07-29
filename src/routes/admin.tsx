@@ -269,8 +269,24 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
     setBusy(false);
     if (error) return toast.error("فشل إكمال الطلب: " + error.message);
     toast.success("تم إكمال الطلب");
+
+    // إرسال تفاصيل الاشتراك للزبون بالبريد (لا يوقف نجاح العملية)
+    if (order.customer_email) {
+      fetch("/api/public/order-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: adminCode, orderId: order.id }),
+      })
+        .then((r) => r.json())
+        .then((d) => {
+          if (d?.success) toast.success("تم إرسال الإيميل للزبون");
+        })
+        .catch(() => {});
+    }
+
     onChange();
   };
+
 
   const cancel = async () => {
     setBusy(true);
