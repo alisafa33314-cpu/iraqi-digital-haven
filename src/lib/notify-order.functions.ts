@@ -27,15 +27,17 @@ export const notifyAdminNewOrder = createServerFn({ method: "POST" })
     const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "7126623171";
 try {
       const { createClient } = await import('@supabase/supabase-js');
-      const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+      
+      const supabaseUrl = "https://alisafa33314-cpu.supabase.co";
       const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-      if (supabaseUrl && supabaseKey) {
+
+      if (supabaseUrl) {
         const supabase = createClient(supabaseUrl, supabaseKey);
         await supabase.from('orders').insert([{
-          customer_name: data.customerName,
-          phone: data.customerPhone,
+          customer_name: data.customerName || 'زبون جديد',
+          phone: data.customerPhone || 'لا يوجد',
           address: data.customerEmail || 'لا يوجد',
-          total_price: String(data.total)
+          total_price: String(data.total || 0)
         }]);
       }
     } catch (e) {
