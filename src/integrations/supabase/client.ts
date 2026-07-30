@@ -26,7 +26,7 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 
 function createSupabaseClient() {
   const SUPABASE_URL = "https://alisafa33314-cpu.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqcml5bHhrd29xb3Z2bGhscnVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwNjgyNDUsImV4cCI6MjA5OTY0NDI0NX0.FXKqOyO1obv1eudSKdvyNvqMz2GLYMOepPBmvuULu5s";
+  const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqcml5bHhrd29xb3Z2bGhscnVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwNjgyNDUsImV4cCI6MjA5OTY0NDI0NX0.FXKqOyO1obv1eudSKdvyNvqMz2GLYMOepPBmvuULu5s";
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
