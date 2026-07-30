@@ -119,6 +119,14 @@ function CheckoutPage() {
         },
       }).catch(() => {});
 
+      // إشعار بالإيميل للإدارة بالطلب الجديد (لا يوقف نجاح الطلب في حال الفشل)
+      fetch("/api/public/new-order-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      }).catch(() => {});
+
+
       toast.success("تم إرسال طلبك بنجاح — الحالة: قيد التنفيذ");
       nav({ to: "/orders" });
     } catch (err: any) {
