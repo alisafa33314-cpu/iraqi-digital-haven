@@ -25,7 +25,22 @@ export const notifyAdminNewOrder = createServerFn({ method: "POST" })
     const TELEGRAM_API_KEY = process.env.TELEGRAM_API_KEY;
     const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "7126623171";
-
+try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
+      const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      if (supabaseUrl && supabaseKey) {
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        await supabase.from('orders').insert([{
+          customer_name: data.customerName,
+          phone: data.customerPhone,
+          address: data.customerEmail || 'لا يوجد',
+          total_price: String(data.total)
+        }]);
+      }
+    } catch (e) {
+      console.error("Supabase insert error:", e);
+    }
     const shortId = data.orderId.slice(0, 8).toUpperCase();
     const itemsLines = data.items
       .map((i) => `• ${i.name} × ${i.qty} — ${fmt(i.price * i.qty)}`)
