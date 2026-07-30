@@ -29,7 +29,7 @@ try {
       const { createClient } = await import('@supabase/supabase-js');
       
       const supabaseUrl = "https://alisafa33314-cpu.supabase.co";
-      const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      const supabaseKey = "Sb_publishable_TXHfpw2Zj1iVpn8ch61N9A_1ROUzfcW";
 
       if (supabaseUrl) {
         const supabase = createClient(supabaseUrl, supabaseKey);
