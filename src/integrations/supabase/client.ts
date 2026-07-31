@@ -25,8 +25,13 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 }
 
 function createSupabaseClient() {
-  const SUPABASE_URL = "https://alisafa33314-cpu.supabase.co";
-  const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqcml5bHhrd29xb3Z2bGhscnVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwNjgyNDUsImV4cCI6MjA5OTY0NDI0NX0.FXKqOyO1obv1eudSKdvyNvqMz2GLYMOepPBmvuULu5s";
+  const SUPABASE_URL =
+    (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
+    "https://maeniuozqrionnhmssli.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY =
+    (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
+    "sb_publishable_A-6Q--ON6buJy4QrkIHIYA_j_e3JxNO";
+
 
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
     const missing = [
