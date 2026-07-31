@@ -22,6 +22,7 @@ import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiPublicOrderStatusEmailRouteImport } from './routes/api/public/order-status-email'
 import { Route as ApiPublicOrderEmailRouteImport } from './routes/api/public/order-email'
 import { Route as ApiPublicNewOrderEmailRouteImport } from './routes/api/public/new-order-email'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
@@ -93,6 +94,12 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicOrderStatusEmailRoute =
+  ApiPublicOrderStatusEmailRouteImport.update({
+    id: '/api/public/order-status-email',
+    path: '/api/public/order-status-email',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicOrderEmailRoute = ApiPublicOrderEmailRouteImport.update({
   id: '/api/public/order-email',
   path: '/api/public/order-email',
@@ -137,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/product/$id': typeof ProductIdRoute
   '/api/public/new-order-email': typeof ApiPublicNewOrderEmailRoute
   '/api/public/order-email': typeof ApiPublicOrderEmailRoute
+  '/api/public/order-status-email': typeof ApiPublicOrderStatusEmailRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -157,6 +165,7 @@ export interface FileRoutesByTo {
   '/product/$id': typeof ProductIdRoute
   '/api/public/new-order-email': typeof ApiPublicNewOrderEmailRoute
   '/api/public/order-email': typeof ApiPublicOrderEmailRoute
+  '/api/public/order-status-email': typeof ApiPublicOrderStatusEmailRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -178,6 +187,7 @@ export interface FileRoutesById {
   '/product/$id': typeof ProductIdRoute
   '/api/public/new-order-email': typeof ApiPublicNewOrderEmailRoute
   '/api/public/order-email': typeof ApiPublicOrderEmailRoute
+  '/api/public/order-status-email': typeof ApiPublicOrderStatusEmailRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/product/$id'
     | '/api/public/new-order-email'
     | '/api/public/order-email'
+    | '/api/public/order-status-email'
     | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/product/$id'
     | '/api/public/new-order-email'
     | '/api/public/order-email'
+    | '/api/public/order-status-email'
     | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -240,6 +252,7 @@ export interface FileRouteTypes {
     | '/product/$id'
     | '/api/public/new-order-email'
     | '/api/public/order-email'
+    | '/api/public/order-status-email'
     | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -261,6 +274,7 @@ export interface RootRouteChildren {
   ProductIdRoute: typeof ProductIdRoute
   ApiPublicNewOrderEmailRoute: typeof ApiPublicNewOrderEmailRoute
   ApiPublicOrderEmailRoute: typeof ApiPublicOrderEmailRoute
+  ApiPublicOrderStatusEmailRoute: typeof ApiPublicOrderStatusEmailRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -360,6 +374,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/order-status-email': {
+      id: '/api/public/order-status-email'
+      path: '/api/public/order-status-email'
+      fullPath: '/api/public/order-status-email'
+      preLoaderRoute: typeof ApiPublicOrderStatusEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/order-email': {
       id: '/api/public/order-email'
       path: '/api/public/order-email'
@@ -413,6 +434,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProductIdRoute: ProductIdRoute,
   ApiPublicNewOrderEmailRoute: ApiPublicNewOrderEmailRoute,
   ApiPublicOrderEmailRoute: ApiPublicOrderEmailRoute,
+  ApiPublicOrderStatusEmailRoute: ApiPublicOrderStatusEmailRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
