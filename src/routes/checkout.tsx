@@ -91,6 +91,7 @@ function CheckoutPage() {
 
       const rows = items.map((i) => ({
         order_id: orderId,
+        product_id: i.product.id,
         product_name: i.product.name,
         quantity: i.qty,
         unit_price: i.product.price,
@@ -98,8 +99,18 @@ function CheckoutPage() {
       const { error: itemsError } = await supabase.from("order_items").insert(rows);
       if (itemsError) throw itemsError;
 
+      // التسليم التلقائي من مخزون الحسابات (إن توفّر)
+      let autoDelivered = false;
+      try {
+        const { data: delivered } = await supabase.rpc("auto_deliver_order" as any, { _order_id: orderId });
+        autoDelivered = delivered === true;
+      } catch {
+        autoDelivered = false;
+      }
+
       addId(orderId);
       clear();
+
 
       // إشعار الأدمن على تلغرام (لا يوقف نجاح الطلب في حال الفشل)
       notifyAdminNewOrder({
