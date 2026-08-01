@@ -512,10 +512,102 @@ function StockQuickEdit({ product, adminCode, onSaved }: {
   );
 }
 
+function AutoStockModal({ product, adminCode, onClose, onChanged }: {
+  product: Product; adminCode: string; onClose: () => void; onChanged: () => void;
+}) {
+  const [rows, setRows] = useState<Array<{ id: string; account_details: string; is_used: boolean }>>([]);
+  const [bulk, setBulk] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => {
+    const { data, error } = await supabase.rpc("admin_list_stock" as any, {
+      _code: adminCode, _product_id: product.id,
+    });
+    if (error) return toast.error("فشل تحميل المخزون");
+    setRows((data as any[]) || []);
+  };
+  useEffect(() => { load(); }, [product.id]);
+
+  const add = async () => {
+    const lines = bulk.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lines.length === 0) return toast.error("أدخل حساباً واحداً على الأقل");
+    setBusy(true);
+    const { data, error } = await supabase.rpc("admin_add_stock" as any, {
+      _code: adminCode, _product_id: product.id, _lines: lines,
+    });
+    setBusy(false);
+    if (error) return toast.error("فشل الإضافة: " + error.message);
+    toast.success(`تمت إضافة ${data} حساب`);
+    setBulk("");
+    await load();
+    onChanged();
+  };
+
+  const del = async (id: string) => {
+    const { error } = await supabase.rpc("admin_delete_stock" as any, { _code: adminCode, _id: id });
+    if (error) return toast.error("فشل الحذف");
+    await load();
+    onChanged();
+  };
+
+  const available = rows.filter((r) => !r.is_used).length;
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-black text-lg mb-1">مخزون التسليم التلقائي</h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          {product.name} — المتوفر: <span className="text-primary font-bold">{available}</span> حساب
+        </p>
+
+        <Field label="أضف حسابات / أكواد (كل سطر = حساب واحد)">
+          <textarea value={bulk} onChange={(e) => setBulk(e.target.value)} rows={5}
+            className={inputCls} dir="ltr" placeholder={"email:pass\ncode-1234\n..."} />
+        </Field>
+        <button onClick={add} disabled={busy}
+          className="mt-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? "جاري الإضافة…" : "إضافة إلى المخزون"}
+        </button>
+
+        <div className="mt-5 space-y-1.5">
+          {rows.length === 0 ? (
+            <div className="text-center text-xs text-muted-foreground py-4">لا توجد حسابات في المخزون.</div>
+          ) : rows.map((r) => (
+            <div key={r.id} className="flex items-center gap-2 p-2 rounded-lg border border-border text-xs">
+              <span className={`px-1.5 py-0.5 rounded font-bold ${r.is_used ? "bg-destructive/15 text-destructive" : "bg-green-500/15 text-green-400"}`}>
+                {r.is_used ? "مُستخدم" : "متوفر"}
+              </span>
+              <span className="flex-1 min-w-0 break-all" dir="ltr">{r.account_details}</span>
+              <button onClick={() => del(r.id)} className="p-1.5 rounded-md bg-surface-2 border border-border text-destructive">
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button onClick={onClose} className="mt-5 w-full py-2.5 rounded-lg bg-surface-2 border border-border font-bold">
+          إغلاق
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ProductsManager({ adminCode, products, categories, onChange }: {
   adminCode: string; products: Product[]; categories: Category[]; onChange: () => void;
 }) {
   const [editing, setEditing] = useState<ProductForm | null>(null);
+  const [stockFor, setStockFor] = useState<Product | null>(null);
+  const [counts, setCounts] = useState<Record<string, number>>({});
+
+  const loadCounts = async () => {
+    const { data } = await supabase.rpc("admin_stock_counts" as any, { _code: adminCode });
+    const map: Record<string, number> = {};
+    for (const r of (data as any[]) || []) map[r.product_id] = r.available;
+    setCounts(map);
+  };
+  useEffect(() => { loadCounts(); }, [adminCode]);
 
   const startNew = () => setEditing({ ...emptyProduct, category_slug: categories[0]?.slug || "" });
   const startEdit = (p: Product) => setEditing({
@@ -556,6 +648,14 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
                   {categories.find((c) => c.slug === p.categorySlug)?.name || "—"} · <span className="text-primary font-bold">{formatIQD(p.price)}</span>
                 </div>
                 <StockQuickEdit product={p} adminCode={adminCode} onSaved={onChange} />
+                <button onClick={() => setStockFor(p)}
+                  className={`mt-1.5 inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md border font-bold ${
+                    (counts[p.id] || 0) > 0
+                      ? "bg-green-500/10 border-green-500/40 text-green-400"
+                      : "bg-surface-2 border-border text-muted-foreground"
+                  }`}>
+                  ⚡ تسليم تلقائي: {counts[p.id] || 0} حساب
+                </button>
               </div>
               <div className="flex flex-col gap-1 shrink-0">
                 <button onClick={() => startEdit(p)}
@@ -576,9 +676,15 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
         <ProductEditor form={editing} categories={categories} adminCode={adminCode}
           onClose={() => setEditing(null)} onSaved={() => { setEditing(null); onChange(); }} />
       )}
+
+      {stockFor && (
+        <AutoStockModal product={stockFor} adminCode={adminCode}
+          onClose={() => setStockFor(null)} onChanged={loadCounts} />
+      )}
     </div>
   );
 }
+
 
 function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
   form: ProductForm; categories: Category[]; adminCode: string; onClose: () => void; onSaved: () => void;

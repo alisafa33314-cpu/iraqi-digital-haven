@@ -181,6 +181,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          account_details: string | null
           created_at: string
           customer_email: string | null
           customer_name: string
@@ -199,6 +200,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          account_details?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name: string
@@ -217,6 +219,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          account_details?: string | null
           created_at?: string
           customer_email?: string | null
           customer_name?: string
@@ -346,6 +349,51 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      product_stock: {
+        Row: {
+          account_details: string
+          created_at: string
+          id: string
+          is_used: boolean
+          order_id: string | null
+          product_id: string
+          used_at: string | null
+        }
+        Insert: {
+          account_details: string
+          created_at?: string
+          id?: string
+          is_used?: boolean
+          order_id?: string | null
+          product_id: string
+          used_at?: string | null
+        }
+        Update: {
+          account_details?: string
+          created_at?: string
+          id?: string
+          is_used?: boolean
+          order_id?: string | null
+          product_id?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_stock_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_stock_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       products: {
         Row: {
@@ -591,6 +639,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_add_stock: {
+        Args: { _code: string; _lines: string[]; _product_id: string }
+        Returns: number
+      }
       admin_add_store_image: {
         Args: { _code: string; _image_url: string; _sort_order: number }
         Returns: string
@@ -647,6 +699,10 @@ export type Database = {
         Args: { _code: string; _id: string }
         Returns: undefined
       }
+      admin_delete_stock: {
+        Args: { _code: string; _id: string }
+        Returns: undefined
+      }
       admin_delete_store_image: {
         Args: { _code: string; _id: string }
         Returns: undefined
@@ -669,6 +725,15 @@ export type Database = {
           total: number
         }[]
       }
+      admin_list_stock: {
+        Args: { _code: string; _product_id: string }
+        Returns: {
+          account_details: string
+          created_at: string
+          id: string
+          is_used: boolean
+        }[]
+      }
       admin_login: { Args: { _code: string }; Returns: string }
       admin_reorder_category: {
         Args: { _code: string; _slug: string; _sort_order: number }
@@ -677,6 +742,14 @@ export type Database = {
       admin_set_setting: {
         Args: { _code: string; _key: string; _value: string }
         Returns: undefined
+      }
+      admin_stock_counts: {
+        Args: { _code: string }
+        Returns: {
+          available: number
+          product_id: string
+          used: number
+        }[]
       }
       admin_update_status: {
         Args: {
@@ -764,6 +837,7 @@ export type Database = {
         }
         Returns: string
       }
+      auto_deliver_order: { Args: { _order_id: string }; Returns: boolean }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
