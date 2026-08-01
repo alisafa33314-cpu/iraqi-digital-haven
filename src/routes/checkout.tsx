@@ -138,7 +138,12 @@ function CheckoutPage() {
       }).catch(() => {});
 
 
-      toast.success("تم إرسال طلبك بنجاح — الحالة: قيد التنفيذ");
+      toast.success(
+        autoDelivered
+          ? "تم إتمام طلبك وتسليم الحساب تلقائياً — تفقّد صفحة طلباتي"
+          : "تم إرسال طلبك بنجاح — الحالة: قيد التنفيذ",
+      );
+
       nav({ to: "/orders" });
     } catch (err: any) {
       toast.error("فشل إرسال الطلب: " + (err?.message || "خطأ"));
