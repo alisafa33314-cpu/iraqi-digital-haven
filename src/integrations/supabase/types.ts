@@ -713,6 +713,13 @@ export type Database = {
         Args: { _code: string; _id: string }
         Returns: undefined
       }
+      admin_get_private_settings: {
+        Args: { _code: string }
+        Returns: {
+          key: string
+          value: string
+        }[]
+      }
       admin_list_orders: {
         Args: { _code: string }
         Returns: {
