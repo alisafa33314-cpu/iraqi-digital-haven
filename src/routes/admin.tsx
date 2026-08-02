@@ -1654,6 +1654,72 @@ function PromoManager({ adminCode, categories, onChange }: {
   );
 }
 
+/* -------------------- WhatsApp (Green API) Manager -------------------- */
+
+function WhatsAppManager({ adminCode }: { adminCode: string }) {
+  const [idInstance, setIdInstance] = useState("");
+  const [apiToken, setApiToken] = useState("");
+  const [phone, setPhone] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase.rpc("admin_get_private_settings" as any, { _code: adminCode });
+      if (!error && Array.isArray(data)) {
+        for (const row of data as any[]) {
+          if (row.key === "greenapi_id_instance") setIdInstance(row.value || "");
+          if (row.key === "greenapi_api_token") setApiToken(row.value || "");
+          if (row.key === "greenapi_admin_phone") setPhone(row.value || "");
+        }
+      }
+      setLoading(false);
+    })();
+  }, [adminCode]);
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      const setOne = async (key: string, value: string) => {
+        const { error } = await supabase.rpc("admin_set_setting" as any, { _code: adminCode, _key: key, _value: value });
+        if (error) throw error;
+      };
+      await setOne("greenapi_id_instance", idInstance.trim());
+      await setOne("greenapi_api_token", apiToken.trim());
+      await setOne("greenapi_admin_phone", phone.replace(/[^\d]/g, ""));
+      toast.success("تم حفظ إعدادات واتساب");
+    } catch (e: any) { toast.error("فشل: " + (e?.message || "")); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-1 flex items-center gap-2">🟢 إشعارات واتساب للمشرف (Green API)</h2>
+      <p className="text-xs text-muted-foreground mb-4">
+        عند وصول أي طلب جديد، تُرسل رسالة واتساب تحتوي رقم الطلب واسم الزبون والمنتجات والمبلغ ووسيلة الدفع.
+      </p>
+      <div className="space-y-3">
+        <Field label="Green API — idInstance">
+          <input value={idInstance} onChange={(e) => setIdInstance(e.target.value)} className={inputCls} dir="ltr"
+            placeholder="1101234567" disabled={loading} />
+        </Field>
+        <Field label="Green API — apiTokenInstance">
+          <input value={apiToken} onChange={(e) => setApiToken(e.target.value)} className={inputCls} dir="ltr"
+            placeholder="a1b2c3..." disabled={loading} />
+        </Field>
+        <Field label="رقم واتساب المشرف (مع رمز الدولة بدون +)">
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} dir="ltr"
+            placeholder="9647770586502" disabled={loading} />
+        </Field>
+        <button onClick={save} disabled={busy || loading}
+          className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? "جاري الحفظ…" : "حفظ الإعدادات"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 type AnalyticsData = Awaited<ReturnType<typeof adminAnalytics>>;
 
