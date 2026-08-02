@@ -112,10 +112,11 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
           if (!r.ok) {
             return Response.json(
               { success: false, reason: `greenapi_${r.status}`, body: r.body },
-              { status: 502 },
+              { status: 502, headers: CORS },
             )
           }
-          return Response.json({ success: true, id: (r.body as any)?.idMessage })
+          return Response.json({ success: true, id: (r.body as any)?.idMessage }, { headers: CORS })
+
         } catch (e: any) {
           return Response.json(
             { success: false, reason: e?.message || 'fetch_failed' }, { status: 502, headers: CORS })
