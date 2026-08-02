@@ -2,10 +2,19 @@ import { createFileRoute } from '@tanstack/react-router'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '86400',
+}
+
 export const Route = createFileRoute('/api/public/new-order-whatsapp')({
   server: {
     handlers: {
+      OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
+
         const { serverSupabase, resolveGreenConfig, sendWhatsApp, fmtIQD, missingGreenFields } =
           await import('@/lib/whatsapp.server')
 
@@ -16,20 +25,38 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
           const body = await request.json()
           orderId = String((body as any)?.orderId || '')
         } catch {
-          return Response.json({ error: 'invalid_json' }, { status: 400 })
+          return Response.json({ error: 'invalid_json' }, { status: 400, headers: CORS })
         }
         if (!UUID_RE.test(orderId)) {
-          return Response.json({ error: 'invalid_order_id' }, { status: 400 })
+          return Response.json({ error: 'invalid_order_id' }, { status: 400, headers: CORS })
+        }
+
+        // Primary path: the database sends the WhatsApp message itself (security-definer
+        // RPC reads Green API settings + order rows, then calls Green API via pg_net).
+        // This works from any host/domain and needs no service-role key or env vars.
+        try {
+          const { data, error } = await supabase.rpc('whatsapp_notify_order' as any, {
+            _order_id: orderId,
+          })
+          const res = (data as any) || {}
+          if (!error && res.success) {
+            return Response.json(
+              { success: true, via: 'db', reason: res.reason ?? null },
+              { headers: CORS },
+            )
+
+          }
+        } catch {
+          // fall through to the direct fetch path below
         }
 
         const cfg = await resolveGreenConfig(supabase)
         const missing = missingGreenFields(cfg)
         if (missing.length) {
           return Response.json(
-            { success: false, reason: 'whatsapp_not_configured', missing },
-            { status: 200 },
-          )
+            { success: false, reason: 'whatsapp_not_configured', missing }, { status: 200, headers: CORS })
         }
+
 
         // Works with service role (direct read) or publishable key (security-definer RPC).
         let order: any = null
@@ -60,7 +87,7 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
         }
 
         if (!order) {
-          return Response.json({ error: 'order_not_found' }, { status: 404 })
+          return Response.json({ error: 'order_not_found' }, { status: 404, headers: CORS })
         }
 
         const itemLines = items
@@ -85,15 +112,14 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
           if (!r.ok) {
             return Response.json(
               { success: false, reason: `greenapi_${r.status}`, body: r.body },
-              { status: 502 },
+              { status: 502, headers: CORS },
             )
           }
-          return Response.json({ success: true, id: (r.body as any)?.idMessage })
+          return Response.json({ success: true, id: (r.body as any)?.idMessage }, { headers: CORS })
+
         } catch (e: any) {
           return Response.json(
-            { success: false, reason: e?.message || 'fetch_failed' },
-            { status: 502 },
-          )
+            { success: false, reason: e?.message || 'fetch_failed' }, { status: 502, headers: CORS })
         }
       },
     },

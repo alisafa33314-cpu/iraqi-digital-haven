@@ -640,6 +640,21 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_notified: {
+        Row: {
+          created_at: string
+          order_id: string
+        }
+        Insert: {
+          created_at?: string
+          order_id: string
+        }
+        Update: {
+          created_at?: string
+          order_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -917,6 +932,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      whatsapp_notify_order: { Args: { _order_id: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
