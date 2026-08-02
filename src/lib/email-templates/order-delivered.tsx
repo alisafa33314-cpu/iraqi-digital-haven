@@ -81,6 +81,24 @@ const Email = ({
           </Section>
         ) : null}
 
+        {activations.length > 0 ? (
+          <Section>
+            <Hr style={hr} />
+            <Text style={sectionTitle}>خطوات التفعيل والصور</Text>
+            {activations.map((a, idx) => (
+              <Section key={idx}>
+                <Text style={itemLine}>
+                  <b>{a.name}</b>
+                </Text>
+                {a.steps ? <Text style={stepsText}>{a.steps}</Text> : null}
+                {(a.images || []).map((url) => (
+                  <Img key={url} src={url} alt={`خطوات تفعيل ${a.name}`} style={img} />
+                ))}
+              </Section>
+            ))}
+          </Section>
+        ) : null}
+
         <Hr style={hr} />
         <Text style={muted}>
           يمكنك الاطلاع على تفاصيل طلباتك في أي وقت من قسم «طلباتي» في الموقع.
@@ -102,6 +120,13 @@ export const template = {
     images: [],
     items: [{ name: 'اشتراك Netflix شهر', qty: 1, price: 15000 }],
     total: 15000,
+    activations: [
+      {
+        name: 'اشتراك Netflix شهر',
+        steps: '1. افتح تطبيق Netflix\n2. اضغط تسجيل الدخول\n3. أدخل البريد وكلمة المرور المرسلة أعلاه',
+        images: [],
+      },
+    ],
   },
 } satisfies TemplateEntry
 
