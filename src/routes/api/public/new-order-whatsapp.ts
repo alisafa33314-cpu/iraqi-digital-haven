@@ -40,7 +40,11 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
           })
           const res = (data as any) || {}
           if (!error && res.success) {
-            return Response.json({ success: true, via: 'db', reason: res.reason ?? null })
+            return Response.json(
+              { success: true, via: 'db', reason: res.reason ?? null },
+              { headers: CORS },
+            )
+
           }
         } catch {
           // fall through to the direct fetch path below
