@@ -22,6 +22,21 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
           return Response.json({ error: 'invalid_order_id' }, { status: 400 })
         }
 
+        // Primary path: the database sends the WhatsApp message itself (security-definer
+        // RPC reads Green API settings + order rows, then calls Green API via pg_net).
+        // This works from any host/domain and needs no service-role key or env vars.
+        try {
+          const { data, error } = await supabase.rpc('whatsapp_notify_order' as any, {
+            _order_id: orderId,
+          })
+          const res = (data as any) || {}
+          if (!error && res.success) {
+            return Response.json({ success: true, via: 'db', reason: res.reason ?? null })
+          }
+        } catch {
+          // fall through to the direct fetch path below
+        }
+
         const cfg = await resolveGreenConfig(supabase)
         const missing = missingGreenFields(cfg)
         if (missing.length) {
@@ -30,6 +45,7 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
             { status: 200 },
           )
         }
+
 
         // Works with service role (direct read) or publishable key (security-definer RPC).
         let order: any = null
