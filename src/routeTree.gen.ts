@@ -22,6 +22,7 @@ import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
+import { Route as ApiPublicWhatsappTestRouteImport } from './routes/api/public/whatsapp-test'
 import { Route as ApiPublicOrderStatusEmailRouteImport } from './routes/api/public/order-status-email'
 import { Route as ApiPublicOrderEmailRouteImport } from './routes/api/public/order-email'
 import { Route as ApiPublicNewOrderWhatsappRouteImport } from './routes/api/public/new-order-whatsapp'
@@ -95,6 +96,11 @@ const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
   path: '/lovable/email/suppression',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWhatsappTestRoute = ApiPublicWhatsappTestRouteImport.update({
+  id: '/api/public/whatsapp-test',
+  path: '/api/public/whatsapp-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicOrderStatusEmailRoute =
   ApiPublicOrderStatusEmailRouteImport.update({
     id: '/api/public/order-status-email',
@@ -153,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/api/public/new-order-whatsapp': typeof ApiPublicNewOrderWhatsappRoute
   '/api/public/order-email': typeof ApiPublicOrderEmailRoute
   '/api/public/order-status-email': typeof ApiPublicOrderStatusEmailRoute
+  '/api/public/whatsapp-test': typeof ApiPublicWhatsappTestRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/api/public/new-order-whatsapp': typeof ApiPublicNewOrderWhatsappRoute
   '/api/public/order-email': typeof ApiPublicOrderEmailRoute
   '/api/public/order-status-email': typeof ApiPublicOrderStatusEmailRoute
+  '/api/public/whatsapp-test': typeof ApiPublicWhatsappTestRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/api/public/new-order-whatsapp': typeof ApiPublicNewOrderWhatsappRoute
   '/api/public/order-email': typeof ApiPublicOrderEmailRoute
   '/api/public/order-status-email': typeof ApiPublicOrderStatusEmailRoute
+  '/api/public/whatsapp-test': typeof ApiPublicWhatsappTestRoute
   '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
@@ -222,6 +231,7 @@ export interface FileRouteTypes {
     | '/api/public/new-order-whatsapp'
     | '/api/public/order-email'
     | '/api/public/order-status-email'
+    | '/api/public/whatsapp-test'
     | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/api/public/new-order-whatsapp'
     | '/api/public/order-email'
     | '/api/public/order-status-email'
+    | '/api/public/whatsapp-test'
     | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -266,6 +277,7 @@ export interface FileRouteTypes {
     | '/api/public/new-order-whatsapp'
     | '/api/public/order-email'
     | '/api/public/order-status-email'
+    | '/api/public/whatsapp-test'
     | '/lovable/email/suppression'
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
@@ -289,6 +301,7 @@ export interface RootRouteChildren {
   ApiPublicNewOrderWhatsappRoute: typeof ApiPublicNewOrderWhatsappRoute
   ApiPublicOrderEmailRoute: typeof ApiPublicOrderEmailRoute
   ApiPublicOrderStatusEmailRoute: typeof ApiPublicOrderStatusEmailRoute
+  ApiPublicWhatsappTestRoute: typeof ApiPublicWhatsappTestRoute
   LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
@@ -388,6 +401,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailSuppressionRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/whatsapp-test': {
+      id: '/api/public/whatsapp-test'
+      path: '/api/public/whatsapp-test'
+      fullPath: '/api/public/whatsapp-test'
+      preLoaderRoute: typeof ApiPublicWhatsappTestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/order-status-email': {
       id: '/api/public/order-status-email'
       path: '/api/public/order-status-email'
@@ -457,6 +477,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicNewOrderWhatsappRoute: ApiPublicNewOrderWhatsappRoute,
   ApiPublicOrderEmailRoute: ApiPublicOrderEmailRoute,
   ApiPublicOrderStatusEmailRoute: ApiPublicOrderStatusEmailRoute,
+  ApiPublicWhatsappTestRoute: ApiPublicWhatsappTestRoute,
   LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,

@@ -1661,6 +1661,7 @@ function WhatsAppManager({ adminCode }: { adminCode: string }) {
   const [apiToken, setApiToken] = useState("");
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -1692,6 +1693,22 @@ function WhatsAppManager({ adminCode }: { adminCode: string }) {
     finally { setBusy(false); }
   };
 
+  const testSend = async () => {
+    setTesting(true);
+    try {
+      const res = await fetch("/api/public/whatsapp-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: adminCode }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.success) toast.success("تم إرسال رسالة الاختبار للواتساب ✅");
+      else toast.error("فشل الاختبار: " + (data?.reason || data?.error || res.status));
+    } catch (e: any) { toast.error("فشل الاختبار: " + (e?.message || "")); }
+    finally { setTesting(false); }
+  };
+
+
   return (
     <div className="card-neon rounded-2xl p-5 mb-6">
       <h2 className="font-black text-lg mb-1 flex items-center gap-2">🟢 إشعارات واتساب للمشرف (Green API)</h2>
@@ -1714,6 +1731,10 @@ function WhatsAppManager({ adminCode }: { adminCode: string }) {
         <button onClick={save} disabled={busy || loading}
           className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
           {busy ? "جاري الحفظ…" : "حفظ الإعدادات"}
+        </button>
+        <button type="button" onClick={testSend} disabled={testing || loading}
+          className="w-full py-2.5 rounded-lg bg-surface-2 border border-primary/40 text-primary font-bold disabled:opacity-60">
+          {testing ? "جاري الإرسال…" : "🧪 اختبار إرسال الواتساب"}
         </button>
       </div>
     </div>
