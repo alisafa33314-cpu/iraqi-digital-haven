@@ -1661,6 +1661,7 @@ function WhatsAppManager({ adminCode }: { adminCode: string }) {
   const [apiToken, setApiToken] = useState("");
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
+  const [testing, setTesting] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
