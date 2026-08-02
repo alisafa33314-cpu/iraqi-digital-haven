@@ -86,10 +86,23 @@ function OrdersPage() {
 
 function OrderCard({ o, onReview }: { o: OrderRow; onReview: () => void }) {
   const reviewedIds = useReviewedOrders((s) => s.ids);
+  const catalogProducts = useCatalog((s) => s.products);
   const alreadyReviewed = reviewedIds.includes(o.id);
   const images = (o.subscription_image_urls && o.subscription_image_urls.length > 0)
     ? o.subscription_image_urls
     : (o.subscription_image_url ? [o.subscription_image_url] : []);
+
+  const activations = o.items
+    .map((i) => {
+      const p = catalogProducts.find((cp) => cp.name === i.product_name);
+      if (!p) return null;
+      const steps = (p.activationInstructions || "").trim();
+      const imgs = p.activationImages || [];
+      if (!steps && imgs.length === 0) return null;
+      return { name: i.product_name, steps, imgs };
+    })
+    .filter(Boolean) as { name: string; steps: string; imgs: string[] }[];
+
 
   return (
     <div className="card-neon rounded-2xl p-5">
