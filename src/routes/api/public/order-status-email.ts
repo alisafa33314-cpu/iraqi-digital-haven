@@ -53,7 +53,7 @@ export const Route = createFileRoute('/api/public/order-status-email')({
 
         const { data: items } = await supabase
           .from('order_items')
-          .select('product_name, quantity, unit_price')
+          .select('product_id, product_name, quantity, unit_price')
           .eq('order_id', orderId)
 
         const images =
@@ -62,6 +62,24 @@ export const Route = createFileRoute('/api/public/order-status-email')({
             : order.subscription_image_url
               ? [order.subscription_image_url]
               : []) ?? []
+
+        const productIds = Array.from(
+          new Set(((items || []) as any[]).map((i) => i.product_id).filter(Boolean)),
+        )
+        let activations: { name: string; steps: string; images: string[] }[] = []
+        if (productIds.length > 0) {
+          const { data: prods } = await supabase
+            .from('products')
+            .select('id, name, activation_instructions, activation_images')
+            .in('id', productIds as string[])
+          activations = ((prods || []) as any[])
+            .map((p) => ({
+              name: p.name as string,
+              steps: (p.activation_instructions || '') as string,
+              images: (Array.isArray(p.activation_images) ? p.activation_images : []) as string[],
+            }))
+            .filter((a) => a.steps || a.images.length > 0)
+        }
 
         const result = await sendTemplateEmailInternal({
           templateName: 'order-delivered',
@@ -78,6 +96,7 @@ export const Route = createFileRoute('/api/public/order-status-email')({
               price: Number(i.unit_price),
             })),
             total: Number(order.total),
+            activations,
           },
         })
 
