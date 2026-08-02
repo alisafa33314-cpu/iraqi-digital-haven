@@ -1732,6 +1732,10 @@ function WhatsAppManager({ adminCode }: { adminCode: string }) {
           className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
           {busy ? "جاري الحفظ…" : "حفظ الإعدادات"}
         </button>
+        <button type="button" onClick={testSend} disabled={testing || loading}
+          className="w-full py-2.5 rounded-lg bg-surface-2 border border-primary/40 text-primary font-bold disabled:opacity-60">
+          {testing ? "جاري الإرسال…" : "🧪 اختبار إرسال الواتساب"}
+        </button>
       </div>
     </div>
   );
