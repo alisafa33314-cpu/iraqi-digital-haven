@@ -84,6 +84,8 @@ export const useCatalog = create<CatalogState>((set) => ({
       image: p.image_url || "https://placehold.co/600x600/222/fff?text=No+Image",
       categorySlug: p.category_slug || "",
       inStock: p.is_active !== false,
+      activationInstructions: p.activation_instructions || null,
+      activationImages: Array.isArray(p.activation_images) ? p.activation_images : [],
     }));
 
       for (const c of cats) c.count = prods.filter((p) => p.categorySlug === c.slug).length;
