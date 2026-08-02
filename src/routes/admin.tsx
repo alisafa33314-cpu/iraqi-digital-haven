@@ -738,7 +738,7 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
   const save = async () => {
     if (!f.name.trim() || !f.price) return toast.error("أدخل الاسم والسعر");
     setBusy(true);
-    const { error } = await supabase.rpc("admin_upsert_product_v2" as any, {
+    const { error } = await supabase.rpc("admin_upsert_product_v3" as any, {
       _code: adminCode,
       _id: f.id,
       _name: f.name.trim(),
@@ -749,6 +749,8 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
       _image_url: f.image_url.trim() || null,
       _category_slug: f.category_slug || null,
       _is_active: f.is_active,
+      _activation_instructions: f.activation_instructions.trim() || null,
+      _activation_images: f.activation_images,
     });
     setBusy(false);
     if (error) return toast.error("فشل الحفظ: " + error.message);
