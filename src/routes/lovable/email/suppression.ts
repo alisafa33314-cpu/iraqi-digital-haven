@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import { WebhookError, verifyWebhookRequest } from '@lovable.dev/webhooks-js'
 import { createFileRoute } from '@tanstack/react-router'
 
 // Suppression event payload sent by the Go API when Mailgun reports
@@ -55,6 +54,7 @@ export const Route = createFileRoute("/lovable/email/suppression")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { WebhookError, verifyWebhookRequest } = await import('@lovable.dev/webhooks-js')
         const apiKey = process.env.LOVABLE_API_KEY
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
