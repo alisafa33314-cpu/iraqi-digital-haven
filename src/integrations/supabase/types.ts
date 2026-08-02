@@ -397,6 +397,8 @@ export type Database = {
       }
       products: {
         Row: {
+          activation_images: string[]
+          activation_instructions: string | null
           category_id: string | null
           category_slug: string | null
           created_at: string
@@ -411,6 +413,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          activation_images?: string[]
+          activation_instructions?: string | null
           category_id?: string | null
           category_slug?: string | null
           created_at?: string
@@ -425,6 +429,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          activation_images?: string[]
+          activation_instructions?: string | null
           category_id?: string | null
           category_slug?: string | null
           created_at?: string
@@ -812,6 +818,23 @@ export type Database = {
       }
       admin_upsert_product_v2: {
         Args: {
+          _category_slug: string
+          _code: string
+          _description: string
+          _id: string
+          _image_url: string
+          _is_active: boolean
+          _name: string
+          _old_price: number
+          _price: number
+          _stock: number
+        }
+        Returns: string
+      }
+      admin_upsert_product_v3: {
+        Args: {
+          _activation_images?: string[]
+          _activation_instructions?: string
           _category_slug: string
           _code: string
           _description: string

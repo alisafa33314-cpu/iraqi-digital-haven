@@ -459,12 +459,53 @@ type ProductForm = {
   image_url: string;
   category_slug: string;
   is_active: boolean;
+  activation_instructions: string;
+  activation_images: string[];
 };
 
 const emptyProduct: ProductForm = {
   id: null, name: "", description: "", price: "", old_price: "", stock: "0",
   image_url: "", category_slug: "", is_active: true,
+  activation_instructions: "", activation_images: [],
 };
+
+function MultiImagePicker({ value, onChange, folder }: {
+  value: string[]; onChange: (urls: string[]) => void; folder: string;
+}) {
+  const [busy, setBusy] = useState(false);
+  const handle = async (files: FileList) => {
+    setBusy(true);
+    try {
+      const urls: string[] = [];
+      for (const f of Array.from(files)) urls.push(await uploadImage(f, folder));
+      onChange([...value, ...urls]);
+      toast.success(`تم رفع ${urls.length} صورة`);
+    } catch (e: any) { toast.error("فشل الرفع: " + (e?.message || "")); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div className="space-y-2">
+      <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-2 border border-border cursor-pointer text-xs hover:border-primary/50">
+        <Upload className="w-3.5 h-3.5" />
+        {busy ? "جاري الرفع…" : "رفع صور الشرح"}
+        <input type="file" accept="image/*" multiple className="hidden"
+          onChange={(e) => e.target.files?.length && handle(e.target.files)} />
+      </label>
+      {value.length > 0 && (
+        <div className="grid grid-cols-3 gap-2">
+          {value.map((u, i) => (
+            <div key={i} className="relative">
+              <img src={u} alt="" className="w-full h-20 rounded-lg object-cover border border-border" />
+              <button type="button" onClick={() => onChange(value.filter((_, idx) => idx !== i))}
+                className="absolute top-1 left-1 w-6 h-6 rounded-md bg-destructive text-white text-xs font-bold">×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function StockQuickEdit({ product, adminCode, onSaved }: {
   product: Product; adminCode: string; onSaved: () => void;
@@ -615,6 +656,8 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
     old_price: p.oldPrice != null ? String(p.oldPrice) : "",
     stock: p.stock != null ? String(p.stock) : "0",
     image_url: p.image, category_slug: p.categorySlug, is_active: p.inStock,
+    activation_instructions: p.activationInstructions || "",
+    activation_images: p.activationImages || [],
   });
 
   const remove = async (id: string, name: string) => {
@@ -695,7 +738,7 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
   const save = async () => {
     if (!f.name.trim() || !f.price) return toast.error("أدخل الاسم والسعر");
     setBusy(true);
-    const { error } = await supabase.rpc("admin_upsert_product_v2" as any, {
+    const { error } = await supabase.rpc("admin_upsert_product_v3" as any, {
       _code: adminCode,
       _id: f.id,
       _name: f.name.trim(),
@@ -706,6 +749,8 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
       _image_url: f.image_url.trim() || null,
       _category_slug: f.category_slug || null,
       _is_active: f.is_active,
+      _activation_instructions: f.activation_instructions.trim() || null,
+      _activation_images: f.activation_images,
     });
     setBusy(false);
     if (error) return toast.error("فشل الحفظ: " + error.message);
@@ -749,6 +794,15 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
           </div>
           <Field label="صورة المنتج">
             <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="products" />
+          </Field>
+          <Field label="خطوات التفعيل (تُرسل للزبون بعد الشراء)">
+            <textarea value={f.activation_instructions}
+              onChange={(e) => setF({ ...f, activation_instructions: e.target.value })}
+              rows={5} className={inputCls} placeholder={"1. افتح التطبيق\n2. اضغط تسجيل الدخول\n3. أدخل البيانات المرسلة"} />
+          </Field>
+          <Field label="صور شرح التفعيل">
+            <MultiImagePicker value={f.activation_images}
+              onChange={(urls) => setF({ ...f, activation_images: urls })} folder="activation" />
           </Field>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={f.is_active} onChange={(e) => setF({ ...f, is_active: e.target.checked })} className="accent-primary" />

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { useMyOrderIds, useReviewedOrders, STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { formatIQD } from "@/lib/data";
-import { PackageOpen, KeyRound, Copy, Star, X } from "lucide-react";
+import { PackageOpen, KeyRound, Copy, Star, X, ListChecks } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { useCatalog } from "@/lib/catalog";
@@ -86,10 +86,23 @@ function OrdersPage() {
 
 function OrderCard({ o, onReview }: { o: OrderRow; onReview: () => void }) {
   const reviewedIds = useReviewedOrders((s) => s.ids);
+  const catalogProducts = useCatalog((s) => s.products);
   const alreadyReviewed = reviewedIds.includes(o.id);
   const images = (o.subscription_image_urls && o.subscription_image_urls.length > 0)
     ? o.subscription_image_urls
     : (o.subscription_image_url ? [o.subscription_image_url] : []);
+
+  const activations = o.items
+    .map((i) => {
+      const p = catalogProducts.find((cp) => cp.name === i.product_name);
+      if (!p) return null;
+      const steps = (p.activationInstructions || "").trim();
+      const imgs = p.activationImages || [];
+      if (!steps && imgs.length === 0) return null;
+      return { name: i.product_name, steps, imgs };
+    })
+    .filter(Boolean) as { name: string; steps: string; imgs: string[] }[];
+
 
   return (
     <div className="card-neon rounded-2xl p-5">
@@ -153,6 +166,33 @@ function OrderCard({ o, onReview }: { o: OrderRow; onReview: () => void }) {
           )}
         </div>
       )}
+
+      {o.status === "completed" && activations.length > 0 && (
+        <div className="mb-4 p-4 rounded-xl border border-primary/40 bg-primary/5 space-y-4">
+          <div className="flex items-center gap-2 text-primary font-bold text-sm">
+            <ListChecks className="w-4 h-4" /> خطوات التفعيل والصور
+          </div>
+          {activations.map((a, idx) => (
+            <div key={idx} className="space-y-2">
+              <div className="font-bold text-sm">{a.name}</div>
+              {a.steps && (
+                <div className="text-xs leading-6 whitespace-pre-wrap bg-surface-2 rounded-lg p-3">{a.steps}</div>
+              )}
+              {a.imgs.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {a.imgs.map((u, i) => (
+                    <a key={i} href={u} target="_blank" rel="noreferrer" className="block">
+                      <img src={u} alt={`خطوة ${i + 1}`}
+                        className="w-full h-32 rounded-lg border border-border object-cover bg-surface-2" />
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
 
       {o.status === "pending" && (
         <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 text-xs text-yellow-300">

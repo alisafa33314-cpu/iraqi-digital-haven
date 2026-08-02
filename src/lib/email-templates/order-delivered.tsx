@@ -13,6 +13,12 @@ import {
 } from '@react-email/components'
 import type { TemplateEntry } from './registry'
 
+interface Activation {
+  name: string
+  steps?: string
+  images?: string[]
+}
+
 interface Props {
   orderId?: string
   customerName?: string
@@ -20,6 +26,7 @@ interface Props {
   images?: string[]
   items?: { name: string; qty: number; price: number }[]
   total?: number
+  activations?: Activation[]
 }
 
 const fmt = (n: number) =>
@@ -32,6 +39,7 @@ const Email = ({
   images = [],
   items = [],
   total,
+  activations = [],
 }: Props) => (
   <Html lang="ar" dir="rtl">
     <Head />
@@ -73,6 +81,24 @@ const Email = ({
           </Section>
         ) : null}
 
+        {activations.length > 0 ? (
+          <Section>
+            <Hr style={hr} />
+            <Text style={sectionTitle}>خطوات التفعيل والصور</Text>
+            {activations.map((a, idx) => (
+              <Section key={idx}>
+                <Text style={itemLine}>
+                  <b>{a.name}</b>
+                </Text>
+                {a.steps ? <Text style={stepsText}>{a.steps}</Text> : null}
+                {(a.images || []).map((url) => (
+                  <Img key={url} src={url} alt={`خطوات تفعيل ${a.name}`} style={img} />
+                ))}
+              </Section>
+            ))}
+          </Section>
+        ) : null}
+
         <Hr style={hr} />
         <Text style={muted}>
           يمكنك الاطلاع على تفاصيل طلباتك في أي وقت من قسم «طلباتي» في الموقع.
@@ -94,6 +120,13 @@ export const template = {
     images: [],
     items: [{ name: 'اشتراك Netflix شهر', qty: 1, price: 15000 }],
     total: 15000,
+    activations: [
+      {
+        name: 'اشتراك Netflix شهر',
+        steps: '1. افتح تطبيق Netflix\n2. اضغط تسجيل الدخول\n3. أدخل البريد وكلمة المرور المرسلة أعلاه',
+        images: [],
+      },
+    ],
   },
 } satisfies TemplateEntry
 
@@ -124,3 +157,22 @@ const hr = { borderColor: '#e5e7eb', margin: '20px 0' }
 const muted = { fontSize: '12px', color: '#6b7280', textAlign: 'right' as const }
 
 export default Email
+
+const sectionTitle = {
+  fontSize: '15px',
+  fontWeight: 'bold' as const,
+  color: '#e11d2f',
+  margin: '0 0 8px',
+  textAlign: 'right' as const,
+}
+const stepsText = {
+  fontSize: '14px',
+  color: '#111827',
+  whiteSpace: 'pre-wrap' as const,
+  lineHeight: '1.9',
+  textAlign: 'right' as const,
+  backgroundColor: '#f9fafb',
+  border: '1px solid #e5e7eb',
+  borderRadius: '8px',
+  padding: '12px',
+}
