@@ -137,6 +137,14 @@ function CheckoutPage() {
         body: JSON.stringify({ orderId }),
       }).catch(() => {});
 
+      // إشعار واتساب للمشرف عبر Green API (لا يوقف نجاح الطلب في حال الفشل)
+      fetch("/api/public/new-order-whatsapp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId }),
+      }).catch(() => {});
+
+
 
       toast.success(
         autoDelivered
