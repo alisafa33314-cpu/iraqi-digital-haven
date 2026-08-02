@@ -19,6 +19,10 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  // Outside Lovable's own build (e.g. on Vercel) target the Vercel runtime so the
+  // SSR handler is emitted as a Vercel Build Output function instead of a Worker.
+  // Inside Lovable the preset stays Cloudflare automatically.
+  nitro: { preset: process.env.VERCEL ? "vercel" : undefined },
   vite: {
     resolve: {
       alias: {
