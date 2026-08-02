@@ -6,14 +6,10 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { adminSupabase, loadGreenConfig, sendWhatsApp, fmtIQD } = await import(
-          '@/lib/whatsapp.server'
-        )
+        const { serverSupabase, resolveGreenConfig, sendWhatsApp, fmtIQD, missingGreenFields } =
+          await import('@/lib/whatsapp.server')
 
-        const supabase = adminSupabase()
-        if (!supabase) {
-          return Response.json({ error: 'server_configuration_error' }, { status: 500 })
-        }
+        const supabase = serverSupabase()
 
         let orderId = ''
         try {
@@ -26,12 +22,20 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
           return Response.json({ error: 'invalid_order_id' }, { status: 400 })
         }
 
-        const cfg = await loadGreenConfig(supabase)
-        if (!cfg.idInstance || !cfg.apiToken || !cfg.phone) {
-          return Response.json({ success: false, reason: 'whatsapp_not_configured' }, { status: 200 })
+        const cfg = await resolveGreenConfig(supabase)
+        const missing = missingGreenFields(cfg)
+        if (missing.length) {
+          return Response.json(
+            { success: false, reason: 'whatsapp_not_configured', missing },
+            { status: 200 },
+          )
         }
 
-        const { data: order, error } = await supabase
+        // Works with service role (direct read) or publishable key (security-definer RPC).
+        let order: any = null
+        let items: any[] = []
+
+        const direct = await supabase
           .from('orders')
           .select(
             'id, customer_name, customer_phone, customer_email, total, payment_method_name, created_at',
@@ -39,19 +43,27 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
           .eq('id', orderId)
           .maybeSingle()
 
-        if (error || !order) {
-          return Response.json(
-            { error: 'order_not_found', reason: error?.message },
-            { status: 404 },
-          )
+        if (direct.data) {
+          order = direct.data
+          const { data } = await supabase
+            .from('order_items')
+            .select('product_name, quantity, unit_price')
+            .eq('order_id', orderId)
+          items = data || []
+        } else {
+          const { data } = await supabase.rpc('get_orders_by_ids' as any, { _ids: [orderId] })
+          const row = Array.isArray(data) ? (data[0] as any) : null
+          if (row) {
+            order = row
+            items = Array.isArray(row.items) ? row.items : []
+          }
         }
 
-        const { data: items } = await supabase
-          .from('order_items')
-          .select('product_name, quantity, unit_price')
-          .eq('order_id', orderId)
+        if (!order) {
+          return Response.json({ error: 'order_not_found' }, { status: 404 })
+        }
 
-        const itemLines = (items || [])
+        const itemLines = items
           .map(
             (i: any) =>
               `• ${i.product_name} × ${i.quantity} — ${fmtIQD(Number(i.unit_price) * i.quantity)}`,
@@ -60,7 +72,7 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
 
         const message =
           `🛒 *طلب جديد — FPI STOR*\n\n` +
-          `🆔 رقم الطلب: ${order.id.slice(0, 8).toUpperCase()}\n` +
+          `🆔 رقم الطلب: ${String(order.id).slice(0, 8).toUpperCase()}\n` +
           `👤 الزبون: ${order.customer_name}\n` +
           `📞 الهاتف: ${order.customer_phone}\n` +
           (order.customer_email ? `✉️ الإيميل: ${order.customer_email}\n` : '') +

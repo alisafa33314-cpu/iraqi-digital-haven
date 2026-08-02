@@ -1699,11 +1699,16 @@ function WhatsAppManager({ adminCode }: { adminCode: string }) {
       const res = await fetch("/api/public/whatsapp-test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: adminCode }),
+        body: JSON.stringify({
+          code: adminCode,
+          idInstance: idInstance.trim(),
+          apiToken: apiToken.trim(),
+          phone: phone.trim(),
+        }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data?.success) toast.success("تم إرسال رسالة الاختبار للواتساب ✅");
-      else toast.error("فشل الاختبار: " + (data?.reason || data?.error || res.status));
+      else toast.error("فشل الاختبار: " + (data?.hint || data?.reason || data?.error || res.status));
     } catch (e: any) { toast.error("فشل الاختبار: " + (e?.message || "")); }
     finally { setTesting(false); }
   };

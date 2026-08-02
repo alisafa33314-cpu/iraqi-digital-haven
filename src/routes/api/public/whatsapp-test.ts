@@ -4,31 +4,44 @@ export const Route = createFileRoute('/api/public/whatsapp-test')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { adminSupabase, loadGreenConfig, sendWhatsApp, normalizePhone } = await import(
-          '@/lib/whatsapp.server'
-        )
+        const {
+          serverSupabase,
+          resolveGreenConfig,
+          sendWhatsApp,
+          normalizePhone,
+          missingGreenFields,
+        } = await import('@/lib/whatsapp.server')
 
-        const supabase = adminSupabase()
-        if (!supabase) {
-          return Response.json({ error: 'server_configuration_error' }, { status: 500 })
-        }
-
-        let code = ''
+        let body: any = {}
         try {
-          const body = await request.json()
-          code = String((body as any)?.code || '')
+          body = await request.json()
         } catch {
           return Response.json({ error: 'invalid_json' }, { status: 400 })
         }
+
+        const code = String(body?.code || '')
         if (!code) return Response.json({ error: 'unauthorized' }, { status: 401 })
 
-        const { error: authErr } = await supabase.rpc('admin_check_code', { _code: code })
+        const supabase = serverSupabase()
+        const { error: authErr } = await supabase.rpc('admin_check_code' as any, { _code: code })
         if (authErr) return Response.json({ error: 'unauthorized' }, { status: 401 })
 
-        const cfg = await loadGreenConfig(supabase)
-        if (!cfg.idInstance || !cfg.apiToken || !cfg.phone) {
+        const cfg = await resolveGreenConfig(supabase, {
+          code,
+          idInstance: body?.idInstance,
+          apiToken: body?.apiToken,
+          phone: body?.phone,
+        })
+
+        const missing = missingGreenFields(cfg)
+        if (missing.length) {
           return Response.json(
-            { success: false, reason: 'whatsapp_not_configured' },
+            {
+              success: false,
+              reason: 'whatsapp_not_configured',
+              missing,
+              hint: `أدخل القيم في لوحة التحكم أو أضف المتغيرات: ${missing.join(', ')}`,
+            },
             { status: 200 },
           )
         }
