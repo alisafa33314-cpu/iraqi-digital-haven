@@ -1707,8 +1707,21 @@ function WhatsAppManager({ adminCode }: { adminCode: string }) {
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (res.ok && data?.success) toast.success("تم إرسال رسالة الاختبار للواتساب ✅");
-      else toast.error("فشل الاختبار: " + (data?.hint || data?.reason || data?.error || res.status));
+      if (res.ok && data?.success) {
+        toast.success("تم إرسال رسالة الاختبار للواتساب ✅");
+      } else {
+        // مسار احتياطي: الإرسال من قاعدة البيانات مباشرة (يعمل من أي نطاق)
+        const { data: dbRes, error: dbErr } = await supabase.rpc("whatsapp_test_send" as any);
+        if (!dbErr && (dbRes as any)?.success) {
+          toast.success("تم إرسال رسالة الاختبار من قاعدة البيانات ✅");
+        } else {
+          toast.error(
+            "فشل الاختبار: " +
+              ((dbRes as any)?.reason || dbErr?.message || data?.hint || data?.reason || data?.error || res.status),
+          );
+        }
+      }
+
     } catch (e: any) { toast.error("فشل الاختبار: " + (e?.message || "")); }
     finally { setTesting(false); }
   };
