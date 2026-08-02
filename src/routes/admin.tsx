@@ -185,20 +185,8 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
         <AnalyticsPanel adminCode={adminCode} />
 
         {/* Orders */}
-        <div className="card-neon rounded-2xl p-5 mb-6">
-          <h2 className="font-black text-lg mb-4">الطلبات</h2>
-          {loading ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">جاري التحميل…</div>
-          ) : orders.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">لا توجد طلبات بعد.</div>
-          ) : (
-            <div className="space-y-3">
-              {orders.map((o) => (
-                <OrderRow key={o.id} order={o} adminCode={adminCode} onChange={fetchOrders} />
-              ))}
-            </div>
-          )}
-        </div>
+        <OrdersPanel orders={orders} loading={loading} adminCode={adminCode} onChange={fetchOrders} />
+
 
         {/* Categories management */}
         <CategoriesManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
