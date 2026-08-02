@@ -25,10 +25,10 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
           const body = await request.json()
           orderId = String((body as any)?.orderId || '')
         } catch {
-          return Response.json({ error: 'invalid_json' }, { status: 400 })
+          return Response.json({ error: 'invalid_json' }, { status: 400, headers: CORS })
         }
         if (!UUID_RE.test(orderId)) {
-          return Response.json({ error: 'invalid_order_id' }, { status: 400 })
+          return Response.json({ error: 'invalid_order_id' }, { status: 400, headers: CORS })
         }
 
         // Primary path: the database sends the WhatsApp message itself (security-definer
@@ -50,9 +50,7 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
         const missing = missingGreenFields(cfg)
         if (missing.length) {
           return Response.json(
-            { success: false, reason: 'whatsapp_not_configured', missing },
-            { status: 200 },
-          )
+            { success: false, reason: 'whatsapp_not_configured', missing }, { status: 200, headers: CORS })
         }
 
 
@@ -85,7 +83,7 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
         }
 
         if (!order) {
-          return Response.json({ error: 'order_not_found' }, { status: 404 })
+          return Response.json({ error: 'order_not_found' }, { status: 404, headers: CORS })
         }
 
         const itemLines = items
@@ -116,9 +114,7 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
           return Response.json({ success: true, id: (r.body as any)?.idMessage })
         } catch (e: any) {
           return Response.json(
-            { success: false, reason: e?.message || 'fetch_failed' },
-            { status: 502 },
-          )
+            { success: false, reason: e?.message || 'fetch_failed' }, { status: 502, headers: CORS })
         }
       },
     },
