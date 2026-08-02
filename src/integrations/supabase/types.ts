@@ -640,6 +640,36 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_log: {
+        Row: {
+          chat_id: string | null
+          created_at: string
+          id: number
+          order_id: string | null
+          reason: string | null
+          request_id: number | null
+          url: string | null
+        }
+        Insert: {
+          chat_id?: string | null
+          created_at?: string
+          id?: number
+          order_id?: string | null
+          reason?: string | null
+          request_id?: number | null
+          url?: string | null
+        }
+        Update: {
+          chat_id?: string | null
+          created_at?: string
+          id?: number
+          order_id?: string | null
+          reason?: string | null
+          request_id?: number | null
+          url?: string | null
+        }
+        Relationships: []
+      }
       whatsapp_notified: {
         Row: {
           created_at: string
@@ -933,6 +963,7 @@ export type Database = {
         }[]
       }
       whatsapp_notify_order: { Args: { _order_id: string }; Returns: Json }
+      whatsapp_test_send: { Args: never; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
