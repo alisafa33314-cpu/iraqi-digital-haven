@@ -185,20 +185,8 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
         <AnalyticsPanel adminCode={adminCode} />
 
         {/* Orders */}
-        <div className="card-neon rounded-2xl p-5 mb-6">
-          <h2 className="font-black text-lg mb-4">الطلبات</h2>
-          {loading ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">جاري التحميل…</div>
-          ) : orders.length === 0 ? (
-            <div className="text-center py-8 text-sm text-muted-foreground">لا توجد طلبات بعد.</div>
-          ) : (
-            <div className="space-y-3">
-              {orders.map((o) => (
-                <OrderRow key={o.id} order={o} adminCode={adminCode} onChange={fetchOrders} />
-              ))}
-            </div>
-          )}
-        </div>
+        <OrdersPanel orders={orders} loading={loading} adminCode={adminCode} onChange={fetchOrders} />
+
 
         {/* Categories management */}
         <CategoriesManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
@@ -228,6 +216,72 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
         <ChangeCodeManager adminCode={adminCode} onChanged={(c) => useAdmin.getState().setCode(c)} />
       </Container>
     </Layout>
+  );
+}
+
+function OrdersPanel({ orders, loading, adminCode, onChange }: { orders: AdminOrder[]; loading: boolean; adminCode: string; onChange: () => void; }) {
+  const [perPage, setPerPage] = useState(5);
+  const [page, setPage] = useState(1);
+  const [collapsed, setCollapsed] = useState(false);
+
+  const totalPages = Math.max(1, Math.ceil(orders.length / perPage));
+  const current = Math.min(page, totalPages);
+  const slice = orders.slice((current - 1) * perPage, current * perPage);
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="font-black text-lg">الطلبات <span className="text-xs text-muted-foreground font-bold">({orders.length})</span></h2>
+        <div className="flex items-center gap-2">
+          <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+            className="bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs font-bold">
+            <option value={5}>5 لكل صفحة</option>
+            <option value={10}>10 لكل صفحة</option>
+            <option value={20}>20 لكل صفحة</option>
+          </select>
+          <button onClick={() => setCollapsed((v) => !v)}
+            className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border font-bold">
+            {collapsed ? "إظهار الطلبات" : "طي الطلبات"}
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">جاري التحميل…</div>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">لا توجد طلبات بعد.</div>
+      ) : collapsed ? (
+        <div className="text-center py-4 text-xs text-muted-foreground">الطلبات مطوية — اضغط «إظهار الطلبات» لعرضها.</div>
+      ) : (
+        <>
+          <div className="space-y-3">
+            {slice.map((o) => (
+              <OrderRow key={o.id} order={o} adminCode={adminCode} onChange={onChange} />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center justify-center gap-2">
+              <button onClick={() => setPage(current - 1)} disabled={current === 1}
+                className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border font-bold disabled:opacity-40">
+                السابق
+              </button>
+              {pages.map((p) => (
+                <button key={p} onClick={() => setPage(p)}
+                  className={`text-xs w-8 h-8 rounded-lg border font-bold ${p === current ? "bg-primary text-primary-foreground border-primary" : "bg-surface-2 border-border"}`}>
+                  {p}
+                </button>
+              ))}
+              <button onClick={() => setPage(current + 1)} disabled={current === totalPages}
+                className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border font-bold disabled:opacity-40">
+                التالي
+              </button>
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 
