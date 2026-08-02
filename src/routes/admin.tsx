@@ -1692,6 +1692,22 @@ function WhatsAppManager({ adminCode }: { adminCode: string }) {
     finally { setBusy(false); }
   };
 
+  const testSend = async () => {
+    setTesting(true);
+    try {
+      const res = await fetch("/api/public/whatsapp-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: adminCode }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.success) toast.success("تم إرسال رسالة الاختبار للواتساب ✅");
+      else toast.error("فشل الاختبار: " + (data?.reason || data?.error || res.status));
+    } catch (e: any) { toast.error("فشل الاختبار: " + (e?.message || "")); }
+    finally { setTesting(false); }
+  };
+
+
   return (
     <div className="card-neon rounded-2xl p-5 mb-6">
       <h2 className="font-black text-lg mb-1 flex items-center gap-2">🟢 إشعارات واتساب للمشرف (Green API)</h2>
