@@ -656,6 +656,8 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
     old_price: p.oldPrice != null ? String(p.oldPrice) : "",
     stock: p.stock != null ? String(p.stock) : "0",
     image_url: p.image, category_slug: p.categorySlug, is_active: p.inStock,
+    activation_instructions: p.activationInstructions || "",
+    activation_images: p.activationImages || [],
   });
 
   const remove = async (id: string, name: string) => {
