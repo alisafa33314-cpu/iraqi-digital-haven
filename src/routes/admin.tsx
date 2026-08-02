@@ -795,6 +795,15 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
           <Field label="صورة المنتج">
             <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="products" />
           </Field>
+          <Field label="خطوات التفعيل (تُرسل للزبون بعد الشراء)">
+            <textarea value={f.activation_instructions}
+              onChange={(e) => setF({ ...f, activation_instructions: e.target.value })}
+              rows={5} className={inputCls} placeholder={"1. افتح التطبيق\n2. اضغط تسجيل الدخول\n3. أدخل البيانات المرسلة"} />
+          </Field>
+          <Field label="صور شرح التفعيل">
+            <MultiImagePicker value={f.activation_images}
+              onChange={(urls) => setF({ ...f, activation_images: urls })} folder="activation" />
+          </Field>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={f.is_active} onChange={(e) => setF({ ...f, is_active: e.target.checked })} className="accent-primary" />
             متوفر (يظهر للزبائن)
