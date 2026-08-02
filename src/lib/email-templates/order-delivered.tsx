@@ -157,3 +157,22 @@ const hr = { borderColor: '#e5e7eb', margin: '20px 0' }
 const muted = { fontSize: '12px', color: '#6b7280', textAlign: 'right' as const }
 
 export default Email
+
+const sectionTitle = {
+  fontSize: '15px',
+  fontWeight: 'bold' as const,
+  color: '#e11d2f',
+  margin: '0 0 8px',
+  textAlign: 'right' as const,
+}
+const stepsText = {
+  fontSize: '14px',
+  color: '#111827',
+  whiteSpace: 'pre-wrap' as const,
+  lineHeight: '1.9',
+  textAlign: 'right' as const,
+  backgroundColor: '#f9fafb',
+  border: '1px solid #e5e7eb',
+  borderRadius: '8px',
+  padding: '12px',
+}
