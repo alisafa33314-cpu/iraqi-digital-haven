@@ -212,6 +212,11 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
         {/* Promo banner */}
         <PromoManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
 
+        {/* WhatsApp (Green API) admin notifications */}
+        <WhatsAppManager adminCode={adminCode} />
+
+
+
         {/* Change admin code */}
         <ChangeCodeManager adminCode={adminCode} onChanged={(c) => useAdmin.getState().setCode(c)} />
       </Container>
