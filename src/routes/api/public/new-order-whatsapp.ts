@@ -2,10 +2,19 @@ import { createFileRoute } from '@tanstack/react-router'
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '86400',
+}
+
 export const Route = createFileRoute('/api/public/new-order-whatsapp')({
   server: {
     handlers: {
+      OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
+
         const { serverSupabase, resolveGreenConfig, sendWhatsApp, fmtIQD, missingGreenFields } =
           await import('@/lib/whatsapp.server')
 
