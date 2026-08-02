@@ -6,7 +6,7 @@ import { useCatalog } from "@/lib/catalog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Upload, Check, Copy } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { cloud as supabase } from "@/lib/cloud-client";
 import { uploadImage } from "@/lib/upload";
 import { notifyAdminNewOrder } from "@/lib/notify-order.functions";
 
