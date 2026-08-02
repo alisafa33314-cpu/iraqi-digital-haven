@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { cloud as supabase } from "@/lib/cloud-client";
 
 const BUCKET = "shop-assets";
 const TEN_YEARS = 60 * 60 * 24 * 365 * 10;

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { supabase } from "@/integrations/supabase/client";
+import { cloud as supabase } from "@/lib/cloud-client";
 import type { Category, PaymentMethod, Product } from "./data";
 
 export type SocialLink = {

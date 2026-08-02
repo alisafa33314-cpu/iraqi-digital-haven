@@ -4,7 +4,7 @@ import { useMyOrderIds, useReviewedOrders, STATUS_AR, STATUS_STYLES } from "@/li
 import { formatIQD } from "@/lib/data";
 import { PackageOpen, KeyRound, Copy, Star, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { cloud as supabase } from "@/lib/cloud-client";
 import { useCatalog } from "@/lib/catalog";
 import { toast } from "sonner";
 
