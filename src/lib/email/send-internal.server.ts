@@ -1,7 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import * as React from 'react'
-import { render } from '@react-email/render'
-import { TEMPLATES } from '@/lib/email-templates/registry'
 
 const SITE_NAME = 'FPI STOR'
 const SENDER_DOMAIN = 'notify.fpistor.com'
@@ -25,6 +22,11 @@ export async function sendTemplateEmailInternal(opts: {
   idempotencyKey?: string
   templateData?: Record<string, any>
 }) {
+  const [{ createElement }, { render }, { TEMPLATES }] = await Promise.all([
+    import('react'),
+    import('@react-email/render'),
+    import('@/lib/email-templates/registry'),
+  ])
   const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!supabaseUrl || !supabaseServiceKey) {
@@ -75,7 +77,7 @@ export async function sendTemplateEmailInternal(opts: {
     return { ok: false as const, error: 'email_suppressed' }
   }
 
-  const element = React.createElement(template.component, opts.templateData || {})
+  const element = createElement(template.component, opts.templateData || {})
   const html = await render(element)
   const plainText = await render(element, { plainText: true })
   const subject =

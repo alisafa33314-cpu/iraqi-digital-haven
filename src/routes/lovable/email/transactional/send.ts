@@ -1,8 +1,5 @@
-import * as React from 'react'
-import { render } from '@react-email/render'
 import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
-import { TEMPLATES } from '@/lib/email-templates/registry'
 
 // Configuration baked in at scaffold time
 const SITE_NAME = "iraqi-digital-haven"
@@ -33,6 +30,11 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const [{ createElement }, { render }, { TEMPLATES }] = await Promise.all([
+          import('react'),
+          import('@react-email/render'),
+          import('@/lib/email-templates/registry'),
+        ])
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
         const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
@@ -252,7 +254,7 @@ export const Route = createFileRoute("/lovable/email/transactional/send")({
         }
 
         // 4. Render React Email template to HTML and plain text
-        const element = React.createElement(template.component, templateData)
+        const element = createElement(template.component, templateData)
         const html = await render(element)
         const plainText = await render(element, { plainText: true })
 

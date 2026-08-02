@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createClient } from '@supabase/supabase-js'
-import { sendTemplateEmailInternal } from '@/lib/email/send-internal.server'
 
 /**
  * Called by the database trigger on public.orders when status becomes
@@ -11,6 +10,7 @@ export const Route = createFileRoute('/api/public/order-status-email')({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { sendTemplateEmailInternal } = await import('@/lib/email/send-internal.server')
         const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
         if (!supabaseUrl || !serviceKey) {
