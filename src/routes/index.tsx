@@ -22,6 +22,9 @@ export const Route = createFileRoute("/")({
 
 
 function Home() {
+  const ready = useCatalog((s) => s.ready);
+  const catalogError = useCatalog((s) => s.error);
+  const refreshCatalog = useCatalog((s) => s.refresh);
   const products = useCatalog((s) => s.products);
   const categories = useCatalog((s) => s.categories);
   const storeImages = useCatalog((s) => s.storeImages);
@@ -93,7 +96,16 @@ function Home() {
       {/* Categories */}
       <section className="py-12">
         <Container>
+          {catalogError && (
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
+              <span>{catalogError}</span>
+              <button type="button" onClick={() => refreshCatalog()} className="font-bold text-primary hover:underline">
+                إعادة المحاولة
+              </button>
+            </div>
+          )}
           <SectionHeader title="أقسام المتجر" subtitle="اختر ما يناسبك من فئات متنوعة" />
+          {!ready && <div className="mb-5 text-sm text-muted-foreground">جاري تحميل المنتجات...</div>}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {categories.map((c) => (
               <Link

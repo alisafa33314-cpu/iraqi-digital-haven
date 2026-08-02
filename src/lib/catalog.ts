@@ -28,6 +28,7 @@ export type ReviewRow = {
 
 type CatalogState = {
   ready: boolean;
+  error: string | null;
   products: Product[];
   categories: Category[];
   paymentMethods: PaymentMethod[];
@@ -40,6 +41,7 @@ type CatalogState = {
 
 export const useCatalog = create<CatalogState>((set) => ({
   ready: false,
+  error: null,
   products: [],
   categories: [],
   paymentMethods: [],
@@ -48,17 +50,23 @@ export const useCatalog = create<CatalogState>((set) => ({
   reviews: [],
   settings: {},
   refresh: async () => {
-    const [pRes, cRes, mRes, sRes, iRes, rRes, stRes] = await Promise.all([
-      supabase.from("products").select("*").order("created_at", { ascending: false }),
-      supabase.from("categories").select("*").order("sort_order", { ascending: true }),
-      supabase.from("payment_methods" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("social_links" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("store_images" as any).select("*").order("sort_order", { ascending: true }),
-      supabase.from("reviews" as any).select("*").order("created_at", { ascending: false }),
-      supabase.from("site_settings" as any).select("key,value"),
-    ]);
+    set({ ready: false, error: null });
 
-    const cats: Category[] = ((cRes.data as any[]) || []).map((c) => ({
+    try {
+      const [pRes, cRes, mRes, sRes, iRes, rRes, stRes] = await Promise.all([
+        supabase.from("products").select("*").eq("is_active", true).order("created_at", { ascending: false }),
+        supabase.from("categories").select("*").order("sort_order", { ascending: true }),
+        supabase.from("payment_methods" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+        supabase.from("social_links" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+        supabase.from("store_images" as any).select("*").order("sort_order", { ascending: true }),
+        supabase.from("reviews" as any).select("*").order("created_at", { ascending: false }),
+        supabase.from("site_settings" as any).select("key,value"),
+      ]);
+
+      const catalogError = [pRes.error, cRes.error].find(Boolean);
+      if (catalogError) throw catalogError;
+
+      const cats: Category[] = ((cRes.data as any[]) || []).map((c) => ({
       slug: c.slug,
       name: c.name,
       icon: c.icon || "📦",
@@ -66,7 +74,7 @@ export const useCatalog = create<CatalogState>((set) => ({
       count: 0,
     }));
 
-    const prods: Product[] = ((pRes.data as any[]) || []).map((p) => ({
+      const prods: Product[] = ((pRes.data as any[]) || []).map((p) => ({
       id: p.id,
       name: p.name,
       description: p.description || "",
@@ -78,9 +86,9 @@ export const useCatalog = create<CatalogState>((set) => ({
       inStock: p.is_active !== false,
     }));
 
-    for (const c of cats) c.count = prods.filter((p) => p.categorySlug === c.slug).length;
+      for (const c of cats) c.count = prods.filter((p) => p.categorySlug === c.slug).length;
 
-    const pms: PaymentMethod[] = ((mRes.data as any[]) || []).map((m) => ({
+      const pms: PaymentMethod[] = ((mRes.data as any[]) || []).map((m) => ({
       id: m.id,
       name: m.name,
       number: m.account_number,
@@ -89,20 +97,24 @@ export const useCatalog = create<CatalogState>((set) => ({
       tax: Number(m.tax) || 0,
     }));
 
-    const socials: SocialLink[] = ((sRes.data as any[]) || []).map((s) => ({
+      const socials: SocialLink[] = ((sRes.data as any[]) || []).map((s) => ({
       id: s.id, name: s.name, image_url: s.image_url, url: s.url, sort_order: s.sort_order || 0,
     }));
 
-    const storeImages: StoreImage[] = ((iRes.data as any[]) || []).map((s) => ({
+      const storeImages: StoreImage[] = ((iRes.data as any[]) || []).map((s) => ({
       id: s.id, image_url: s.image_url, sort_order: s.sort_order || 0,
     }));
 
-    const reviews: ReviewRow[] = ((rRes.data as any[]) || []) as ReviewRow[];
+      const reviews: ReviewRow[] = ((rRes.data as any[]) || []) as ReviewRow[];
 
-    const settings: Record<string, string> = {};
-    for (const row of (stRes.data as any[]) || []) settings[row.key] = row.value;
+      const settings: Record<string, string> = {};
+      for (const row of (stRes.data as any[]) || []) settings[row.key] = row.value;
 
-    set({ ready: true, products: prods, categories: cats, paymentMethods: pms, socials, storeImages, reviews, settings });
+      set({ ready: true, error: null, products: prods, categories: cats, paymentMethods: pms, socials, storeImages, reviews, settings });
+    } catch (error) {
+      console.error("Failed to load storefront catalog", error);
+      set({ ready: true, error: "تعذر تحميل المنتجات حالياً. يرجى تحديث الصفحة." });
+    }
   },
 }));
 
