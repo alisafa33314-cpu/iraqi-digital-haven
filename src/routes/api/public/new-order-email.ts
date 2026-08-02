@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { createClient } from '@supabase/supabase-js'
-import { sendTemplateEmailInternal } from '@/lib/email/send-internal.server'
 
 const ADMIN_EMAIL = 'netflxstor@gmail.com'
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -9,6 +8,7 @@ export const Route = createFileRoute('/api/public/new-order-email')({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { sendTemplateEmailInternal } = await import('@/lib/email/send-internal.server')
         const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
         if (!supabaseUrl || !serviceKey) {

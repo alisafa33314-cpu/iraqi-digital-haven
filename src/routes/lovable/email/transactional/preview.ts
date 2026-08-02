@@ -1,7 +1,4 @@
-import * as React from 'react'
-import { render } from '@react-email/render'
 import { createFileRoute } from '@tanstack/react-router'
-import { TEMPLATES } from '@/lib/email-templates/registry'
 
 // Renders all registered templates with their previewData.
 // Gated by LOVABLE_API_KEY — only the Go API calls this.
@@ -10,6 +7,11 @@ export const Route = createFileRoute("/lovable/email/transactional/preview")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const [{ createElement }, { render }, { TEMPLATES }] = await Promise.all([
+          import('react'),
+          import('@react-email/render'),
+          import('@/lib/email-templates/registry'),
+        ])
         const apiKey = process.env.LOVABLE_API_KEY
         if (!apiKey) {
           return Response.json(
@@ -52,7 +54,7 @@ export const Route = createFileRoute("/lovable/email/transactional/preview")({
 
           try {
             const html = await render(
-              React.createElement(entry.component, entry.previewData)
+              createElement(entry.component, entry.previewData)
             )
             const resolvedSubject =
               typeof entry.subject === 'function'
