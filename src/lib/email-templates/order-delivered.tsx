@@ -13,6 +13,12 @@ import {
 } from '@react-email/components'
 import type { TemplateEntry } from './registry'
 
+interface Activation {
+  name: string
+  steps?: string
+  images?: string[]
+}
+
 interface Props {
   orderId?: string
   customerName?: string
@@ -20,6 +26,7 @@ interface Props {
   images?: string[]
   items?: { name: string; qty: number; price: number }[]
   total?: number
+  activations?: Activation[]
 }
 
 const fmt = (n: number) =>
@@ -32,6 +39,7 @@ const Email = ({
   images = [],
   items = [],
   total,
+  activations = [],
 }: Props) => (
   <Html lang="ar" dir="rtl">
     <Head />
