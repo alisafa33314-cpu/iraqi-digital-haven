@@ -54,7 +54,7 @@ export const useCatalog = create<CatalogState>((set) => ({
 
     try {
       const [pRes, cRes, mRes, sRes, iRes, rRes, stRes] = await Promise.all([
-        supabase.from("products").select("*").eq("is_active", true).order("created_at", { ascending: false }),
+        supabase.from("products").select("*").eq("is_active", true).order("display_order", { ascending: true }).order("created_at", { ascending: false }),
         supabase.from("categories").select("*").order("sort_order", { ascending: true }),
         supabase.from("payment_methods" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
         supabase.from("social_links" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
