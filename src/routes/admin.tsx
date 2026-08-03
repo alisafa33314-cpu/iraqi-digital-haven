@@ -520,12 +520,15 @@ type ProductForm = {
   is_active: boolean;
   activation_instructions: string;
   activation_images: string[];
+  is_featured: boolean;
+  display_order: string;
 };
 
 const emptyProduct: ProductForm = {
   id: null, name: "", description: "", price: "", old_price: "", stock: "0",
   image_url: "", category_slug: "", is_active: true,
   activation_instructions: "", activation_images: [],
+  is_featured: false, display_order: "0",
 };
 
 function MultiImagePicker({ value, onChange, folder }: {
