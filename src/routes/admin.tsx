@@ -720,6 +720,8 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
     image_url: p.image, category_slug: p.categorySlug, is_active: p.inStock,
     activation_instructions: p.activationInstructions || "",
     activation_images: p.activationImages || [],
+    is_featured: p.isFeatured === true,
+    display_order: String(p.displayOrder ?? 0),
   });
 
   const remove = async (id: string, name: string) => {
