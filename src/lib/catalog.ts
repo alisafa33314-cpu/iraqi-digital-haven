@@ -86,6 +86,8 @@ export const useCatalog = create<CatalogState>((set) => ({
       inStock: p.is_active !== false,
       activationInstructions: p.activation_instructions || null,
       activationImages: Array.isArray(p.activation_images) ? p.activation_images : [],
+      isFeatured: p.is_featured === true,
+      displayOrder: p.display_order != null ? Number(p.display_order) : 0,
     }));
 
       for (const c of cats) c.count = prods.filter((p) => p.categorySlug === c.slug).length;
