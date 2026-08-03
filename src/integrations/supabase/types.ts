@@ -938,6 +938,7 @@ export type Database = {
         Returns: string
       }
       auto_deliver_order: { Args: { _order_id: string }; Returns: boolean }
+      can_add_order_items: { Args: { _order_id: string }; Returns: boolean }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
