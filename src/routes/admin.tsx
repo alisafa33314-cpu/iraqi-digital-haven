@@ -1711,7 +1711,7 @@ function WhatsAppManager({ adminCode }: { adminCode: string }) {
         toast.success("تم إرسال رسالة الاختبار للواتساب ✅");
       } else {
         // مسار احتياطي: الإرسال من قاعدة البيانات مباشرة (يعمل من أي نطاق)
-        const { data: dbRes, error: dbErr } = await supabase.rpc("whatsapp_test_send" as any);
+        const { data: dbRes, error: dbErr } = await supabase.rpc("whatsapp_test_send" as any, { _code: adminCode } as any);
         if (!dbErr && (dbRes as any)?.success) {
           toast.success("تم إرسال رسالة الاختبار من قاعدة البيانات ✅");
         } else {

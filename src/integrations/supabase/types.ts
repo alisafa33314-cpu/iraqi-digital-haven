@@ -963,7 +963,7 @@ export type Database = {
         }[]
       }
       whatsapp_notify_order: { Args: { _order_id: string }; Returns: Json }
-      whatsapp_test_send: { Args: never; Returns: Json }
+      whatsapp_test_send: { Args: { _code: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
