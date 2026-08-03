@@ -520,12 +520,15 @@ type ProductForm = {
   is_active: boolean;
   activation_instructions: string;
   activation_images: string[];
+  is_featured: boolean;
+  display_order: string;
 };
 
 const emptyProduct: ProductForm = {
   id: null, name: "", description: "", price: "", old_price: "", stock: "0",
   image_url: "", category_slug: "", is_active: true,
   activation_instructions: "", activation_images: [],
+  is_featured: false, display_order: "0",
 };
 
 function MultiImagePicker({ value, onChange, folder }: {
@@ -717,6 +720,8 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
     image_url: p.image, category_slug: p.categorySlug, is_active: p.inStock,
     activation_instructions: p.activationInstructions || "",
     activation_images: p.activationImages || [],
+    is_featured: p.isFeatured === true,
+    display_order: String(p.displayOrder ?? 0),
   });
 
   const remove = async (id: string, name: string) => {
@@ -797,7 +802,7 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
   const save = async () => {
     if (!f.name.trim() || !f.price) return toast.error("أدخل الاسم والسعر");
     setBusy(true);
-    const { error } = await supabase.rpc("admin_upsert_product_v3" as any, {
+    const { error } = await supabase.rpc("admin_upsert_product_v4" as any, {
       _code: adminCode,
       _id: f.id,
       _name: f.name.trim(),
@@ -810,6 +815,8 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
       _is_active: f.is_active,
       _activation_instructions: f.activation_instructions.trim() || null,
       _activation_images: f.activation_images,
+      _is_featured: f.is_featured,
+      _display_order: Number(f.display_order) || 0,
     });
     setBusy(false);
     if (error) return toast.error("فشل الحفظ: " + error.message);
@@ -863,6 +870,14 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
             <MultiImagePicker value={f.activation_images}
               onChange={(urls) => setF({ ...f, activation_images: urls })} folder="activation" />
           </Field>
+          <Field label="ترتيب الظهور (الأصغر يظهر أولاً)">
+            <input type="number" value={f.display_order}
+              onChange={(e) => setF({ ...f, display_order: e.target.value })} className={inputCls} dir="ltr" />
+          </Field>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={f.is_featured} onChange={(e) => setF({ ...f, is_featured: e.target.checked })} className="accent-primary" />
+            عرض في الصفحة الرئيسية
+          </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={f.is_active} onChange={(e) => setF({ ...f, is_active: e.target.checked })} className="accent-primary" />
             متوفر (يظهر للزبائن)

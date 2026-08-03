@@ -403,9 +403,11 @@ export type Database = {
           category_slug: string | null
           created_at: string
           description: string | null
+          display_order: number
           id: string
           image_url: string | null
           is_active: boolean
+          is_featured: boolean
           name: string
           old_price: number | null
           price: number
@@ -419,9 +421,11 @@ export type Database = {
           category_slug?: string | null
           created_at?: string
           description?: string | null
+          display_order?: number
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_featured?: boolean
           name: string
           old_price?: number | null
           price: number
@@ -435,9 +439,11 @@ export type Database = {
           category_slug?: string | null
           created_at?: string
           description?: string | null
+          display_order?: number
           id?: string
           image_url?: string | null
           is_active?: boolean
+          is_featured?: boolean
           name?: string
           old_price?: number | null
           price?: number
@@ -893,6 +899,25 @@ export type Database = {
           _id: string
           _image_url: string
           _is_active: boolean
+          _name: string
+          _old_price: number
+          _price: number
+          _stock: number
+        }
+        Returns: string
+      }
+      admin_upsert_product_v4: {
+        Args: {
+          _activation_images?: string[]
+          _activation_instructions?: string
+          _category_slug: string
+          _code: string
+          _description: string
+          _display_order?: number
+          _id: string
+          _image_url: string
+          _is_active: boolean
+          _is_featured?: boolean
           _name: string
           _old_price: number
           _price: number
