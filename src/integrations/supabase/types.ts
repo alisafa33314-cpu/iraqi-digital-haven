@@ -709,20 +709,6 @@ export type Database = {
         Returns: undefined
       }
       admin_check_code: { Args: { _code: string }; Returns: undefined }
-      admin_complete_order:
-        | {
-            Args: { _code: string; _info: string; _order_id: string }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              _code: string
-              _image_url: string
-              _info: string
-              _order_id: string
-            }
-            Returns: undefined
-          }
       admin_complete_order_v2: {
         Args: {
           _code: string
@@ -823,30 +809,18 @@ export type Database = {
         }
         Returns: undefined
       }
-      admin_upsert_category:
-        | {
-            Args: {
-              _code: string
-              _icon: string
-              _name: string
-              _new_slug: string
-              _slug: string
-              _sort_order: number
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              _code: string
-              _icon: string
-              _image_url?: string
-              _name: string
-              _new_slug: string
-              _slug: string
-              _sort_order: number
-            }
-            Returns: undefined
-          }
+      admin_upsert_category: {
+        Args: {
+          _code: string
+          _icon: string
+          _image_url?: string
+          _name: string
+          _new_slug: string
+          _slug: string
+          _sort_order: number
+        }
+        Returns: undefined
+      }
       admin_upsert_payment_method: {
         Args: {
           _account_number: string
@@ -861,38 +835,8 @@ export type Database = {
         }
         Returns: string
       }
-      admin_upsert_product: {
-        Args: {
-          _category_slug: string
-          _code: string
-          _description: string
-          _id: string
-          _image_url: string
-          _is_active: boolean
-          _name: string
-          _price: number
-        }
-        Returns: string
-      }
       admin_upsert_product_v2: {
         Args: {
-          _category_slug: string
-          _code: string
-          _description: string
-          _id: string
-          _image_url: string
-          _is_active: boolean
-          _name: string
-          _old_price: number
-          _price: number
-          _stock: number
-        }
-        Returns: string
-      }
-      admin_upsert_product_v3: {
-        Args: {
-          _activation_images?: string[]
-          _activation_instructions?: string
           _category_slug: string
           _code: string
           _description: string
