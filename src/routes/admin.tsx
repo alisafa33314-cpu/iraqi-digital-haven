@@ -870,6 +870,14 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
             <MultiImagePicker value={f.activation_images}
               onChange={(urls) => setF({ ...f, activation_images: urls })} folder="activation" />
           </Field>
+          <Field label="ترتيب الظهور (الأصغر يظهر أولاً)">
+            <input type="number" value={f.display_order}
+              onChange={(e) => setF({ ...f, display_order: e.target.value })} className={inputCls} dir="ltr" />
+          </Field>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={f.is_featured} onChange={(e) => setF({ ...f, is_featured: e.target.checked })} className="accent-primary" />
+            عرض في الصفحة الرئيسية
+          </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={f.is_active} onChange={(e) => setF({ ...f, is_active: e.target.checked })} className="accent-primary" />
             متوفر (يظهر للزبائن)
