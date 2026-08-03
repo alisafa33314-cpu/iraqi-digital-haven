@@ -30,8 +30,9 @@ function Home() {
   const storeImages = useCatalog((s) => s.storeImages);
   const dbReviews = useCatalog((s) => s.reviews);
   const settings = useCatalog((s) => s.settings);
-  const bestsellers = products.slice(0, 8);
-  const newArrivals = products.slice(0, 8);
+  const featured = products.filter((p) => p.isFeatured);
+  const bestsellers = featured.slice(0, 8);
+  const newArrivals = featured.slice(0, 8);
   const allReviews = [
     ...dbReviews.map((r) => ({ name: r.customer_name, text: r.comment || "", rating: r.rating })),
     ...(dbReviews.length === 0 ? staticReviews : []),
