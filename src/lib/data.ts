@@ -20,6 +20,8 @@ export type Product = {
   stock?: number;
   activationInstructions?: string | null;
   activationImages?: string[];
+  isFeatured?: boolean;
+  displayOrder?: number;
   // Optional legacy fields, kept for cart-persisted items
   oldPrice?: number;
   bestseller?: boolean;
