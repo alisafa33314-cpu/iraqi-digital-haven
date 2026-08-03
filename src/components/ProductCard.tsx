@@ -78,18 +78,34 @@ export function ProductCard({ product }: { product: Product }) {
             {product.stock === 0 ? "نفذت الكمية" : `متوفر: ${product.stock}`}
           </div>
         )}
-        <button
-          onClick={() => {
-            if (!product.inStock) return;
-            if (add(product)) toast.success("تمت الإضافة إلى السلة");
-            else toast.error("لا يمكن إضافة أكثر من الكمية المتوفرة");
-          }}
-          disabled={!product.inStock}
-          className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed hover:btn-glow transition"
-        >
-          <ShoppingCart className="w-4 h-4" />
-          أضف للسلة
-        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => {
+              if (!product.inStock) return;
+              if (add(product)) toast.success("تمت الإضافة إلى السلة");
+              else toast.error("لا يمكن إضافة أكثر من الكمية المتوفرة");
+            }}
+            disabled={!product.inStock}
+            className="w-full py-2 rounded-lg bg-surface-2 border border-border text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:border-primary/50 transition"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            أضف للسلة
+          </button>
+          <button
+            onClick={() => {
+              if (!product.inStock) return;
+              clear();
+              if (add(product)) navigate({ to: "/checkout" });
+              else toast.error("لا يمكن إضافة أكثر من الكمية المتوفرة");
+            }}
+            disabled={!product.inStock}
+            className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:btn-glow transition"
+          >
+            <Zap className="w-4 h-4" />
+            شراء الآن
+          </button>
+        </div>
+
       </div>
     </div>
   );
