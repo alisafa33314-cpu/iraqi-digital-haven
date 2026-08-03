@@ -1,14 +1,17 @@
-import { Link } from "@tanstack/react-router";
-import { Star, ShoppingCart } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { Star, ShoppingCart, Zap } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { formatIQD, type Product } from "@/lib/data";
 import { toast } from "sonner";
 
 export function ProductCard({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
+  const clear = useCart((s) => s.clear);
+  const navigate = useNavigate();
   const discount = product.oldPrice
     ? Math.round(100 - (product.price / product.oldPrice) * 100)
     : 0;
+
 
   return (
     <div className="card-neon rounded-2xl overflow-hidden group flex flex-col">
