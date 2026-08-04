@@ -330,8 +330,6 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 
 
 
-        {/* Change admin code */}
-        <ChangeCodeManager adminCode={adminCode} onChanged={(c) => useAdmin.getState().setCode(c)} />
       </Container>
     </Layout>
   );
