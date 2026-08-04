@@ -1699,43 +1699,6 @@ function MarqueeManager({ adminCode, onChange }: { adminCode: string; onChange: 
   );
 }
 
-/* -------------------- Change Admin Code -------------------- */
-
-function ChangeCodeManager({ adminCode, onChanged }: { adminCode: string; onChanged: (c: string) => void }) {
-  const [next, setNext] = useState("");
-  const [confirmNext, setConfirmNext] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const submit = async () => {
-    if (next.length < 4) return toast.error("الرمز الجديد يجب أن يكون 4 خانات فأكثر");
-    if (next !== confirmNext) return toast.error("الرمز غير متطابق");
-    setBusy(true);
-    const { error } = await supabase.rpc("admin_change_code" as any, { _current: adminCode, _new: next });
-    setBusy(false);
-    if (error) return toast.error("فشل: " + error.message);
-    toast.success("تم تغيير رمز الإدارة");
-    onChanged(next);
-    setNext(""); setConfirmNext("");
-  };
-
-  return (
-    <div className="card-neon rounded-2xl p-5 mb-6">
-      <h2 className="font-black text-lg mb-4 flex items-center gap-2"><KeyRound className="w-5 h-5" /> تغيير رمز الإدارة</h2>
-      <div className="space-y-3">
-        <Field label="الرمز الجديد">
-          <input type="password" value={next} onChange={(e) => setNext(e.target.value)} className={inputCls} dir="ltr" />
-        </Field>
-        <Field label="تأكيد الرمز الجديد">
-          <input type="password" value={confirmNext} onChange={(e) => setConfirmNext(e.target.value)} className={inputCls} dir="ltr" />
-        </Field>
-        <button onClick={submit} disabled={busy}
-          className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-          {busy ? "جاري الحفظ…" : "تغيير الرمز"}
-        </button>
-      </div>
-    </div>
-  );
-}
 
 /* -------------------- Promo Banner Manager -------------------- */
 
