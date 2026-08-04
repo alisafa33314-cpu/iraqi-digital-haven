@@ -174,11 +174,7 @@ function CheckoutPage() {
         body: JSON.stringify({ orderId }),
       }).catch(() => {});
 
-      // مسار احتياطي مستقل عن النطاق: قاعدة البيانات ترسل الرسالة بنفسها (idempotent)
-      supabase.rpc("whatsapp_notify_order" as any, { _order_id: orderId } as any).then(
-        () => {},
-        () => {},
-      );
+
 
 
 
