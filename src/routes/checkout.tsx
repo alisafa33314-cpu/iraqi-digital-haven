@@ -60,6 +60,28 @@ function CheckoutPage() {
     }
   };
 
+  // جلب عنوان IP الزبون من خدمة خارجية (احتياطي إن لم يتوفر من السيرفر)
+  const fetchPublicIp = async (): Promise<string | null> => {
+    const sources = [
+      { url: "https://api.ipify.org?format=json", pick: (j: any) => j?.ip },
+      { url: "https://ipapi.co/json/", pick: (j: any) => j?.ip },
+    ];
+    for (const s of sources) {
+      try {
+        const ctl = new AbortController();
+        const t = setTimeout(() => ctl.abort(), 4000);
+        const res = await fetch(s.url, { signal: ctl.signal });
+        clearTimeout(t);
+        if (!res.ok) continue;
+        const ip = s.pick(await res.json());
+        if (typeof ip === "string" && ip.trim()) return ip.trim();
+      } catch {
+        /* try next */
+      }
+    }
+    return null;
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) return toast.error("الرجاء إدخال الاسم ورقم الهاتف");
@@ -67,21 +89,23 @@ function CheckoutPage() {
     if (!proof) return toast.error("الرجاء رفع صورة إثبات الدفع لإكمال الطلب");
     setSubmitting(true);
     try {
-      // التحقق من قائمة المحظورين قبل إرسال الطلب
-      let clientIp: string | null = null;
+      // جلب IP الزبون أولاً ثم التحقق من قائمة المحظورين
+      let clientIp: string | null = await fetchPublicIp();
       try {
         const guard = await checkBlocked({
-          data: { phone: phone.trim(), email: email.trim() || null },
+          data: { phone: phone.trim(), email: email.trim() || null, ip: clientIp },
         });
         if (guard.blocked) {
           toast.error("عذراً، لا يمكنك إتمام الطلب");
           setSubmitting(false);
           return;
         }
-        clientIp = guard.ip;
+        clientIp = guard.ip || clientIp;
       } catch {
-        clientIp = null;
+        /* نتابع مع IP المجلوب من الخدمة الخارجية */
       }
+
+
 
       const orderId = crypto.randomUUID();
 

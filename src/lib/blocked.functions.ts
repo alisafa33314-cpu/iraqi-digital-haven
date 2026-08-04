@@ -21,11 +21,12 @@ function normPhone(p: string): string {
 
 /** يرجع عنوان IP الزائر وحالة الحظر (IP / هاتف / إيميل) */
 export const checkBlocked = createServerFn({ method: "POST" })
-  .inputValidator((d: { phone?: string; email?: string | null }) => d)
+  .inputValidator((d: { phone?: string; email?: string | null; ip?: string | null }) => d)
   .handler(async ({ data }) => {
     const req = getRequest();
-    const ip = clientIp(req);
+    const ip = clientIp(req) || (data.ip || "").trim() || null;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
 
     const { data: rows } = await supabaseAdmin
       .from("blocked_entities")
