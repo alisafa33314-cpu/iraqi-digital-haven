@@ -190,7 +190,12 @@ function CheckoutPage() {
 
       nav({ to: "/orders" });
     } catch (err: any) {
-      toast.error("فشل إرسال الطلب: " + (err?.message || "خطأ"));
+      const msg = String(err?.message || "");
+      if (/row-level security|violates row-level/i.test(msg)) {
+        toast.error("عذراً، لا يمكنك إتمام الطلب");
+      } else {
+        toast.error("فشل إرسال الطلب: " + (msg || "خطأ"));
+      }
     } finally {
       setSubmitting(false);
     }
