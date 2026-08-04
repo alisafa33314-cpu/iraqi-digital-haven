@@ -65,52 +65,159 @@ function ImagePicker({ value, onChange, folder }: {
 }
 
 function AdminPage() {
-  const code = useAdmin((s) => s.code);
-  const setCode = useAdmin((s) => s.setCode);
-  const [input, setInput] = useState("");
+  const [userId, setUserId] = useState<string | null | undefined>(undefined); // undefined = جاري التحقق
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
-  if (!code) {
+  const checkRole = async (uid: string | null) => {
+    if (!uid) { setIsAdmin(null); return; }
+    const { data } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", uid)
+      .eq("role", "admin")
+      .maybeSingle();
+    setIsAdmin(!!data);
+  };
+
+  useEffect(() => {
+    let alive = true;
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!alive) return;
+      const uid = data.session?.user?.id ?? null;
+      setUserId(uid);
+      await checkRole(uid);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
+      const uid = session?.user?.id ?? null;
+      setUserId(uid);
+      await checkRole(uid);
+    });
+    return () => { alive = false; sub.subscription.unsubscribe(); };
+  }, []);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setUserId(null);
+    setIsAdmin(null);
+  };
+
+  if (userId === undefined) {
     return (
       <Layout>
-        <Container className="py-20 max-w-md">
-          <div className="card-neon rounded-3xl p-8 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="text-2xl font-black mb-2">لوحة الإدارة</h1>
-            <p className="text-sm text-muted-foreground mb-6">أدخل رمز الدخول للمتابعة</p>
-            <input type="password" value={input} onChange={(e) => setInput(e.target.value)}
-              placeholder="••••••••"
-              className="w-full text-center bg-surface-2 border border-border rounded-xl px-4 py-3.5 mb-3 focus:border-primary outline-none text-lg tracking-widest"
-              dir="ltr" />
-            <button
-              onClick={async () => {
-                const { data, error } = await supabase.rpc("admin_login" as any, { _code: input });
-                const result = typeof data === "string" ? data : "";
-                if (error || result.startsWith("invalid:") || result.startsWith("locked:")) {
-                  const msg = result || error?.message || "";
-                  const lock = msg.match(/locked:(\d+)/);
-                  const invalid = msg.match(/invalid:(\d+)/);
-                  if (lock) {
-                    const mins = Math.ceil(Number(lock[1]) / 60);
-                    return toast.error(`تم حظرك من تسجيل دخول الإدارة لمدة ${mins} دقيقة`);
-                  }
-                  if (invalid) return toast.error(`رمز غير صحيح — تبقى ${invalid[1]} محاولة`);
-                  return toast.error("رمز غير صحيح");
-                }
-                setCode(input);
-                toast.success("مرحباً بك في لوحة الإدارة");
-              }}
-              className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow">
-              دخول
-            </button>
-          </div>
-        </Container>
+        <Container className="py-20 text-center text-muted-foreground">جاري التحقق…</Container>
       </Layout>
     );
   }
 
-  return <AdminDashboard adminCode={code} onLogout={() => setCode(null)} />;
+  if (!userId) return <AdminLogin />;
+  if (!isAdmin) return <AdminClaim onDone={() => checkRole(userId)} onSignOut={signOut} />;
+
+  return <AdminDashboard adminCode="" onLogout={signOut} />;
+}
+
+function AdminShell({ title, hint, children }: { title: string; hint: string; children: React.ReactNode }) {
+  return (
+    <Layout>
+      <Container className="py-20 max-w-md">
+        <div className="card-neon rounded-3xl p-8">
+          <div className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center mx-auto mb-4">
+            <ShieldCheck className="w-8 h-8 text-primary" />
+          </div>
+          <h1 className="text-2xl font-black mb-2 text-center">{title}</h1>
+          <p className="text-sm text-muted-foreground mb-6 text-center">{hint}</p>
+          {children}
+        </div>
+      </Container>
+    </Layout>
+  );
+}
+
+function AdminLogin() {
+  const [mode, setMode] = useState<"in" | "up">("in");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || password.length < 6) return toast.error("أدخل بريداً صالحاً وكلمة مرور 6 خانات فأكثر");
+    setBusy(true);
+    try {
+      if (mode === "in") {
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (error) throw error;
+        toast.success("تم تسجيل الدخول");
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { emailRedirectTo: window.location.origin + "/admin" },
+        });
+        if (error) throw error;
+        if (!data.session) toast.success("تم إنشاء الحساب — افتح بريدك لتأكيد الحساب ثم سجّل الدخول");
+        else toast.success("تم إنشاء الحساب");
+      }
+    } catch (err: any) {
+      toast.error("فشل: " + (err?.message || ""));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <AdminShell title="لوحة الإدارة" hint="الدخول متاح لحسابات الإدارة فقط">
+      <form onSubmit={submit} className="space-y-3">
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+          placeholder="البريد الإلكتروني" dir="ltr" autoComplete="email"
+          className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 focus:border-primary outline-none" />
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+          placeholder="كلمة المرور" dir="ltr" autoComplete={mode === "in" ? "current-password" : "new-password"}
+          className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 focus:border-primary outline-none" />
+        <button type="submit" disabled={busy}
+          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? "…" : mode === "in" ? "دخول" : "إنشاء حساب الإدارة"}
+        </button>
+        <button type="button" onClick={() => setMode(mode === "in" ? "up" : "in")}
+          className="w-full text-xs text-muted-foreground hover:text-primary">
+          {mode === "in" ? "ليس لديك حساب إدارة؟ إنشاء حساب" : "لدي حساب — تسجيل الدخول"}
+        </button>
+      </form>
+    </AdminShell>
+  );
+}
+
+function AdminClaim({ onDone, onSignOut }: { onDone: () => void; onSignOut: () => void }) {
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const claim = async () => {
+    setBusy(true);
+    const { error } = await supabase.rpc("claim_first_admin" as any, { _code: code });
+    setBusy(false);
+    if (error) {
+      const m = error.message || "";
+      if (m.includes("admin_exists")) return toast.error("توجد حساب إدارة بالفعل — سجّل الدخول به");
+      if (m.includes("bootstrap_closed")) return toast.error("تم إغلاق منح الصلاحية — استخدم حساب الإدارة الحالي");
+      return toast.error("رمز غير صحيح");
+    }
+    toast.success("تم منح صلاحية الإدارة لحسابك");
+    onDone();
+  };
+
+  return (
+    <AdminShell title="لا تملك صلاحية الإدارة" hint="لأول مرة فقط: أدخل رمز الإدارة القديم لتحويل حسابك إلى أدمن">
+      <div className="space-y-3">
+        <input type="password" value={code} onChange={(e) => setCode(e.target.value)}
+          placeholder="رمز الإدارة" dir="ltr"
+          className="w-full text-center bg-surface-2 border border-border rounded-xl px-4 py-3 focus:border-primary outline-none tracking-widest" />
+        <button onClick={claim} disabled={busy}
+          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? "…" : "منح الصلاحية"}
+        </button>
+        <button onClick={onSignOut} className="w-full text-xs text-muted-foreground hover:text-primary">تسجيل الخروج</button>
+      </div>
+    </AdminShell>
+  );
 }
 
 function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: () => void }) {
