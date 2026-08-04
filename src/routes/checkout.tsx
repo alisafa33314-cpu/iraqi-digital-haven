@@ -157,22 +157,8 @@ function CheckoutPage() {
 
 
       // إشعار الأدمن على تلغرام (لا يوقف نجاح الطلب في حال الفشل)
-      notifyAdminNewOrder({
-        data: {
-          orderId,
-          customerName: name.trim(),
-          customerPhone: phone.trim(),
-          customerEmail: email.trim() || null,
-          paymentMethod: selected.name,
-          total,
-          items: items.map((i) => ({
-            name: i.product.name,
-            qty: i.qty,
-            price: i.product.price,
-          })),
-          proofUrl,
-        },
-      }).catch(() => {});
+      notifyAdminNewOrder({ data: { orderId } }).catch(() => {});
+
 
       // إشعار بالإيميل للإدارة بالطلب الجديد (لا يوقف نجاح الطلب في حال الفشل)
       fetch("/api/public/new-order-email", {
