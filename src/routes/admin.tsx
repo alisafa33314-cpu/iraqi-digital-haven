@@ -22,6 +22,8 @@ type AdminOrder = {
   customer_name: string;
   customer_phone: string;
   customer_email: string | null;
+  customer_ip: string | null;
+
   total: number;
   status: string;
   subscription_info: string | null;
