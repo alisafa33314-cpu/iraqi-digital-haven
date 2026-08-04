@@ -22,6 +22,8 @@ type AdminOrder = {
   customer_name: string;
   customer_phone: string;
   customer_email: string | null;
+  customer_ip: string | null;
+
   total: number;
   status: string;
   subscription_info: string | null;
@@ -215,6 +217,10 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
         {/* WhatsApp (Green API) admin notifications */}
         <WhatsAppManager adminCode={adminCode} />
 
+        {/* قائمة المحظورين */}
+        <BlockedManager adminCode={adminCode} />
+
+
 
 
         {/* Change admin code */}
@@ -301,6 +307,8 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [proofOpen, setProofOpen] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
+
 
   const handleUpload = async (files: FileList) => {
     setUploading(true);
@@ -475,13 +483,21 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
             {done && (
               <div className="text-xs text-green-400 font-bold">✓ تم إكمال الطلب</div>
             )}
+            <button onClick={() => setBlockOpen(true)} disabled={busy}
+              className="px-4 py-2 rounded-lg bg-yellow-500/15 border border-yellow-500/40 text-yellow-400 font-bold text-sm disabled:opacity-60">
+              🚫 حظر الزبون
+            </button>
             <button onClick={remove} disabled={busy}
               className="px-4 py-2 rounded-lg bg-destructive/20 border border-destructive text-destructive font-bold text-sm disabled:opacity-60 mr-auto">
               🗑 حذف الطلب
             </button>
           </div>
+          {blockOpen && (
+            <BlockCustomerModal order={order} adminCode={adminCode} onClose={() => setBlockOpen(false)} />
+          )}
         </div>
       )}
+
 
 
       {proofOpen && order.payment_proof_url && (
@@ -1940,3 +1956,168 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function Empty() { return <div className="text-xs text-muted-foreground py-4 text-center">لا توجد بيانات</div>; }
+
+/* -------------------- Blocked entities (حظر الطلبات الوهمية) -------------------- */
+
+type BlockedRow = { id: string; type: string; value: string; reason: string | null; created_at: string };
+
+const BLOCK_TYPE_AR: Record<string, string> = { ip: "عنوان IP", phone: "رقم هاتف", email: "بريد إلكتروني" };
+
+function BlockCustomerModal({ order, adminCode, onClose }: {
+  order: AdminOrder; adminCode: string; onClose: () => void;
+}) {
+  const options = [
+    { type: "ip", value: order.customer_ip || "" },
+    { type: "phone", value: order.customer_phone || "" },
+    { type: "email", value: order.customer_email || "" },
+  ].filter((o) => o.value.trim().length > 0);
+
+  const [picked, setPicked] = useState<string[]>(options.map((o) => o.type));
+  const [reason, setReason] = useState("طلب وهمي");
+  const [busy, setBusy] = useState(false);
+
+  const toggle = (t: string) =>
+    setPicked((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
+
+  const save = async () => {
+    const chosen = options.filter((o) => picked.includes(o.type));
+    if (chosen.length === 0) return toast.error("اختر عنصراً واحداً على الأقل للحظر");
+    setBusy(true);
+    for (const c of chosen) {
+      const { error } = await supabase.rpc("admin_block_entity" as any, {
+        _code: adminCode, _type: c.type, _value: c.value.trim(), _reason: reason.trim() || null,
+      });
+      if (error) {
+        setBusy(false);
+        return toast.error("فشل الحظر: " + error.message);
+      }
+    }
+    setBusy(false);
+    toast.success(`تم حظر ${chosen.length} عنصر`);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="card-neon rounded-2xl p-5 w-full max-w-md space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h3 className="font-black">حظر الزبون</h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-surface-2 border border-border">
+            <X className="w-4 h-4 mx-auto" />
+          </button>
+        </div>
+        {options.length === 0 ? (
+          <div className="text-sm text-muted-foreground">لا توجد بيانات قابلة للحظر في هذا الطلب.</div>
+        ) : (
+          <>
+            <div className="space-y-2">
+              {options.map((o) => (
+                <label key={o.type}
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer text-sm ${
+                    picked.includes(o.type) ? "border-destructive bg-destructive/10" : "border-border bg-surface-2"
+                  }`}>
+                  <input type="checkbox" checked={picked.includes(o.type)} onChange={() => toggle(o.type)} className="accent-primary" />
+                  <span className="text-xs text-muted-foreground w-24">{BLOCK_TYPE_AR[o.type]}</span>
+                  <span className="font-bold" dir="ltr">{o.value}</span>
+                </label>
+              ))}
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">السبب (اختياري)</label>
+              <input value={reason} onChange={(e) => setReason(e.target.value)}
+                className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none" />
+            </div>
+            <button onClick={save} disabled={busy}
+              className="w-full py-2.5 rounded-lg bg-destructive text-white font-bold text-sm disabled:opacity-60">
+              {busy ? "جاري الحظر…" : "🚫 تأكيد الحظر"}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BlockedManager({ adminCode }: { adminCode: string }) {
+  const [rows, setRows] = useState<BlockedRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [type, setType] = useState("ip");
+  const [value, setValue] = useState("");
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const load = async () => {
+    const { data, error } = await supabase.rpc("admin_list_blocked" as any, { _code: adminCode });
+    if (!error) setRows(((data as any[]) || []) as BlockedRow[]);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [adminCode]);
+
+  const add = async () => {
+    if (!value.trim()) return toast.error("أدخل القيمة");
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_block_entity" as any, {
+      _code: adminCode, _type: type, _value: value.trim(), _reason: reason.trim() || null,
+    });
+    setBusy(false);
+    if (error) return toast.error("فشل الحظر: " + error.message);
+    toast.success("تم إضافة الحظر");
+    setValue(""); setReason("");
+    load();
+  };
+
+  const unblock = async (id: string) => {
+    const { error } = await supabase.rpc("admin_unblock_entity" as any, { _code: adminCode, _id: id });
+    if (error) return toast.error("فشل إلغاء الحظر: " + error.message);
+    toast.success("تم إلغاء الحظر");
+    load();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mt-8">
+      <h2 className="font-black text-lg mb-4">🚫 قائمة المحظورين</h2>
+
+      <div className="grid sm:grid-cols-4 gap-2 mb-5">
+        <select value={type} onChange={(e) => setType(e.target.value)}
+          className="bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none">
+          <option value="ip">عنوان IP</option>
+          <option value="phone">رقم هاتف</option>
+          <option value="email">بريد إلكتروني</option>
+        </select>
+        <input value={value} onChange={(e) => setValue(e.target.value)} placeholder="القيمة" dir="ltr"
+          className="bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none" />
+        <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="السبب (اختياري)"
+          className="bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none" />
+        <button onClick={add} disabled={busy}
+          className="py-2 rounded-lg bg-primary text-primary-foreground font-bold text-sm disabled:opacity-60">
+          {busy ? "…" : "إضافة للحظر"}
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="text-sm text-muted-foreground">جاري التحميل…</div>
+      ) : rows.length === 0 ? (
+        <div className="text-sm text-muted-foreground">لا يوجد محظورون حالياً.</div>
+      ) : (
+        <div className="space-y-2">
+          {rows.map((r) => (
+            <div key={r.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-2 border border-border">
+              <div className="min-w-0">
+                <div className="font-bold text-sm" dir="ltr">{r.value}</div>
+                <div className="text-[11px] text-muted-foreground">
+                  {BLOCK_TYPE_AR[r.type] || r.type}
+                  {r.reason ? ` · ${r.reason}` : ""} · {new Date(r.created_at).toLocaleString("ar-IQ")}
+                </div>
+              </div>
+              <button onClick={() => unblock(r.id)}
+                className="shrink-0 px-3 py-1.5 rounded-lg bg-green-500/15 border border-green-500/30 text-green-400 font-bold text-xs">
+                إلغاء الحظر
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

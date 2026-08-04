@@ -9,6 +9,8 @@ import { Upload, Check, Copy } from "lucide-react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { uploadImage } from "@/lib/upload";
 import { notifyAdminNewOrder } from "@/lib/notify-order.functions";
+import { checkBlocked } from "@/lib/blocked.functions";
+
 
 
 
@@ -65,6 +67,22 @@ function CheckoutPage() {
     if (!proof) return toast.error("الرجاء رفع صورة إثبات الدفع لإكمال الطلب");
     setSubmitting(true);
     try {
+      // التحقق من قائمة المحظورين قبل إرسال الطلب
+      let clientIp: string | null = null;
+      try {
+        const guard = await checkBlocked({
+          data: { phone: phone.trim(), email: email.trim() || null },
+        });
+        if (guard.blocked) {
+          toast.error("عذراً، لا يمكنك إتمام الطلب");
+          setSubmitting(false);
+          return;
+        }
+        clientIp = guard.ip;
+      } catch {
+        clientIp = null;
+      }
+
       const orderId = crypto.randomUUID();
 
       let proofUrl: string | null = null;
@@ -81,6 +99,7 @@ function CheckoutPage() {
           customer_name: name.trim(),
           customer_phone: phone.trim(),
           customer_email: email.trim() || null,
+          customer_ip: clientIp,
           delivery_info: `طريقة الدفع: ${selected.name}`,
           payment_method_name: selected.name,
           payment_proof_url: proofUrl,
@@ -88,6 +107,7 @@ function CheckoutPage() {
           status: "pending",
         } as any);
       if (error) throw error;
+
 
       const rows = items.map((i) => ({
         order_id: orderId,

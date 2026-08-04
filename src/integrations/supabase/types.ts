@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocked_entities: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          type: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          type: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          type?: string
+          value?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -184,6 +208,7 @@ export type Database = {
           account_details: string | null
           created_at: string
           customer_email: string | null
+          customer_ip: string | null
           customer_name: string
           customer_notes: string | null
           customer_phone: string
@@ -203,6 +228,7 @@ export type Database = {
           account_details?: string | null
           created_at?: string
           customer_email?: string | null
+          customer_ip?: string | null
           customer_name: string
           customer_notes?: string | null
           customer_phone: string
@@ -222,6 +248,7 @@ export type Database = {
           account_details?: string | null
           created_at?: string
           customer_email?: string | null
+          customer_ip?: string | null
           customer_name?: string
           customer_notes?: string | null
           customer_phone?: string
@@ -704,6 +731,10 @@ export type Database = {
         Args: { _code: string; _image_url: string; _sort_order: number }
         Returns: string
       }
+      admin_block_entity: {
+        Args: { _code: string; _reason: string; _type: string; _value: string }
+        Returns: string
+      }
       admin_change_code: {
         Args: { _current: string; _new: string }
         Returns: undefined
@@ -757,11 +788,22 @@ export type Database = {
           value: string
         }[]
       }
+      admin_list_blocked: {
+        Args: { _code: string }
+        Returns: {
+          created_at: string
+          id: string
+          reason: string
+          type: string
+          value: string
+        }[]
+      }
       admin_list_orders: {
         Args: { _code: string }
         Returns: {
           created_at: string
           customer_email: string
+          customer_ip: string
           customer_name: string
           customer_phone: string
           id: string
@@ -800,6 +842,10 @@ export type Database = {
           product_id: string
           used: number
         }[]
+      }
+      admin_unblock_entity: {
+        Args: { _code: string; _id: string }
+        Returns: undefined
       }
       admin_update_status: {
         Args: {
