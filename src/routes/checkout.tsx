@@ -89,21 +89,24 @@ function CheckoutPage() {
     if (!proof) return toast.error("الرجاء رفع صورة إثبات الدفع لإكمال الطلب");
     setSubmitting(true);
     try {
-      // جلب IP الزبون أولاً ثم التحقق من قائمة المحظورين
+      // التحقق من قائمة المحظورين من جهة السيرفر (إلزامي)
       let clientIp: string | null = await fetchPublicIp();
+      let guard: { ip: string | null; blocked: boolean };
       try {
-        const guard = await checkBlocked({
+        guard = await checkBlocked({
           data: { phone: phone.trim(), email: email.trim() || null, ip: clientIp },
         });
-        if (guard.blocked) {
-          toast.error("عذراً، لا يمكنك إتمام الطلب");
-          setSubmitting(false);
-          return;
-        }
-        clientIp = guard.ip || clientIp;
       } catch {
-        /* نتابع مع IP المجلوب من الخدمة الخارجية */
+        toast.error("تعذّر التحقق من الطلب، حاول مرة أخرى");
+        setSubmitting(false);
+        return;
       }
+      if (guard.blocked) {
+        toast.error("عذراً، لا يمكنك إتمام الطلب");
+        setSubmitting(false);
+        return;
+      }
+      clientIp = guard.ip || clientIp;
 
 
 
