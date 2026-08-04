@@ -217,6 +217,10 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
         {/* WhatsApp (Green API) admin notifications */}
         <WhatsAppManager adminCode={adminCode} />
 
+        {/* قائمة المحظورين */}
+        <BlockedManager adminCode={adminCode} />
+
+
 
 
         {/* Change admin code */}
