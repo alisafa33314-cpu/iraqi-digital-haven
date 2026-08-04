@@ -803,6 +803,7 @@ export type Database = {
         Returns: {
           created_at: string
           customer_email: string
+          customer_ip: string
           customer_name: string
           customer_phone: string
           id: string
