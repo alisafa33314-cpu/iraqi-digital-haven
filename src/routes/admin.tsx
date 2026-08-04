@@ -378,6 +378,22 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
     onChange();
   };
 
+  const quickBlock = async (type: "ip" | "phone") => {
+    const value = type === "ip" ? order.customer_ip : order.customer_phone;
+    if (!value) return;
+    if (!confirm(`حظر ${type === "ip" ? "عنوان IP" : "رقم الهاتف"}: ${value} ؟`)) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_block_entity" as any, {
+      _code: adminCode, _type: type, _value: value,
+      _reason: `حظر سريع من الطلب ${order.id.slice(0, 8).toUpperCase()}`,
+    });
+    setBusy(false);
+    if (error) return toast.error("فشل الحظر: " + error.message);
+    toast.success("تم الحظر بنجاح");
+    onChange();
+  };
+
+
 
   const done = order.status === "completed";
 
@@ -406,6 +422,15 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
             {order.customer_email && (
               <div>الإيميل: <span dir="ltr" className="font-bold">{order.customer_email}</span></div>
             )}
+            <div className="flex items-center gap-2">
+              <span>عنوان IP:</span>
+              <span dir="ltr" className="font-mono font-bold text-primary">{order.customer_ip || "—"}</span>
+              {order.customer_ip && (
+                <button type="button" onClick={() => navigator.clipboard?.writeText(order.customer_ip!).then(() => toast.success("تم نسخ IP"), () => {})}
+                  className="px-2 py-0.5 rounded-md bg-surface-2 border border-border text-[10px] font-bold">نسخ</button>
+              )}
+            </div>
+
             {order.payment_method_name && (
               <div>وسيلة الدفع: <span className="font-bold text-primary">{order.payment_method_name}</span></div>
             )}
@@ -483,15 +508,30 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
             {done && (
               <div className="text-xs text-green-400 font-bold">✓ تم إكمال الطلب</div>
             )}
-            <button onClick={() => setBlockOpen(true)} disabled={busy}
-              className="px-4 py-2 rounded-lg bg-yellow-500/15 border border-yellow-500/40 text-yellow-400 font-bold text-sm disabled:opacity-60">
-              🚫 حظر الزبون
-            </button>
             <button onClick={remove} disabled={busy}
               className="px-4 py-2 rounded-lg bg-destructive/20 border border-destructive text-destructive font-bold text-sm disabled:opacity-60 mr-auto">
               🗑 حذف الطلب
             </button>
           </div>
+
+          {/* حظر الزبون — بنقرة واحدة */}
+          <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/5 p-3 space-y-2">
+            <button onClick={() => setBlockOpen(true)} disabled={busy}
+              className="w-full py-3.5 rounded-xl bg-yellow-500 text-black font-black text-base disabled:opacity-60">
+              🚫 حظر الزبون
+            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => quickBlock("ip")} disabled={busy || !order.customer_ip}
+                className="py-2 rounded-lg bg-surface-2 border border-yellow-500/40 text-yellow-400 font-bold text-xs disabled:opacity-40">
+                حظر IP بنقرة
+              </button>
+              <button onClick={() => quickBlock("phone")} disabled={busy || !order.customer_phone}
+                className="py-2 rounded-lg bg-surface-2 border border-yellow-500/40 text-yellow-400 font-bold text-xs disabled:opacity-40">
+                حظر رقم الهاتف بنقرة
+              </button>
+            </div>
+          </div>
+
           {blockOpen && (
             <BlockCustomerModal order={order} adminCode={adminCode} onClose={() => setBlockOpen(false)} />
           )}
