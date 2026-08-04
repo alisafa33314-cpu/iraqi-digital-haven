@@ -378,6 +378,22 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
     onChange();
   };
 
+  const quickBlock = async (type: "ip" | "phone") => {
+    const value = type === "ip" ? order.customer_ip : order.customer_phone;
+    if (!value) return;
+    if (!confirm(`حظر ${type === "ip" ? "عنوان IP" : "رقم الهاتف"}: ${value} ؟`)) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("admin_block_entity" as any, {
+      _code: adminCode, _type: type, _value: value,
+      _reason: `حظر سريع من الطلب ${order.id.slice(0, 8).toUpperCase()}`,
+    });
+    setBusy(false);
+    if (error) return toast.error("فشل الحظر: " + error.message);
+    toast.success("تم الحظر بنجاح");
+    onChange();
+  };
+
+
 
   const done = order.status === "completed";
 
