@@ -735,10 +735,6 @@ export type Database = {
         Args: { _code: string; _reason: string; _type: string; _value: string }
         Returns: string
       }
-      admin_change_code: {
-        Args: { _current: string; _new: string }
-        Returns: undefined
-      }
       admin_check_code: { Args: { _code: string }; Returns: undefined }
       admin_complete_order_v2: {
         Args: {
@@ -826,7 +822,6 @@ export type Database = {
           is_used: boolean
         }[]
       }
-      admin_login: { Args: { _code: string }; Returns: string }
       admin_reorder_category: {
         Args: { _code: string; _slug: string; _sort_order: number }
         Returns: undefined
@@ -929,6 +924,7 @@ export type Database = {
       }
       auto_deliver_order: { Args: { _order_id: string }; Returns: boolean }
       can_add_order_items: { Args: { _order_id: string }; Returns: boolean }
+      claim_first_admin: { Args: { _code: string }; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -961,6 +957,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_blocked: {
+        Args: { _email: string; _ip: string; _phone: string }
+        Returns: boolean
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -970,6 +970,7 @@ export type Database = {
         }
         Returns: number
       }
+      norm_phone: { Args: { _p: string }; Returns: string }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
