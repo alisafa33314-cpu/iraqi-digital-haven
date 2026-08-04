@@ -492,15 +492,30 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
             {done && (
               <div className="text-xs text-green-400 font-bold">✓ تم إكمال الطلب</div>
             )}
-            <button onClick={() => setBlockOpen(true)} disabled={busy}
-              className="px-4 py-2 rounded-lg bg-yellow-500/15 border border-yellow-500/40 text-yellow-400 font-bold text-sm disabled:opacity-60">
-              🚫 حظر الزبون
-            </button>
             <button onClick={remove} disabled={busy}
               className="px-4 py-2 rounded-lg bg-destructive/20 border border-destructive text-destructive font-bold text-sm disabled:opacity-60 mr-auto">
               🗑 حذف الطلب
             </button>
           </div>
+
+          {/* حظر الزبون — بنقرة واحدة */}
+          <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/5 p-3 space-y-2">
+            <button onClick={() => setBlockOpen(true)} disabled={busy}
+              className="w-full py-3.5 rounded-xl bg-yellow-500 text-black font-black text-base disabled:opacity-60">
+              🚫 حظر الزبون
+            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => quickBlock("ip")} disabled={busy || !order.customer_ip}
+                className="py-2 rounded-lg bg-surface-2 border border-yellow-500/40 text-yellow-400 font-bold text-xs disabled:opacity-40">
+                حظر IP بنقرة
+              </button>
+              <button onClick={() => quickBlock("phone")} disabled={busy || !order.customer_phone}
+                className="py-2 rounded-lg bg-surface-2 border border-yellow-500/40 text-yellow-400 font-bold text-xs disabled:opacity-40">
+                حظر رقم الهاتف بنقرة
+              </button>
+            </div>
+          </div>
+
           {blockOpen && (
             <BlockCustomerModal order={order} adminCode={adminCode} onClose={() => setBlockOpen(false)} />
           )}
