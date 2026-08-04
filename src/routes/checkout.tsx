@@ -60,6 +60,28 @@ function CheckoutPage() {
     }
   };
 
+  // جلب عنوان IP الزبون من خدمة خارجية (احتياطي إن لم يتوفر من السيرفر)
+  const fetchPublicIp = async (): Promise<string | null> => {
+    const sources = [
+      { url: "https://api.ipify.org?format=json", pick: (j: any) => j?.ip },
+      { url: "https://ipapi.co/json/", pick: (j: any) => j?.ip },
+    ];
+    for (const s of sources) {
+      try {
+        const ctl = new AbortController();
+        const t = setTimeout(() => ctl.abort(), 4000);
+        const res = await fetch(s.url, { signal: ctl.signal });
+        clearTimeout(t);
+        if (!res.ok) continue;
+        const ip = s.pick(await res.json());
+        if (typeof ip === "string" && ip.trim()) return ip.trim();
+      } catch {
+        /* try next */
+      }
+    }
+    return null;
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !phone.trim()) return toast.error("الرجاء إدخال الاسم ورقم الهاتف");
@@ -82,6 +104,10 @@ function CheckoutPage() {
       } catch {
         clientIp = null;
       }
+
+      // إن لم يتوفر IP من السيرفر، نجلبه من خدمة خارجية
+      if (!clientIp) clientIp = await fetchPublicIp();
+
 
       const orderId = crypto.randomUUID();
 
