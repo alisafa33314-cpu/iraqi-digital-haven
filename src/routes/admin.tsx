@@ -303,6 +303,8 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
   const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [proofOpen, setProofOpen] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
+
 
   const handleUpload = async (files: FileList) => {
     setUploading(true);
