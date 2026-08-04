@@ -67,16 +67,25 @@ function ImagePicker({ value, onChange, folder }: {
 function AdminPage() {
   const [userId, setUserId] = useState<string | null | undefined>(undefined); // undefined = جاري التحقق
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [checking, setChecking] = useState(true);
 
   const checkRole = async (uid: string | null) => {
-    if (!uid) { setIsAdmin(null); return; }
-    const { data } = await supabase
+    if (!uid) { setIsAdmin(false); setChecking(false); return false; }
+    setChecking(true);
+    const { data, error } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", uid)
       .eq("role", "admin")
       .maybeSingle();
-    setIsAdmin(!!data);
+    setChecking(false);
+    if (error) {
+      // خطأ في القراءة: لا نُسقط الصلاحية الحالية
+      return false;
+    }
+    const ok = !!data;
+    setIsAdmin(ok);
+    return ok;
   };
 
   useEffect(() => {
@@ -87,7 +96,8 @@ function AdminPage() {
       setUserId(uid);
       await checkRole(uid);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") return;
       const uid = session?.user?.id ?? null;
       setUserId(uid);
       await checkRole(uid);
@@ -98,10 +108,10 @@ function AdminPage() {
   const signOut = async () => {
     await supabase.auth.signOut();
     setUserId(null);
-    setIsAdmin(null);
+    setIsAdmin(false);
   };
 
-  if (userId === undefined) {
+  if (userId === undefined || (userId && checking && isAdmin === null)) {
     return (
       <Layout>
         <Container className="py-20 text-center text-muted-foreground">جاري التحقق…</Container>
@@ -114,6 +124,7 @@ function AdminPage() {
 
   return <AdminDashboard adminCode="" onLogout={signOut} />;
 }
+
 
 function AdminShell({ title, hint, children }: { title: string; hint: string; children: React.ReactNode }) {
   return (
