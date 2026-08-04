@@ -406,6 +406,15 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
             {order.customer_email && (
               <div>الإيميل: <span dir="ltr" className="font-bold">{order.customer_email}</span></div>
             )}
+            <div className="flex items-center gap-2">
+              <span>عنوان IP:</span>
+              <span dir="ltr" className="font-mono font-bold text-primary">{order.customer_ip || "—"}</span>
+              {order.customer_ip && (
+                <button type="button" onClick={() => navigator.clipboard?.writeText(order.customer_ip!).then(() => toast.success("تم نسخ IP"), () => {})}
+                  className="px-2 py-0.5 rounded-md bg-surface-2 border border-border text-[10px] font-bold">نسخ</button>
+              )}
+            </div>
+
             {order.payment_method_name && (
               <div>وسيلة الدفع: <span className="font-bold text-primary">{order.payment_method_name}</span></div>
             )}
