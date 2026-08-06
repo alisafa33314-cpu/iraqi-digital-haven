@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useCatalog } from "@/lib/catalog";
 import { useAnalytics } from "@/lib/analytics";
+import { useSiteTheme } from "@/lib/theme";
 
 function NotFoundComponent() {
   return (
@@ -137,6 +138,7 @@ function RootComponent() {
   const refreshCatalog = useCatalog((s) => s.refresh);
   useEffect(() => { refreshCatalog(); }, [refreshCatalog]);
   useAnalytics();
+  useSiteTheme();
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />

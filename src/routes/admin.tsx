@@ -9,6 +9,7 @@ import { cloud as supabase } from "@/lib/cloud-client";
 import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage } from "@/lib/upload";
 import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
+import { readTheme, applyTheme, THEME_KEYS, THEME_LABELS, THEME_DEFAULTS, themeSettingKey } from "@/lib/theme";
 import { adminAnalytics } from "@/lib/track.functions";
 
 
@@ -325,6 +326,9 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 
         {/* Reviews management */}
         <ReviewsManager adminCode={adminCode} reviews={reviews} onChange={refreshCatalog} />
+
+        {/* Theme colors */}
+        <ThemeManager adminCode={adminCode} onChange={refreshCatalog} />
 
         {/* Marquee / announcement bar */}
         <MarqueeManager adminCode={adminCode} onChange={refreshCatalog} />
@@ -1643,6 +1647,68 @@ function ReviewsManager({ adminCode, reviews, onChange }: {
 }
 
 /* -------------------- Marquee Manager -------------------- */
+
+function ThemeManager({ adminCode, onChange }: { adminCode: string; onChange: () => void }) {
+  const settings = useCatalog((s) => s.settings);
+  const [colors, setColors] = useState(() => readTheme(settings));
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => { setColors(readTheme(settings)); }, [settings]);
+  useEffect(() => { applyTheme(colors); }, [colors]);
+
+  const save = async () => {
+    setBusy(true);
+    const results = await Promise.all(
+      THEME_KEYS.map((k) =>
+        supabase.rpc("admin_set_setting" as any, {
+          _code: adminCode, _key: themeSettingKey(k), _value: colors[k],
+        }),
+      ),
+    );
+    setBusy(false);
+    if (results.some((r) => r.error)) return toast.error("فشل حفظ الألوان");
+    toast.success("تم تحديث ألوان الموقع");
+    onChange();
+  };
+
+  const reset = () => setColors({ ...THEME_DEFAULTS });
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-4 flex items-center gap-2">🎨 ألوان وتصميم الموقع</h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-4">
+        {THEME_KEYS.map((k) => (
+          <label key={k} className="flex items-center gap-3 rounded-lg bg-surface-2 border border-border p-3">
+            <input
+              type="color"
+              value={colors[k]}
+              onChange={(e) => setColors({ ...colors, [k]: e.target.value })}
+              className="h-9 w-12 shrink-0 cursor-pointer rounded border border-border bg-transparent"
+              aria-label={THEME_LABELS[k]}
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-bold">{THEME_LABELS[k]}</span>
+              <span className="block text-[11px] text-muted-foreground uppercase">{colors[k]}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={save} disabled={busy}
+          className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? "جاري الحفظ…" : "حفظ التغييرات"}
+        </button>
+        <button onClick={reset} type="button"
+          className="py-2.5 px-4 rounded-lg bg-surface-2 border border-border font-bold">
+          استعادة الافتراضي
+        </button>
+      </div>
+      <p className="mt-3 text-[11px] text-muted-foreground">
+        تُطبَّق الألوان مباشرة على كل صفحات المتجر بعد الحفظ دون إعادة تحميل.
+      </p>
+    </div>
+  );
+}
 
 function MarqueeManager({ adminCode, onChange }: { adminCode: string; onChange: () => void }) {
   const settings = useCatalog((s) => s.settings);
