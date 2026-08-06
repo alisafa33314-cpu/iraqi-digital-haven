@@ -9,6 +9,7 @@ import { cloud as supabase } from "@/lib/cloud-client";
 import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage } from "@/lib/upload";
 import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
+import { readTheme, applyTheme, THEME_KEYS, THEME_LABELS, THEME_DEFAULTS, themeSettingKey } from "@/lib/theme";
 import { adminAnalytics } from "@/lib/track.functions";
 
 
