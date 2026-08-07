@@ -8,6 +8,10 @@ export const Route = createFileRoute('/api/public/new-order-email')({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { isChannelEnabled } = await import('@/lib/notify-settings.server')
+        if (!(await isChannelEnabled('notify_admin_email'))) {
+          return Response.json({ success: false, reason: 'channel_disabled' })
+        }
         const { sendTemplateEmailInternal } = await import('@/lib/email/send-internal.server')
         const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
