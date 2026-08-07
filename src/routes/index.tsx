@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
 
 
 function Home() {
-  const [showAll, setShowAll] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const ready = useCatalog((s) => s.ready);
   const catalogError = useCatalog((s) => s.error);
   const refreshCatalog = useCatalog((s) => s.refresh);
@@ -39,6 +39,7 @@ function Home() {
     ...dbReviews.map((r) => ({ name: r.customer_name, text: r.comment || "", rating: r.rating })),
     ...(dbReviews.length === 0 ? staticReviews : []),
   ].slice(0, 8);
+  const displayedReviews = showAllReviews ? allReviews : allReviews?.slice(0, 3);
 
 
   return (
@@ -193,7 +194,7 @@ function Home() {
         <Container>
           <SectionHeader title="آراء عملائنا" subtitle="ثقتك شرفنا" />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {(showAll ? allReviews : allReviews.slice(0, 3)).map((r, i) => (
+            {displayedReviews.map((r, i) => (
               <div key={i} className="card-neon rounded-2xl p-5">
                 <div className="flex gap-1 mb-3">
                   {Array.from({ length: r.rating }).map((_, j) => (
@@ -212,12 +213,15 @@ function Home() {
               </div>
             ))}
           </div>
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="w-full py-3 mt-4 bg-secondary text-foreground font-bold rounded-lg flex items-center justify-center gap-2 border border-border hover:opacity-90 transition"
-          >
-            {showAll ? "طي التقييمات 🔼" : "عرض باقي التقييمات 🔽"}
-          </button>
+          <div className="text-center mt-6">
+            <button
+              type="button"
+              onClick={() => setShowAllReviews(!showAllReviews)}
+              className="px-6 py-2.5 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 rounded-xl font-medium transition-all duration-200"
+            >
+              {showAllReviews ? "طي التقييمات 🔼" : "عرض باقي التقييمات 🔽"}
+            </button>
+          </div>
         </Container>
       </section>
     </Layout>
