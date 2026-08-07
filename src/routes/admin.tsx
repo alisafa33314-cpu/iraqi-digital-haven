@@ -362,7 +362,32 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
   );
 }
 
+function AdminSection({ title, defaultOpen = false, children }: {
+  title: string; defaultOpen?: boolean; children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="mt-8">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={`w-full card-neon rounded-2xl px-5 py-4 flex items-center justify-between gap-3 text-right hover:border-primary/50 transition ${open ? "rounded-b-none" : ""}`}
+      >
+        <span className="font-black text-lg">{title}</span>
+        <span className="text-primary text-sm">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="animate-in fade-in slide-in-from-top-1 duration-200 [&>div]:mt-0 [&>div]:rounded-t-none [&>div]:border-t-0 [&>div>h2]:hidden">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function OrdersPanel({ orders, loading, adminCode, onChange }: { orders: AdminOrder[]; loading: boolean; adminCode: string; onChange: () => void; }) {
+
   const [perPage, setPerPage] = useState(5);
   const [page, setPage] = useState(1);
   const [collapsed, setCollapsed] = useState(false);
