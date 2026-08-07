@@ -22,6 +22,7 @@ import { Route as CategorySlugRouteImport } from './routes/category.$slug'
 import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as ApiPublicNewOrderEmailRouteImport } from './routes/api/public/new-order-email'
+import { Route as ApiPublicNewOrderTelegramRouteImport } from './routes/api/public/new-order-telegram'
 import { Route as ApiPublicNewOrderWhatsappRouteImport } from './routes/api/public/new-order-whatsapp'
 import { Route as ApiPublicOrderEmailRouteImport } from './routes/api/public/order-email'
 import { Route as ApiPublicOrderStatusEmailRouteImport } from './routes/api/public/order-status-email'
@@ -97,6 +98,12 @@ const ApiPublicNewOrderEmailRoute = ApiPublicNewOrderEmailRouteImport.update({
   path: '/api/public/new-order-email',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicNewOrderTelegramRoute =
+  ApiPublicNewOrderTelegramRouteImport.update({
+    id: '/api/public/new-order-telegram',
+    path: '/api/public/new-order-telegram',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicNewOrderWhatsappRoute =
   ApiPublicNewOrderWhatsappRouteImport.update({
     id: '/api/public/new-order-whatsapp',
@@ -162,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$id': typeof ProductIdRoute
   '/api/public/new-order-email': typeof ApiPublicNewOrderEmailRoute
+  '/api/public/new-order-telegram': typeof ApiPublicNewOrderTelegramRoute
   '/api/public/new-order-whatsapp': typeof ApiPublicNewOrderWhatsappRoute
   '/api/public/order-email': typeof ApiPublicOrderEmailRoute
   '/api/public/order-status-email': typeof ApiPublicOrderStatusEmailRoute
@@ -186,6 +194,7 @@ export interface FileRoutesByTo {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$id': typeof ProductIdRoute
   '/api/public/new-order-email': typeof ApiPublicNewOrderEmailRoute
+  '/api/public/new-order-telegram': typeof ApiPublicNewOrderTelegramRoute
   '/api/public/new-order-whatsapp': typeof ApiPublicNewOrderWhatsappRoute
   '/api/public/order-email': typeof ApiPublicOrderEmailRoute
   '/api/public/order-status-email': typeof ApiPublicOrderStatusEmailRoute
@@ -211,6 +220,7 @@ export interface FileRoutesById {
   '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/product/$id': typeof ProductIdRoute
   '/api/public/new-order-email': typeof ApiPublicNewOrderEmailRoute
+  '/api/public/new-order-telegram': typeof ApiPublicNewOrderTelegramRoute
   '/api/public/new-order-whatsapp': typeof ApiPublicNewOrderWhatsappRoute
   '/api/public/order-email': typeof ApiPublicOrderEmailRoute
   '/api/public/order-status-email': typeof ApiPublicOrderStatusEmailRoute
@@ -237,6 +247,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/product/$id'
     | '/api/public/new-order-email'
+    | '/api/public/new-order-telegram'
     | '/api/public/new-order-whatsapp'
     | '/api/public/order-email'
     | '/api/public/order-status-email'
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/product/$id'
     | '/api/public/new-order-email'
+    | '/api/public/new-order-telegram'
     | '/api/public/new-order-whatsapp'
     | '/api/public/order-email'
     | '/api/public/order-status-email'
@@ -285,6 +297,7 @@ export interface FileRouteTypes {
     | '/email/unsubscribe'
     | '/product/$id'
     | '/api/public/new-order-email'
+    | '/api/public/new-order-telegram'
     | '/api/public/new-order-whatsapp'
     | '/api/public/order-email'
     | '/api/public/order-status-email'
@@ -310,6 +323,7 @@ export interface RootRouteChildren {
   EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   ProductIdRoute: typeof ProductIdRoute
   ApiPublicNewOrderEmailRoute: typeof ApiPublicNewOrderEmailRoute
+  ApiPublicNewOrderTelegramRoute: typeof ApiPublicNewOrderTelegramRoute
   ApiPublicNewOrderWhatsappRoute: typeof ApiPublicNewOrderWhatsappRoute
   ApiPublicOrderEmailRoute: typeof ApiPublicOrderEmailRoute
   ApiPublicOrderStatusEmailRoute: typeof ApiPublicOrderStatusEmailRoute
@@ -414,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNewOrderEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/new-order-telegram': {
+      id: '/api/public/new-order-telegram'
+      path: '/api/public/new-order-telegram'
+      fullPath: '/api/public/new-order-telegram'
+      preLoaderRoute: typeof ApiPublicNewOrderTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/new-order-whatsapp': {
       id: '/api/public/new-order-whatsapp'
       path: '/api/public/new-order-whatsapp'
@@ -494,6 +515,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   ProductIdRoute: ProductIdRoute,
   ApiPublicNewOrderEmailRoute: ApiPublicNewOrderEmailRoute,
+  ApiPublicNewOrderTelegramRoute: ApiPublicNewOrderTelegramRoute,
   ApiPublicNewOrderWhatsappRoute: ApiPublicNewOrderWhatsappRoute,
   ApiPublicOrderEmailRoute: ApiPublicOrderEmailRoute,
   ApiPublicOrderStatusEmailRoute: ApiPublicOrderStatusEmailRoute,
