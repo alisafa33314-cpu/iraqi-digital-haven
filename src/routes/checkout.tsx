@@ -194,16 +194,28 @@ function CheckoutPage() {
         }
       };
 
+      // تليجرام: عبر مسار HTTP عام (يعمل على Vercel) وإن فشل نجرّب دالة الخادم كخطة بديلة.
       const notifyTelegram = async () => {
+        try {
+          const res = await fetch("/api/public/new-order-telegram", notifyBody);
+          const text = await res.text().catch(() => "");
+          if (res.ok && !/"success":false/.test(text)) {
+            console.info(`[notify:telegram] ok — ${text}`);
+            return;
+          }
+          console.error(`[notify:telegram] route failed HTTP ${res.status} — ${text}`);
+        } catch (e: any) {
+          console.error(`[notify:telegram] route threw — ${e?.message || e}`);
+        }
         try {
           const res: any = await notifyAdminNewOrder({ data: { orderId } });
           if (res?.ok === false) {
-            console.error(`[notify:telegram] failed — ${JSON.stringify(res)}`);
+            console.error(`[notify:telegram] fallback failed — ${JSON.stringify(res)}`);
           } else {
-            console.info(`[notify:telegram] ok — ${JSON.stringify(res ?? {})}`);
+            console.info(`[notify:telegram] fallback ok — ${JSON.stringify(res ?? {})}`);
           }
         } catch (e: any) {
-          console.error(`[notify:telegram] threw — ${e?.message || e}`);
+          console.error(`[notify:telegram] fallback threw — ${e?.message || e}`);
         }
       };
 
@@ -212,6 +224,7 @@ function CheckoutPage() {
         postNotify("admin-email", "/api/public/new-order-email"),
         postNotify("whatsapp", "/api/public/new-order-whatsapp"),
       ]);
+
 
 
 
