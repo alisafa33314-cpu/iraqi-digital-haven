@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
@@ -22,6 +23,7 @@ export const Route = createFileRoute("/")({
 
 
 function Home() {
+  const [showAll, setShowAll] = useState(false);
   const ready = useCatalog((s) => s.ready);
   const catalogError = useCatalog((s) => s.error);
   const refreshCatalog = useCatalog((s) => s.refresh);
@@ -191,7 +193,7 @@ function Home() {
         <Container>
           <SectionHeader title="آراء عملائنا" subtitle="ثقتك شرفنا" />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {allReviews.map((r, i) => (
+            {(showAll ? allReviews : allReviews.slice(0, 4)).map((r, i) => (
               <div key={i} className="card-neon rounded-2xl p-5">
                 <div className="flex gap-1 mb-3">
                   {Array.from({ length: r.rating }).map((_, j) => (
@@ -210,6 +212,17 @@ function Home() {
               </div>
             ))}
           </div>
+          {allReviews.length > 4 && (
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => setShowAll((v) => !v)}
+                className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold btn-glow"
+              >
+                {showAll ? "طي التقييمات (🔼)" : "عرض باقي التقييمات (🔽)"}
+              </button>
+            </div>
+          )}
         </Container>
       </section>
     </Layout>
