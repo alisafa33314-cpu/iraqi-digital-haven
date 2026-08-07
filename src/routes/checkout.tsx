@@ -160,69 +160,8 @@ function CheckoutPage() {
       addId(orderId);
       clear();
 
-      // إشعارات المشرف — كل قناة في try/catch مستقل حتى لا تُعطّل أي قناة الأخرى
-      // ولا تُعطّل عملية إنشاء الطلب نفسها (الطلب صار مُسجّلاً بنجاح قبل هذه المرحلة).
-      const notifyBody = {
-        method: "POST" as const,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId }),
-        keepalive: true,
-      };
+      console.info(`[notify] order ${orderId} saved — admin notifications dispatched by database trigger`);
 
-      const postNotify = async (label: string, url: string) => {
-        try {
-          const res = await fetch(url, notifyBody);
-          const text = await res.text().catch(() => "");
-          if (!res.ok) {
-            console.error(`[notify:${label}] HTTP ${res.status} — ${text}`);
-            return;
-          }
-          let json: any = null;
-          try {
-            json = text ? JSON.parse(text) : null;
-          } catch {
-            /* الاستجابة ليست JSON */
-          }
-          if (json && json.success === false) {
-            console.error(`[notify:${label}] failed — ${text}`);
-          } else {
-            console.info(`[notify:${label}] ok — ${text}`);
-          }
-        } catch (e: any) {
-          console.error(`[notify:${label}] threw — ${e?.message || e}`);
-        }
-      };
-
-      // تليجرام: عبر مسار HTTP عام (يعمل على Vercel) وإن فشل نجرّب دالة الخادم كخطة بديلة.
-      const notifyTelegram = async () => {
-        try {
-          const res = await fetch("/api/public/new-order-telegram", notifyBody);
-          const text = await res.text().catch(() => "");
-          if (res.ok && !/"success":false/.test(text)) {
-            console.info(`[notify:telegram] ok — ${text}`);
-            return;
-          }
-          console.error(`[notify:telegram] route failed HTTP ${res.status} — ${text}`);
-        } catch (e: any) {
-          console.error(`[notify:telegram] route threw — ${e?.message || e}`);
-        }
-        try {
-          const res: any = await notifyAdminNewOrder({ data: { orderId } });
-          if (res?.ok === false) {
-            console.error(`[notify:telegram] fallback failed — ${JSON.stringify(res)}`);
-          } else {
-            console.info(`[notify:telegram] fallback ok — ${JSON.stringify(res ?? {})}`);
-          }
-        } catch (e: any) {
-          console.error(`[notify:telegram] fallback threw — ${e?.message || e}`);
-        }
-      };
-
-      await Promise.allSettled([
-        notifyTelegram(),
-        postNotify("admin-email", "/api/public/new-order-email"),
-        postNotify("whatsapp", "/api/public/new-order-whatsapp"),
-      ]);
 
 
 
