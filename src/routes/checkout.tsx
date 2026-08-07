@@ -25,16 +25,33 @@ function CheckoutPage() {
   const addId = useMyOrderIds((s) => s.addId);
   const paymentMethods = useCatalog((s) => s.paymentMethods);
 
+  const savedInfo = useCustomerInfo((s) => s.info);
+  const saveInfo = useCustomerInfo((s) => s.save);
+  const clearInfo = useCustomerInfo((s) => s.clearInfo);
+
   const [methodId, setMethodId] = useState<string>("");
   const [proof, setProof] = useState<File | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [autofilled, setAutofilled] = useState(false);
 
   useEffect(() => {
     if (!methodId && paymentMethods[0]) setMethodId(paymentMethods[0].id);
   }, [paymentMethods, methodId]);
+
+  // تعبئة تلقائية من البيانات المحفوظة في المتصفح
+  useEffect(() => {
+    if (!savedInfo) return;
+    if (name || phone || email) return;
+    setName(savedInfo.name || "");
+    setPhone(savedInfo.phone || "");
+    setEmail(savedInfo.email || "");
+    if (savedInfo.name || savedInfo.phone) setAutofilled(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedInfo]);
+
 
   const subtotal = items.reduce((a, i) => a + i.qty * i.product.price, 0);
   const selected = paymentMethods.find((m) => m.id === methodId);
