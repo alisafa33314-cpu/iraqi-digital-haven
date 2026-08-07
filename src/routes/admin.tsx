@@ -353,6 +353,11 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
           <WhatsAppManager adminCode={adminCode} />
         </AdminSection>
 
+        <AdminSection title="✈️ إشعارات التليجرام للمشرف">
+          <TelegramManager adminCode={adminCode} />
+        </AdminSection>
+
+
         <AdminSection title="🚫 قائمة المحظورين">
           <BlockedManager adminCode={adminCode} />
         </AdminSection>
@@ -2120,6 +2125,92 @@ function WhatsAppManager({ adminCode }: { adminCode: string }) {
         <button type="button" onClick={testSend} disabled={testing || loading}
           className="w-full py-2.5 rounded-lg bg-surface-2 border border-primary/40 text-primary font-bold disabled:opacity-60">
           {testing ? "جاري الإرسال…" : "🧪 اختبار إرسال الواتساب"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Telegram Manager -------------------- */
+
+function TelegramManager({ adminCode }: { adminCode: string }) {
+  const [botToken, setBotToken] = useState("");
+  const [chatId, setChatId] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase.rpc("admin_get_private_settings" as any, { _code: adminCode });
+      if (!error && Array.isArray(data)) {
+        for (const row of data as any[]) {
+          if (row.key === "telegram_bot_token") setBotToken(row.value || "");
+          if (row.key === "telegram_chat_id") setChatId(row.value || "");
+        }
+      }
+      setLoading(false);
+    })();
+  }, [adminCode]);
+
+  const save = async () => {
+    setBusy(true);
+    try {
+      const setOne = async (key: string, value: string) => {
+        const { error } = await supabase.rpc("admin_set_setting" as any, { _code: adminCode, _key: key, _value: value });
+        if (error) throw error;
+      };
+      await setOne("telegram_bot_token", botToken.trim());
+      await setOne("telegram_chat_id", chatId.trim());
+      toast.success("تم حفظ إعدادات التليجرام");
+    } catch (e: any) { toast.error("فشل: " + (e?.message || "")); }
+    finally { setBusy(false); }
+  };
+
+  const testSend = async () => {
+    setTesting(true);
+    try {
+      const res = await fetch("/api/public/telegram-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: adminCode, botToken: botToken.trim(), chatId: chatId.trim() }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data?.success) {
+        toast.success("تم إرسال رسالة الاختبار للتليجرام ✅");
+      } else {
+        toast.error(
+          "فشل الاختبار: " +
+            (data?.description || data?.error || data?.reason || (data?.missing || []).join(", ") || res.status),
+        );
+      }
+    } catch (e: any) { toast.error("فشل الاختبار: " + (e?.message || "")); }
+    finally { setTesting(false); }
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-1 flex items-center gap-2">✈️ إشعارات التليجرام للمشرف</h2>
+      <p className="text-xs text-muted-foreground mb-4">
+        احصل على التوكن من @BotFather ومعرّف المحادثة من @userinfobot. حفظها هنا يجعل الإشعارات تعمل على أي استضافة
+        (Vercel أيضاً) دون متغيرات بيئة.
+      </p>
+      <div className="space-y-3">
+        <Field label="Telegram — Bot Token">
+          <input value={botToken} onChange={(e) => setBotToken(e.target.value)} className={inputCls} dir="ltr"
+            placeholder="123456789:AA..." disabled={loading} />
+        </Field>
+        <Field label="Telegram — Chat ID">
+          <input value={chatId} onChange={(e) => setChatId(e.target.value)} className={inputCls} dir="ltr"
+            placeholder="7126623171" disabled={loading} />
+        </Field>
+        <button onClick={save} disabled={busy || loading}
+          className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? "جاري الحفظ…" : "حفظ الإعدادات"}
+        </button>
+        <button type="button" onClick={testSend} disabled={testing || loading}
+          className="w-full py-2.5 rounded-lg bg-surface-2 border border-primary/40 text-primary font-bold disabled:opacity-60">
+          {testing ? "جاري الإرسال…" : "🧪 اختبار إرسال التليجرام"}
         </button>
       </div>
     </div>
