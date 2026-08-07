@@ -90,6 +90,10 @@ export const Route = createFileRoute('/api/public/new-order-telegram')({
             return Response.json({ error: 'order_not_found' }, { status: 404, headers: CORS })
           }
 
+          if (Date.now() - new Date(order.created_at).getTime() > 15 * 60 * 1000) {
+            return Response.json({ success: false, reason: 'order_too_old' }, { status: 409, headers: CORS })
+          }
+
           const shortId = String(order.id).slice(0, 8).toUpperCase()
           const itemsLines = (items || [])
             .map(
@@ -108,7 +112,24 @@ export const Route = createFileRoute('/api/public/new-order-telegram')({
             `<b>المنتجات:</b>\n${itemsLines || '—'}\n\n` +
             `💰 <b>الإجمالي:</b> ${fmtIQD(Number(order.total))}`
 
-          const res = await sendTelegramNotice(cfg, caption, safeHttpUrl(order.payment_proof_url))
+          const rawProof = String(order.payment_proof_url || '').trim()
+          let proofUrl = safeHttpUrl(rawProof)
+          if (!proofUrl && rawProof) {
+            const objectPath = rawProof
+              .replace(/^shop-assets\//, '')
+              .replace(/^\/+/, '')
+            if (objectPath.startsWith('payment-proofs/')) {
+              const { data: signed, error: signError } = await supabase.storage
+                .from('shop-assets')
+                .createSignedUrl(objectPath, 60 * 60)
+              if (signError) console.error('[telegram] payment proof signing failed:', signError.message)
+              proofUrl = safeHttpUrl(signed?.signedUrl)
+            }
+          }
+          console.log('[telegram] payment_proof_url raw:', rawProof || 'null')
+          console.log('[telegram] payment proof public URL:', proofUrl || 'null')
+
+          const res = await sendTelegramNotice(cfg, caption, proofUrl)
           if (!res.ok) {
             console.error('[telegram] order notice failed:', JSON.stringify(res))
             return Response.json({ success: false, reason: res, }, { status: 502, headers: CORS })
