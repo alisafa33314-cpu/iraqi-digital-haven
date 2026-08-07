@@ -102,6 +102,26 @@ export const useReviewedOrders = create<ReviewedState>()(
   ),
 );
 
+// Save customer info for fast re-checkout (per browser)
+export type CustomerInfo = { name: string; phone: string; email: string };
+
+type CustomerState = {
+  info: CustomerInfo | null;
+  save: (i: CustomerInfo) => void;
+  clearInfo: () => void;
+};
+
+export const useCustomerInfo = create<CustomerState>()(
+  persist(
+    (set) => ({
+      info: null,
+      save: (i) => set({ info: i }),
+      clearInfo: () => set({ info: null }),
+    }),
+    { name: "fpi-customer-info" },
+  ),
+);
+
 export const STATUS_AR: Record<string, string> = {
   pending: "قيد التنفيذ",
   processing: "جاري التجهيز",

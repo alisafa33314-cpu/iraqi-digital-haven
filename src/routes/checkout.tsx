@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
-import { useCart, useMyOrderIds } from "@/lib/cart";
+import { useCart, useMyOrderIds, useCustomerInfo } from "@/lib/cart";
 import { formatIQD } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { useEffect, useState } from "react";
@@ -25,16 +25,33 @@ function CheckoutPage() {
   const addId = useMyOrderIds((s) => s.addId);
   const paymentMethods = useCatalog((s) => s.paymentMethods);
 
+  const savedInfo = useCustomerInfo((s) => s.info);
+  const saveInfo = useCustomerInfo((s) => s.save);
+  const clearInfo = useCustomerInfo((s) => s.clearInfo);
+
   const [methodId, setMethodId] = useState<string>("");
   const [proof, setProof] = useState<File | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [autofilled, setAutofilled] = useState(false);
 
   useEffect(() => {
     if (!methodId && paymentMethods[0]) setMethodId(paymentMethods[0].id);
   }, [paymentMethods, methodId]);
+
+  // تعبئة تلقائية من البيانات المحفوظة في المتصفح
+  useEffect(() => {
+    if (!savedInfo) return;
+    if (name || phone || email) return;
+    setName(savedInfo.name || "");
+    setPhone(savedInfo.phone || "");
+    setEmail(savedInfo.email || "");
+    if (savedInfo.name || savedInfo.phone) setAutofilled(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedInfo]);
+
 
   const subtotal = items.reduce((a, i) => a + i.qty * i.product.price, 0);
   const selected = paymentMethods.find((m) => m.id === methodId);
@@ -159,6 +176,7 @@ function CheckoutPage() {
 
       addId(orderId);
       clear();
+      saveInfo({ name: name.trim(), phone: phone.trim(), email: email.trim() });
 
       console.info(`[notify] order ${orderId} saved — admin notifications dispatched by database trigger`);
 
@@ -220,7 +238,19 @@ function CheckoutPage() {
                     placeholder="you@example.com" dir="ltr" />
                 </div>
               </div>
+              {autofilled && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-green-400">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>تم تعبئة بياناتك تلقائياً لتسهيل طلبك</span>
+                  <button type="button"
+                    onClick={() => { clearInfo(); setName(""); setPhone(""); setEmail(""); setAutofilled(false); }}
+                    className="text-[11px] px-2 py-1 rounded-md bg-surface-2 border border-border text-muted-foreground font-bold hover:border-primary/50">
+                    مسح البيانات المحفوظة
+                  </button>
+                </div>
+              )}
             </div>
+
 
             <div className="card-neon rounded-2xl p-5">
               <h2 className="font-black mb-4">اختر طريقة الدفع</h2>
