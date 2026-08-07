@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 function detectDevice(ua: string): string {
   const s = (ua || "").toLowerCase();
@@ -78,12 +79,16 @@ export const trackEvent = createServerFn({ method: "POST" })
   });
 
 export const adminAnalytics = createServerFn({ method: "POST" })
-  .inputValidator((d: { code: string }) => d)
-  .handler(async ({ data }) => {
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { code?: string }) => d)
+  .handler(async ({ context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("unauthorized");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: ok, error: authErr } = await supabaseAdmin.rpc("admin_check_code" as any, { _code: data.code });
-    if (authErr) throw new Error("unauthorized");
-    void ok;
+
     const now = Date.now();
     const since24 = new Date(now - 24 * 3600 * 1000).toISOString();
     const since7d = new Date(now - 7 * 24 * 3600 * 1000).toISOString();
