@@ -176,6 +176,7 @@ function CheckoutPage() {
 
       addId(orderId);
       clear();
+      saveInfo({ name: name.trim(), phone: phone.trim(), email: email.trim() });
 
       console.info(`[notify] order ${orderId} saved — admin notifications dispatched by database trigger`);
 
