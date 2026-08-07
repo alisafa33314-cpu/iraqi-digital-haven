@@ -14,9 +14,9 @@ export const Route = createFileRoute("/category/$slug")({
       { name: "description", content: `تصفح منتجات قسم ${params.slug} في متجر FPI STOR بالدينار العراقي مع تسليم فوري.` },
       { property: "og:title", content: `قسم ${params.slug} — FPI STOR` },
       { property: "og:description", content: `منتجات قسم ${params.slug} بالدينار العراقي.` },
-      { property: "og:url", content: `https://iraqi-digital-haven.lovable.app/category/${params.slug}` },
+      { property: "og:url", content: `https://fpistor.com/category/${params.slug}` },
     ],
-    links: [{ rel: "canonical", href: `https://iraqi-digital-haven.lovable.app/category/${params.slug}` }],
+    links: [{ rel: "canonical", href: `https://fpistor.com/category/${params.slug}` }],
   }),
 });
 
