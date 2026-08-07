@@ -2172,9 +2172,36 @@ function TelegramManager({ adminCode }: { adminCode: string }) {
   const testSend = async () => {
     setTesting(true);
     try {
-      const data: any = await telegramTestSend({
-        data: { botToken: botToken.trim(), chatId: chatId.trim() },
-      });
+      const token = botToken.trim();
+      const chat = chatId.trim();
+
+      // 1) اتصال مباشر بـ Telegram API من المتصفح (لا يحتاج أي متغيرات خادم)
+      if (token && chat) {
+        try {
+          const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: chat,
+              parse_mode: "HTML",
+              text: "🧪 <b>رسالة اختبار — FPI STOR</b>\nإعدادات إشعارات التليجرام تعمل بنجاح ✅",
+            }),
+          });
+          const json: any = await res.json().catch(() => null);
+          if (json?.ok) {
+            toast.success("تم إرسال رسالة الاختبار للتليجرام ✅");
+            return;
+          }
+          console.error("[telegram-test:client]", json);
+          toast.error("فشل الاختبار: " + (json?.description || `HTTP ${res.status}`));
+          return;
+        } catch (err) {
+          console.error("[telegram-test:client] network error, falling back to server", err);
+        }
+      }
+
+      // 2) احتياطي: الإرسال من الخادم بالمفاتيح المحفوظة في الإعدادات
+      const data: any = await telegramTestSend({ data: { botToken: token, chatId: chat } });
       if (data?.ok) {
         toast.success("تم إرسال رسالة الاختبار للتليجرام ✅");
       } else {
