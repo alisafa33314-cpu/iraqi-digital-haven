@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2, ChevronDown, ChevronUp } from "lucide-react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
-import { uploadImage } from "@/lib/upload";
+import { uploadImage, resolveAssetUrl } from "@/lib/upload";
 import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
 import { readTheme, applyTheme, THEME_KEYS, THEME_LABELS, THEME_DEFAULTS, themeSettingKey } from "@/lib/theme";
 import { adminAnalytics } from "@/lib/track.functions";
@@ -709,22 +709,52 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
 
 
       {proofOpen && order.payment_proof_url && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setProofOpen(false)}>
-          <div className="max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between mb-2">
-              <div className="text-white font-bold">إثبات التحويل</div>
-              <button onClick={() => setProofOpen(false)} className="w-8 h-8 rounded-lg bg-white/10 text-white">
-                <X className="w-4 h-4 mx-auto" />
-              </button>
-            </div>
-            <img src={order.payment_proof_url} alt="إثبات التحويل"
-              className="w-full max-h-[80vh] object-contain rounded-xl bg-black" />
-            <a href={order.payment_proof_url} target="_blank" rel="noreferrer"
-              className="mt-2 inline-block text-xs text-primary underline">فتح في نافذة جديدة</a>
-          </div>
-        </div>
+        <ProofModal raw={order.payment_proof_url} onClose={() => setProofOpen(false)} />
       )}
+    </div>
+  );
+}
+
+/* -------------------- Payment proof viewer -------------------- */
+function ProofModal({ raw, onClose }: { raw: string; onClose: () => void }) {
+  const [url, setUrl] = useState<string>("");
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    resolveAssetUrl(raw).then((u) => {
+      if (!alive) return;
+      if (u) setUrl(u); else setFailed(true);
+    });
+    return () => { alive = false; };
+  }, [raw]);
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={onClose}>
+      <div className="max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-between mb-2">
+          <div className="text-white font-bold">إثبات التحويل</div>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/10 text-white">
+            <X className="w-4 h-4 mx-auto" />
+          </button>
+        </div>
+        {failed ? (
+          <div className="p-6 rounded-xl bg-surface-2 border border-border text-sm text-center">
+            تعذّر تحميل صورة إثبات الدفع
+            <div className="mt-2 text-[11px] font-mono text-muted-foreground break-all" dir="ltr">{raw}</div>
+          </div>
+        ) : !url ? (
+          <div className="p-6 rounded-xl bg-surface-2 border border-border text-sm text-center">جاري التحميل…</div>
+        ) : (
+          <>
+            <img src={url} alt="إثبات التحويل" onError={() => setFailed(true)}
+              className="w-full max-h-[80vh] object-contain rounded-xl bg-black" />
+            <a href={url} target="_blank" rel="noreferrer"
+              className="mt-2 inline-block text-xs text-primary underline">فتح في نافذة جديدة</a>
+          </>
+        )}
+      </div>
     </div>
   );
 }

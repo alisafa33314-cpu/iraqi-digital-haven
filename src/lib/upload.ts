@@ -43,3 +43,18 @@ export async function uploadPaymentProof(file: File): Promise<string> {
   }
   return `${BUCKET}/${path}`;
 }
+
+// عرض الأصول الخاصة (إثبات الدفع): إذا كانت القيمة رابطاً كاملاً نستخدمه،
+// وإذا كانت مساراً داخل المخزن نولّد رابطاً موقّعاً (يتطلب صلاحية أدمن).
+export async function resolveAssetUrl(value: string): Promise<string> {
+  const v = (value || "").trim();
+  if (!v) return "";
+  if (/^https?:\/\//i.test(v)) return v;
+  const path = v.replace(/^\/+/, "").replace(new RegExp(`^${BUCKET}/`), "");
+  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 60 * 60);
+  if (error || !data) {
+    console.error("[proof] failed to sign", path, error);
+    return "";
+  }
+  return data.signedUrl;
+}
