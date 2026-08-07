@@ -15,6 +15,11 @@ export const Route = createFileRoute('/api/public/new-order-whatsapp')({
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
 
+        const { isChannelEnabled } = await import('@/lib/notify-settings.server')
+        if (!(await isChannelEnabled('notify_admin_whatsapp'))) {
+          return Response.json({ success: false, reason: 'channel_disabled' }, { headers: CORS })
+        }
+
         const { serverSupabase, resolveGreenConfig, sendWhatsApp, fmtIQD, missingGreenFields } =
           await import('@/lib/whatsapp.server')
 

@@ -345,6 +345,10 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
           <PromoManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
         </AdminSection>
 
+        <AdminSection title="🔔 إعدادات الإشعارات والتنبيهات">
+          <NotificationsManager adminCode={adminCode} onChange={refreshCatalog} />
+        </AdminSection>
+
         <AdminSection title="💬 إشعارات الواتساب للمشرف">
           <WhatsAppManager adminCode={adminCode} />
         </AdminSection>
@@ -1770,6 +1774,88 @@ function ThemeManager({ adminCode, onChange }: { adminCode: string; onChange: ()
       </div>
       <p className="mt-3 text-[11px] text-muted-foreground">
         تُطبَّق الألوان مباشرة على كل صفحات المتجر بعد الحفظ دون إعادة تحميل.
+      </p>
+    </div>
+  );
+}
+
+/* -------------------- Notification Settings Manager -------------------- */
+
+const NOTIFY_KEYS = [
+  {
+    group: "إشعارات الزبون",
+    items: [
+      { key: "notify_customer_email", label: "بريد إلكتروني للزبون عند تحديث حالة الطلب", hint: "يُرسل تفاصيل الاشتراك للزبون عند تسليم الطلب." },
+      { key: "notify_customer_inapp", label: "إشعارات داخل الموقع (صفحة طلباتي)", hint: "تنبيه داخلي فقط عند تغيّر حالة الطلب دون بريد." },
+    ],
+  },
+  {
+    group: "إشعارات الإدارة عند وصول طلب جديد",
+    items: [
+      { key: "notify_admin_whatsapp", label: "واتساب (Green API)", hint: "تنبيه فوري على واتساب المشرف." },
+      { key: "notify_admin_telegram", label: "تليجرام (Telegram Bot)", hint: "تنبيه فوري على قناة/حساب التليجرام." },
+      { key: "notify_admin_email", label: "بريد المشرف الإلكتروني", hint: "ملخص الطلب الجديد على إيميل الإدارة." },
+    ],
+  },
+] as const;
+
+function NotificationsManager({ adminCode, onChange }: { adminCode: string; onChange: () => void }) {
+  const settings = useCatalog((s) => s.settings);
+  const read = (src: Record<string, string>) => {
+    const out: Record<string, boolean> = {};
+    for (const g of NOTIFY_KEYS) for (const it of g.items) out[it.key] = src[it.key] !== "false";
+    return out;
+  };
+  const [flags, setFlags] = useState<Record<string, boolean>>(read(settings));
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => { setFlags(read(settings)); }, [settings]);
+
+  const save = async () => {
+    setBusy(true);
+    let failed = false;
+    for (const [key, value] of Object.entries(flags)) {
+      const { error } = await supabase.rpc("admin_set_setting" as any, {
+        _code: adminCode, _key: key, _value: value ? "true" : "false",
+      });
+      if (error) failed = true;
+    }
+    setBusy(false);
+    if (failed) return toast.error("فشل حفظ بعض الإعدادات");
+    toast.success("تم حفظ إعدادات الإشعارات");
+    onChange();
+  };
+
+  return (
+    <div className="card-neon rounded-2xl p-5 mb-6">
+      <h2 className="font-black text-lg mb-4">🔔 إعدادات الإشعارات والتنبيهات</h2>
+      <div className="space-y-5">
+        {NOTIFY_KEYS.map((g) => (
+          <div key={g.group}>
+            <div className="text-sm font-bold text-primary mb-2">{g.group}</div>
+            <div className="space-y-2">
+              {g.items.map((it) => (
+                <label key={it.key}
+                  className="flex items-start justify-between gap-3 rounded-xl bg-surface-2 border border-border p-3 cursor-pointer hover:border-primary/40 transition">
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold">{it.label}</span>
+                    <span className="block text-[11px] text-muted-foreground mt-0.5">{it.hint}</span>
+                  </span>
+                  <input type="checkbox" className="accent-primary mt-1 w-4 h-4 shrink-0"
+                    checked={!!flags[it.key]}
+                    onChange={(e) => setFlags({ ...flags, [it.key]: e.target.checked })} />
+                </label>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <button onClick={save} disabled={busy}
+        className="mt-4 w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+        {busy ? "جاري الحفظ…" : "حفظ إعدادات الإشعارات"}
+      </button>
+      <p className="mt-3 text-[11px] text-muted-foreground">
+        يفحص الخادم هذه الحالات قبل إرسال أي إشعار، فلا تُستخدم إلا القنوات المفعّلة.
       </p>
     </div>
   );

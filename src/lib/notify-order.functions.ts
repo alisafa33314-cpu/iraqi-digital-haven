@@ -35,6 +35,11 @@ export const notifyAdminNewOrder = createServerFn({ method: "POST" })
     const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
     const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID || "7126623171";
 
+    const { isChannelEnabled } = await import("@/lib/notify-settings.server");
+    if (!(await isChannelEnabled("notify_admin_telegram"))) {
+      return { ok: false, error: "channel_disabled" };
+    }
+
     // All message content comes from the database, never from the caller.
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

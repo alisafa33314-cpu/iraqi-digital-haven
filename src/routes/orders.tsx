@@ -3,7 +3,7 @@ import { Layout, Container } from "@/components/Layout";
 import { useMyOrderIds, useReviewedOrders, STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { formatIQD } from "@/lib/data";
 import { PackageOpen, KeyRound, Copy, Star, X, ListChecks } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { useCatalog } from "@/lib/catalog";
 import { toast } from "sonner";
@@ -32,6 +32,8 @@ function OrdersPage() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [reviewOrder, setReviewOrder] = useState<OrderRow | null>(null);
+  const inAppEnabled = useCatalog((s) => s.settings["notify_customer_inapp"] !== "false");
+  const prevStatuses = useRef<Record<string, string>>({});
 
   const fetchOrders = async () => {
     if (ids.length === 0) {
@@ -41,7 +43,24 @@ function OrdersPage() {
     }
     const { data, error } = await supabase.rpc("get_orders_by_ids" as any, { _ids: ids });
     if (error) toast.error("فشل جلب الطلبات");
-    setOrders(((data as any[]) || []) as OrderRow[]);
+    const rows = ((data as any[]) || []) as OrderRow[];
+
+    // إشعارات داخل الموقع عند تغيّر حالة الطلب (تُفعَّل من لوحة التحكم)
+    if (inAppEnabled) {
+      for (const o of rows) {
+        const prev = prevStatuses.current[o.id];
+        if (prev && prev !== o.status) {
+          toast.info(
+            o.status === "completed"
+              ? `تم تسليم طلبك #${o.id.slice(0, 8).toUpperCase()} — تفقّد تفاصيل الاشتراك`
+              : `تم تحديث حالة طلبك #${o.id.slice(0, 8).toUpperCase()}: ${STATUS_AR[o.status] || o.status}`,
+          );
+        }
+      }
+    }
+    prevStatuses.current = Object.fromEntries(rows.map((o) => [o.id, o.status]));
+
+    setOrders(rows);
     setLoading(false);
   };
 
