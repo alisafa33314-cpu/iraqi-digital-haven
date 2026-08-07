@@ -4,6 +4,7 @@ import { formatIQD } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/lib/cart";
+import { useState } from "react";
 import { ShoppingCart, Shield, Zap, Star } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/product/$id")({
 
 function ProductPage() {
   const { id } = Route.useParams();
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const products = useCatalog((s) => s.products);
   const paymentMethods = useCatalog((s) => s.paymentMethods);
   const allReviews = useCatalog((s) => s.reviews);
