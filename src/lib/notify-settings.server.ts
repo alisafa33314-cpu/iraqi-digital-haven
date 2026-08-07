@@ -7,42 +7,79 @@ export type NotifyChannel =
   | 'notify_admin_telegram'
   | 'notify_admin_email'
 
-/**
- * Reads a notification toggle from site_settings (public, non-sensitive flags).
- * Defaults to enabled when the key was never saved.
- */
-export async function isChannelEnabled(key: NotifyChannel): Promise<boolean> {
+export const NOTIFY_CHANNELS: NotifyChannel[] = [
+  'notify_customer_email',
+  'notify_customer_inapp',
+  'notify_admin_whatsapp',
+  'notify_admin_telegram',
+  'notify_admin_email',
+]
+
+function serverClient() {
   const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+  const service = process.env.SUPABASE_SERVICE_ROLE_KEY
   const anon =
     process.env.SUPABASE_PUBLISHABLE_KEY ||
     process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
     process.env.SUPABASE_ANON_KEY
 
-  if (!url || !anon) return true
+  const key = service || anon
+  if (!url || !key) return null
 
-  try {
-    const client = createClient(url, anon, {
-      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-      global: {
-        fetch: (input, init) => {
-          const headers = new Headers(init?.headers)
-          if (anon.startsWith('sb_') && headers.get('Authorization') === `Bearer ${anon}`) {
-            headers.delete('Authorization')
-          }
-          headers.set('apikey', anon)
-          return fetch(input as any, { ...init, headers })
-        },
+  return createClient(url, key, {
+    auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
+    global: {
+      fetch: (input, init) => {
+        const headers = new Headers(init?.headers)
+        if (key.startsWith('sb_') && headers.get('Authorization') === `Bearer ${key}`) {
+          headers.delete('Authorization')
+        }
+        headers.set('apikey', key)
+        return fetch(input as any, { ...init, headers })
       },
-    })
+    },
+  })
+}
 
-    const { data } = await client
-      .from('site_settings')
-      .select('value')
-      .eq('key', key)
-      .maybeSingle()
+/**
+ * Fetches every notification toggle from site_settings in one round-trip.
+ * A key that was never saved defaults to enabled.
+ */
+export async function getNotifySettings(): Promise<Record<NotifyChannel, boolean>> {
+  const defaults = Object.fromEntries(NOTIFY_CHANNELS.map((k) => [k, true])) as Record<
+    NotifyChannel,
+    boolean
+  >
 
-    return (data as any)?.value !== 'false'
-  } catch {
-    return true
+  const client = serverClient()
+  if (!client) {
+    console.warn('[notify-settings] missing Supabase env; defaulting all channels to enabled')
+    return defaults
   }
+
+  const { data, error } = await client
+    .from('site_settings')
+    .select('key, value')
+    .in('key', NOTIFY_CHANNELS)
+
+  if (error) {
+    console.error('[notify-settings] failed to read settings:', error.message)
+    return defaults
+  }
+
+  const out = { ...defaults }
+  for (const row of (data || []) as { key: string; value: string }[]) {
+    if ((NOTIFY_CHANNELS as string[]).includes(row.key)) {
+      out[row.key as NotifyChannel] = String(row.value).trim().toLowerCase() !== 'false'
+    }
+  }
+  return out
+}
+
+/**
+ * Reads a single notification toggle. Defaults to enabled when never saved.
+ */
+export async function isChannelEnabled(key: NotifyChannel): Promise<boolean> {
+  const settings = await getNotifySettings()
+  return settings[key]
 }
