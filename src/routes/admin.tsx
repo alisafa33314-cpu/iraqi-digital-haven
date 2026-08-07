@@ -2170,23 +2170,21 @@ function TelegramManager({ adminCode }: { adminCode: string }) {
   const testSend = async () => {
     setTesting(true);
     try {
-      const res = await fetch("/api/public/telegram-test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: adminCode, botToken: botToken.trim(), chatId: chatId.trim() }),
+      const data: any = await telegramTestSend({
+        data: { botToken: botToken.trim(), chatId: chatId.trim() },
       });
-      const data = await res.json().catch(() => ({}));
-      if (res.ok && data?.success) {
+      if (data?.ok) {
         toast.success("تم إرسال رسالة الاختبار للتليجرام ✅");
       } else {
         toast.error(
           "فشل الاختبار: " +
-            (data?.description || data?.error || data?.reason || (data?.missing || []).join(", ") || res.status),
+            (data?.description || data?.error || (data?.missing || []).join(", ") || "غير معروف"),
         );
       }
     } catch (e: any) { toast.error("فشل الاختبار: " + (e?.message || "")); }
     finally { setTesting(false); }
   };
+
 
   return (
     <div className="card-neon rounded-2xl p-5 mb-6">
