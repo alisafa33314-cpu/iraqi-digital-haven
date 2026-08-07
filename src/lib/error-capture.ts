@@ -8,9 +8,17 @@ const TTL_MS = 5_000;
 // HTTP adapter. They are not application errors, so never record/report them.
 function isAbort(error: unknown) {
   const name = (error as any)?.name;
-  const msg = String((error as any)?.message ?? "");
-  return name === "AbortError" || /operation was aborted|aborted without reason/i.test(msg);
+  const code = (error as any)?.code;
+  const msg = String((error as any)?.message ?? "").trim();
+  return (
+    name === "AbortError" ||
+    code === "ECONNRESET" ||
+    code === "ERR_STREAM_PREMATURE_CLOSE" ||
+    /^aborted$/i.test(msg) ||
+    /operation was aborted|aborted without reason|socket hang up|premature close/i.test(msg)
+  );
 }
+
 
 function record(error: unknown) {
   if (isAbort(error)) return;
