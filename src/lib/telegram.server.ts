@@ -147,14 +147,23 @@ export async function sendTelegramNotice(
   }
 
   if (photoUrl) {
-    const photo = await telegramCall(cfg, 'sendPhoto', {
-      photo: photoUrl,
-      caption: text,
-      parse_mode: 'HTML',
-    })
-    if (photo.ok) return { ok: true, mode: cfg.mode }
+    console.log('[telegram] extracted payment proof URL:', photoUrl)
+    try {
+      const photo = await telegramCall(cfg, 'sendPhoto', {
+        photo: photoUrl,
+        caption: text,
+        parse_mode: 'HTML',
+      })
+      if (photo.ok) {
+        console.log('[telegram] sendPhoto succeeded')
+        return { ok: true, mode: cfg.mode }
+      }
+      console.error('[telegram] sendPhoto rejected; falling back to sendMessage:', JSON.stringify(photo.body))
+    } catch (error) {
+      console.error('[telegram] sendPhoto threw; falling back to sendMessage:', error)
+    }
     const fallback = await telegramCall(cfg, 'sendMessage', {
-      text: `${text}\n\n🧾 <a href="${escHtml(photoUrl)}">إثبات الدفع</a>`,
+      text: `${text}\n\n🧾 <b>رابط إثبات الدفع:</b>\n${escHtml(photoUrl)}`,
       parse_mode: 'HTML',
       disable_web_page_preview: false,
     })
@@ -167,6 +176,7 @@ export async function sendTelegramNotice(
         }
   }
 
+  console.log('[telegram] extracted payment proof URL: null')
   const msg = await telegramCall(cfg, 'sendMessage', { text, parse_mode: 'HTML' })
   return msg.ok
     ? { ok: true, mode: cfg.mode }
