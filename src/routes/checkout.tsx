@@ -162,23 +162,19 @@ function CheckoutPage() {
       clear();
 
 
-      // إشعار الأدمن على تلغرام (لا يوقف نجاح الطلب في حال الفشل)
-      notifyAdminNewOrder({ data: { orderId } }).catch(() => {});
-
-
-      // إشعار بالإيميل للإدارة بالطلب الجديد (لا يوقف نجاح الطلب في حال الفشل)
-      fetch("/api/public/new-order-email", {
-        method: "POST",
+      // إشعارات المشرف (تلغرام + بريد + واتساب) — ننتظر إرسالها قبل الانتقال
+      // حتى لا يُلغي المتصفح الطلبات عند تغيير الصفحة (AbortError)، مع keepalive.
+      const notifyBody = {
+        method: "POST" as const,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId }),
-      }).catch(() => {});
-
-      // إشعار واتساب للمشرف عبر Green API (لا يوقف نجاح الطلب في حال الفشل)
-      fetch("/api/public/new-order-whatsapp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId }),
-      }).catch(() => {});
+        keepalive: true,
+      };
+      await Promise.allSettled([
+        notifyAdminNewOrder({ data: { orderId } }),
+        fetch("/api/public/new-order-email", notifyBody),
+        fetch("/api/public/new-order-whatsapp", notifyBody),
+      ]);
 
 
 
