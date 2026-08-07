@@ -27,6 +27,7 @@ export async function uploadImage(file: File, folder = "misc"): Promise<string> 
 }
 
 // إثبات الدفع: الزائر يستطيع الرفع فقط، والتوقيع يتم على الخادم.
+// إذا فشل التوقيع (خطأ شبكة/نشر) نُعيد مسار الملف بدل إفشال الطلب بالكامل.
 export async function uploadPaymentProof(file: File): Promise<string> {
   const path = `payment-proofs/${crypto.randomUUID()}.${safeExt(file)}`;
   const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
@@ -34,7 +35,11 @@ export async function uploadPaymentProof(file: File): Promise<string> {
     contentType: file.type || "image/jpeg",
   });
   if (error) throw error;
-  const res = await signPaymentProof({ data: { path } });
-  if (!res?.ok || !res.url) throw new Error(res?.error || "failed to sign");
-  return res.url;
+  try {
+    const res = await signPaymentProof({ data: { path } });
+    if (res?.ok && res.url) return res.url;
+  } catch {
+    /* تجاهل فشل التوقيع */
+  }
+  return `${BUCKET}/${path}`;
 }
