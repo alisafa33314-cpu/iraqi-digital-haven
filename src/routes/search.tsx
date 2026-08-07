@@ -11,9 +11,9 @@ export const Route = createFileRoute("/search")({
       { title: "بحث — FPI STOR" },
       { name: "description", content: "ابحث عن اشتراكات، ألعاب، حسابات وكفت كارد في متجر FPI STOR." },
       { name: "robots", content: "noindex, follow" },
-      { property: "og:url", content: "https://iraqi-digital-haven.lovable.app/search" },
+      { property: "og:url", content: "https://fpistor.com/search" },
     ],
-    links: [{ rel: "canonical", href: "https://iraqi-digital-haven.lovable.app/search" }],
+    links: [{ rel: "canonical", href: "https://fpistor.com/search" }],
   }),
   component: SearchPage,
 });

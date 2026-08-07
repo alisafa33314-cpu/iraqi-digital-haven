@@ -15,9 +15,9 @@ export const Route = createFileRoute("/")({
       { name: "keywords", content: "fpistor, fpistor.com, FPI STOR, متجر اف بي اي, اف بي اي ستور, اشتراكات رقمية" },
       { property: "og:title", content: "FPI STOR | متجر اف بي اي - متجر رقمي عراقي" },
       { property: "og:description", content: "متجر FPI STOR (متجر اف بي اي) لبيع الاشتراكات الرقمية والحسابات والألعاب بأفضل الأسعار في العراق." },
-      { property: "og:url", content: "https://iraqi-digital-haven.lovable.app/" },
+      { property: "og:url", content: "https://fpistor.com/" },
     ],
-    links: [{ rel: "canonical", href: "https://iraqi-digital-haven.lovable.app/" }],
+    links: [{ rel: "canonical", href: "https://fpistor.com/" }],
   }),
   component: Home,
 });

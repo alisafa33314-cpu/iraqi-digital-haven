@@ -19,9 +19,9 @@ export const Route = createFileRoute("/product/$id")({
       { title: `منتج — FPI STOR` },
       { name: "description", content: "اطلب منتجك الرقمي من FPI STOR بالدينار العراقي مع تسليم فوري." },
       { property: "og:type", content: "product" },
-      { property: "og:url", content: `https://iraqi-digital-haven.lovable.app/product/${params.id}` },
+      { property: "og:url", content: `https://fpistor.com/product/${params.id}` },
     ],
-    links: [{ rel: "canonical", href: `https://iraqi-digital-haven.lovable.app/product/${params.id}` }],
+    links: [{ rel: "canonical", href: `https://fpistor.com/product/${params.id}` }],
   }),
 });
 
