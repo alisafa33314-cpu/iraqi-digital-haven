@@ -353,6 +353,11 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
           <WhatsAppManager adminCode={adminCode} />
         </AdminSection>
 
+        <AdminSection title="✈️ إشعارات التليجرام للمشرف">
+          <TelegramManager adminCode={adminCode} />
+        </AdminSection>
+
+
         <AdminSection title="🚫 قائمة المحظورين">
           <BlockedManager adminCode={adminCode} />
         </AdminSection>
