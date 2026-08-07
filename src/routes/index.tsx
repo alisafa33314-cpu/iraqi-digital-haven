@@ -193,7 +193,7 @@ function Home() {
         <Container>
           <SectionHeader title="آراء عملائنا" subtitle="ثقتك شرفنا" />
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {(showAll ? allReviews : allReviews.slice(0, 4)).map((r, i) => (
+            {(showAll ? allReviews : allReviews.slice(0, 3)).map((r, i) => (
               <div key={i} className="card-neon rounded-2xl p-5">
                 <div className="flex gap-1 mb-3">
                   {Array.from({ length: r.rating }).map((_, j) => (
@@ -212,17 +212,12 @@ function Home() {
               </div>
             ))}
           </div>
-          {allReviews.length > 4 && (
-            <div className="mt-6 text-center">
-              <button
-                type="button"
-                onClick={() => setShowAll((v) => !v)}
-                className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold btn-glow"
-              >
-                {showAll ? "طي التقييمات (🔼)" : "عرض باقي التقييمات (🔽)"}
-              </button>
-            </div>
-          )}
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="w-full py-3 mt-4 bg-secondary text-foreground font-bold rounded-lg flex items-center justify-center gap-2 border border-border hover:opacity-90 transition"
+          >
+            {showAll ? "طي التقييمات 🔼" : "عرض باقي التقييمات 🔽"}
+          </button>
         </Container>
       </section>
     </Layout>
