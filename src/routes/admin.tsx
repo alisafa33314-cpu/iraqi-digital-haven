@@ -309,38 +309,50 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
         <OrdersPanel orders={orders} loading={loading} adminCode={adminCode} onChange={fetchOrders} />
 
 
-        {/* Categories management */}
-        <CategoriesManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
+        {/* Collapsible management sections */}
+        <AdminSection title="🗂️ أقسام المتجر">
+          <CategoriesManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
+        </AdminSection>
 
-        {/* Products management */}
-        <ProductsManager adminCode={adminCode} products={products} categories={categories} onChange={refreshCatalog} />
+        <AdminSection title="📦 المنتجات">
+          <ProductsManager adminCode={adminCode} products={products} categories={categories} onChange={refreshCatalog} />
+        </AdminSection>
 
-        {/* Payment methods management */}
-        <PaymentMethodsManager adminCode={adminCode} methods={paymentMethods} onChange={refreshCatalog} />
+        <AdminSection title="💳 طرق الدفع / منصات الدفع">
+          <PaymentMethodsManager adminCode={adminCode} methods={paymentMethods} onChange={refreshCatalog} />
+        </AdminSection>
 
-        {/* Social links management */}
-        <SocialsManager adminCode={adminCode} socials={socials} onChange={refreshCatalog} />
+        <AdminSection title="🔗 روابط التواصل">
+          <SocialsManager adminCode={adminCode} socials={socials} onChange={refreshCatalog} />
+        </AdminSection>
 
-        {/* Store images management */}
-        <StoreImagesManager adminCode={adminCode} images={storeImages} onChange={refreshCatalog} />
+        <AdminSection title="🖼️ صور المتجر">
+          <StoreImagesManager adminCode={adminCode} images={storeImages} onChange={refreshCatalog} />
+        </AdminSection>
 
-        {/* Reviews management */}
+        {/* Reviews management (has its own collapse) */}
         <ReviewsManager adminCode={adminCode} reviews={reviews} onChange={refreshCatalog} />
 
-        {/* Theme colors */}
-        <ThemeManager adminCode={adminCode} onChange={refreshCatalog} />
+        <AdminSection title="🎨 ألوان وتصميم الموقع">
+          <ThemeManager adminCode={adminCode} onChange={refreshCatalog} />
+        </AdminSection>
 
-        {/* Marquee / announcement bar */}
-        <MarqueeManager adminCode={adminCode} onChange={refreshCatalog} />
+        <AdminSection title="📢 الشريط المتحرك">
+          <MarqueeManager adminCode={adminCode} onChange={refreshCatalog} />
+        </AdminSection>
 
-        {/* Promo banner */}
-        <PromoManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
+        <AdminSection title="🏷️ بانر العرض">
+          <PromoManager adminCode={adminCode} categories={categories} onChange={refreshCatalog} />
+        </AdminSection>
 
-        {/* WhatsApp (Green API) admin notifications */}
-        <WhatsAppManager adminCode={adminCode} />
+        <AdminSection title="💬 إشعارات الواتساب للمشرف">
+          <WhatsAppManager adminCode={adminCode} />
+        </AdminSection>
 
-        {/* قائمة المحظورين */}
-        <BlockedManager adminCode={adminCode} />
+        <AdminSection title="🚫 قائمة المحظورين">
+          <BlockedManager adminCode={adminCode} />
+        </AdminSection>
+
 
 
 
@@ -350,7 +362,32 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
   );
 }
 
+function AdminSection({ title, defaultOpen = false, children }: {
+  title: string; defaultOpen?: boolean; children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="mt-8">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className={`w-full card-neon rounded-2xl px-5 py-4 flex items-center justify-between gap-3 text-right hover:border-primary/50 transition ${open ? "rounded-b-none" : ""}`}
+      >
+        <span className="font-black text-lg">{title}</span>
+        <span className="text-primary text-sm">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="animate-in fade-in slide-in-from-top-1 duration-200 [&>div]:mt-0 [&>div]:rounded-t-none [&>div]:border-t-0 [&>div>h2]:hidden">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function OrdersPanel({ orders, loading, adminCode, onChange }: { orders: AdminOrder[]; loading: boolean; adminCode: string; onChange: () => void; }) {
+
   const [perPage, setPerPage] = useState(5);
   const [page, setPage] = useState(1);
   const [collapsed, setCollapsed] = useState(false);
