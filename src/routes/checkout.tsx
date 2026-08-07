@@ -238,7 +238,19 @@ function CheckoutPage() {
                     placeholder="you@example.com" dir="ltr" />
                 </div>
               </div>
+              {autofilled && (
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-green-400">
+                  <Check className="w-3.5 h-3.5" />
+                  <span>تم تعبئة بياناتك تلقائياً لتسهيل طلبك</span>
+                  <button type="button"
+                    onClick={() => { clearInfo(); setName(""); setPhone(""); setEmail(""); setAutofilled(false); }}
+                    className="text-[11px] px-2 py-1 rounded-md bg-surface-2 border border-border text-muted-foreground font-bold hover:border-primary/50">
+                    مسح البيانات المحفوظة
+                  </button>
+                </div>
+              )}
             </div>
+
 
             <div className="card-neon rounded-2xl p-5">
               <h2 className="font-black mb-4">اختر طريقة الدفع</h2>
