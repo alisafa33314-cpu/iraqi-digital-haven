@@ -4,6 +4,7 @@ import { formatIQD } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/lib/cart";
+import { useState } from "react";
 import { ShoppingCart, Shield, Zap, Star } from "lucide-react";
 import { toast } from "sonner";
 
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/product/$id")({
 
 function ProductPage() {
   const { id } = Route.useParams();
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const products = useCatalog((s) => s.products);
   const paymentMethods = useCatalog((s) => s.paymentMethods);
   const allReviews = useCatalog((s) => s.reviews);
@@ -158,22 +160,35 @@ function ProductPage() {
               لا توجد تقييمات لهذا المنتج بعد.
             </div>
           ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              {productReviews.map((r) => (
-                <div key={r.id} className="card-neon rounded-2xl p-4">
-                  <div className="flex gap-1 mb-2">
-                    {Array.from({ length: r.rating }).map((_, j) => (
-                      <Star key={j} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                    ))}
+            <>
+              <div className="grid gap-3 md:grid-cols-2">
+                {(showAllReviews ? productReviews : productReviews.slice(0, 4)).map((r) => (
+                  <div key={r.id} className="card-neon rounded-2xl p-4">
+                    <div className="flex gap-1 mb-2">
+                      {Array.from({ length: r.rating }).map((_, j) => (
+                        <Star key={j} className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                      ))}
+                    </div>
+                    {r.comment && <p className="text-sm text-muted-foreground leading-relaxed mb-3">"{r.comment}"</p>}
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="font-bold">{r.customer_name}</div>
+                      <div className="text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ar-IQ")}</div>
+                    </div>
                   </div>
-                  {r.comment && <p className="text-sm text-muted-foreground leading-relaxed mb-3">"{r.comment}"</p>}
-                  <div className="flex items-center justify-between text-xs">
-                    <div className="font-bold">{r.customer_name}</div>
-                    <div className="text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ar-IQ")}</div>
-                  </div>
+                ))}
+              </div>
+              {productReviews.length > 4 && (
+                <div className="mt-5 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllReviews((v) => !v)}
+                    className="px-6 py-3 rounded-xl bg-surface border border-border font-bold hover:border-primary/50 transition"
+                  >
+                    {showAllReviews ? "طي التقييمات 🔼" : "عرض المزيد من التقييمات 🔽"}
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
 
