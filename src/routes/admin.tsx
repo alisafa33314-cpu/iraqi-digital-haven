@@ -4,7 +4,7 @@ import { formatIQD, type Product, type PaymentMethod, type Category } from "@/li
 import { useCatalog } from "@/lib/catalog";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2 } from "lucide-react";
+import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2, ChevronDown, ChevronUp } from "lucide-react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage } from "@/lib/upload";
@@ -1596,6 +1596,8 @@ function ReviewsManager({ adminCode, reviews, onChange }: {
   adminCode: string; reviews: ReviewRow[]; onChange: () => void;
 }) {
   const products = useCatalog((s) => s.products);
+  const [open, setOpen] = useState(false);
+  const [showAllReviews, setShowAllReviews] = useState(false);
 
   const remove = async (id: string) => {
     if (!confirm("حذف التقييم؟")) return;
@@ -1605,41 +1607,67 @@ function ReviewsManager({ adminCode, reviews, onChange }: {
     onChange();
   };
 
+  const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 3);
+
   return (
     <div className="card-neon rounded-2xl p-5 mb-6">
-      <h2 className="font-black text-lg mb-4 flex items-center gap-2">
-        <Star className="w-5 h-5 text-yellow-500" /> تقييمات الزبائن
-      </h2>
-      {reviews.length === 0 ? (
-        <div className="text-center py-8 text-sm text-muted-foreground">لا توجد تقييمات بعد.</div>
-      ) : (
-        <div className="space-y-2">
-          {reviews.map((r) => {
-            const prod = products.find((p) => p.id === r.product_id);
-            return (
-              <div key={r.id} className="p-3 rounded-xl border border-border">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div>
-                    <div className="flex gap-0.5 mb-1">
-                      {Array.from({ length: r.rating }).map((_, j) => (
-                        <Star key={j} className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
-                      ))}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between gap-2 text-right"
+      >
+        <h2 className="font-black text-lg flex items-center gap-2">
+          <Star className="w-5 h-5 text-yellow-500" /> تقييمات الزبائن
+          <span className="text-xs font-bold text-muted-foreground">({reviews.length})</span>
+        </h2>
+        {open ? <ChevronUp className="w-5 h-5 text-primary" /> : <ChevronDown className="w-5 h-5 text-primary" />}
+      </button>
+
+      {open && (
+        <div className="mt-4">
+          {reviews.length === 0 ? (
+            <div className="text-center py-8 text-sm text-muted-foreground">لا توجد تقييمات بعد.</div>
+          ) : (
+            <>
+              <div className="space-y-2">
+                {displayedReviews.map((r) => {
+                  const prod = products.find((p) => p.id === r.product_id);
+                  return (
+                    <div key={r.id} className="p-3 rounded-xl border border-border">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                          <div className="flex gap-0.5 mb-1">
+                            {Array.from({ length: r.rating }).map((_, j) => (
+                              <Star key={j} className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
+                            ))}
+                          </div>
+                          <div className="font-bold text-sm">{r.customer_name}</div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {new Date(r.created_at).toLocaleString("ar-IQ")}
+                            {prod && <> · <span className="text-primary">{prod.name}</span></>}
+                          </div>
+                        </div>
+                        <button onClick={() => remove(r.id)}
+                          className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive shrink-0">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                      {r.comment && <div className="text-sm text-muted-foreground">"{r.comment}"</div>}
                     </div>
-                    <div className="font-bold text-sm">{r.customer_name}</div>
-                    <div className="text-[11px] text-muted-foreground">
-                      {new Date(r.created_at).toLocaleString("ar-IQ")}
-                      {prod && <> · <span className="text-primary">{prod.name}</span></>}
-                    </div>
-                  </div>
-                  <button onClick={() => remove(r.id)}
-                    className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive shrink-0">
-                    <Trash2 className="w-3.5 h-3.5" />
+                  );
+                })}
+              </div>
+              {reviews.length > 3 && (
+                <div className="text-center mt-4">
+                  <button
+                    onClick={() => setShowAllReviews((v) => !v)}
+                    className="px-6 py-2.5 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 rounded-xl font-medium"
+                  >
+                    {showAllReviews ? "طي التقييمات 🔼" : "عرض باقي التقييمات في اللوحة 🔽"}
                   </button>
                 </div>
-                {r.comment && <div className="text-sm text-muted-foreground">"{r.comment}"</div>}
-              </div>
-            );
-          })}
+              )}
+            </>
+          )}
         </div>
       )}
     </div>
