@@ -10,10 +10,11 @@ import heroImg from "@/assets/hero-gaming.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "FPI STOR — متجر الاشتراكات والألعاب الرقمية في العراق" },
-      { name: "description", content: "متجر FPI STOR: اشتراكات، حسابات، ألعاب، كفت كارد وخدمات رقمية بالدينار العراقي مع تسليم فوري وخدمة 24/7." },
-      { property: "og:title", content: "FPI STOR — متجر الاشتراكات والألعاب الرقمية في العراق" },
-      { property: "og:description", content: "اشتراكات، ألعاب، كفت كارد وخدمات رقمية بالدينار العراقي. تسليم فوري." },
+      { title: "FPI STOR | متجر رقمي عراقي - اشتراكات وحسابات" },
+      { name: "description", content: "متجر FPI STOR لبيع الاشتراكات الرقمية والحسابات والألعاب بأفضل الأسعار في العراق." },
+      { name: "keywords", content: "fpistor, fpistor.com, FPI STOR, متجر اف بي اي, اشتراكات رقمية" },
+      { property: "og:title", content: "FPI STOR | متجر رقمي عراقي - اشتراكات وحسابات" },
+      { property: "og:description", content: "متجر FPI STOR لبيع الاشتراكات الرقمية والحسابات والألعاب بأفضل الأسعار في العراق." },
       { property: "og:url", content: "https://iraqi-digital-haven.lovable.app/" },
     ],
     links: [{ rel: "canonical", href: "https://iraqi-digital-haven.lovable.app/" }],
