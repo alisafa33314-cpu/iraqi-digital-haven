@@ -652,6 +652,21 @@ export type Database = {
         }
         Relationships: []
       }
+      telegram_notified: {
+        Row: {
+          created_at: string
+          order_id: string
+        }
+        Insert: {
+          created_at?: string
+          order_id: string
+        }
+        Update: {
+          created_at?: string
+          order_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -972,6 +987,7 @@ export type Database = {
         Returns: number
       }
       norm_phone: { Args: { _p: string }; Returns: string }
+      notify_enabled: { Args: { _key: string }; Returns: boolean }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
@@ -980,6 +996,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      telegram_notify_order: { Args: { _order_id: string }; Returns: Json }
       whatsapp_notify_order: { Args: { _order_id: string }; Returns: Json }
       whatsapp_test_send: { Args: { _code: string }; Returns: Json }
     }
