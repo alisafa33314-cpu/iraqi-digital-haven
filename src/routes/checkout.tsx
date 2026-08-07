@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Upload, Check, Copy } from "lucide-react";
 import { cloud as supabase } from "@/lib/cloud-client";
-import { uploadImage } from "@/lib/upload";
+import { uploadPaymentProof } from "@/lib/upload";
 import { notifyAdminNewOrder } from "@/lib/notify-order.functions";
 import { checkBlocked } from "@/lib/blocked.functions";
 
@@ -117,7 +117,7 @@ function CheckoutPage() {
 
       let proofUrl: string | null = null;
       try {
-        proofUrl = await uploadImage(proof, "payment-proofs");
+        proofUrl = await uploadPaymentProof(proof);
       } catch (upErr: any) {
         throw new Error("فشل رفع إثبات الدفع: " + (upErr?.message || ""));
       }
