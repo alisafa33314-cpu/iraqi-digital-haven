@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
-import { useCart, useMyOrderIds } from "@/lib/cart";
+import { useCart, useMyOrderIds, useCustomerInfo } from "@/lib/cart";
 import { formatIQD } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { useEffect, useState } from "react";
