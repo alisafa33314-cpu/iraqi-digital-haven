@@ -11,6 +11,8 @@ import { uploadImage } from "@/lib/upload";
 import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
 import { readTheme, applyTheme, THEME_KEYS, THEME_LABELS, THEME_DEFAULTS, themeSettingKey } from "@/lib/theme";
 import { adminAnalytics } from "@/lib/track.functions";
+import { telegramTestSend } from "@/lib/telegram-test.functions";
+
 
 
 export const Route = createFileRoute("/admin")({
