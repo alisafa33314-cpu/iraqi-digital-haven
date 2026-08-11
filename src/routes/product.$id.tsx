@@ -170,9 +170,14 @@ function ProductPage() {
                       ))}
                     </div>
                     {r.comment && <p className="text-sm text-muted-foreground leading-relaxed mb-3">"{r.comment}"</p>}
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="font-bold">{r.customer_name}</div>
-                      <div className="text-muted-foreground">{new Date(r.created_at).toLocaleDateString("ar-IQ")}</div>
+                    <div className="flex items-center justify-between text-xs gap-2">
+                      <div className="font-bold">
+                        {r.customer_name}
+                        {r.product_name && (
+                          <span className="font-medium text-muted-foreground"> — قام بشراء: <span className="text-primary">{r.product_name}</span></span>
+                        )}
+                      </div>
+                      <div className="text-muted-foreground shrink-0">{new Date(r.created_at).toLocaleDateString("ar-IQ")}</div>
                     </div>
                   </div>
                 ))}
