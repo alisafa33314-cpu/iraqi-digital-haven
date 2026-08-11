@@ -209,7 +209,14 @@ function Home() {
                   <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold text-sm">
                     {r.name.charAt(0)}
                   </div>
-                  <div className="text-sm font-bold">{r.name}</div>
+                  <div className="text-sm font-bold">
+                    {r.name}
+                    {r.product && (
+                      <span className="block text-[11px] font-medium text-muted-foreground">
+                        قام بشراء: <span className="text-primary">{r.product}</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
