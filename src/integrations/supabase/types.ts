@@ -519,6 +519,7 @@ export type Database = {
           id: string
           order_id: string | null
           product_id: string | null
+          product_name: string | null
           rating: number
         }
         Insert: {
@@ -528,6 +529,7 @@ export type Database = {
           id?: string
           order_id?: string | null
           product_id?: string | null
+          product_name?: string | null
           rating: number
         }
         Update: {
@@ -537,6 +539,7 @@ export type Database = {
           id?: string
           order_id?: string | null
           product_id?: string | null
+          product_name?: string | null
           rating?: number
         }
         Relationships: [
@@ -939,6 +942,10 @@ export type Database = {
       }
       auto_deliver_order: { Args: { _order_id: string }; Returns: boolean }
       can_add_order_items: { Args: { _order_id: string }; Returns: boolean }
+      can_review_order: {
+        Args: { _order_id: string; _product_id: string }
+        Returns: boolean
+      }
       claim_first_admin: { Args: { _code: string }; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }
