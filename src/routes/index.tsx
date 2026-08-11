@@ -37,8 +37,8 @@ function Home() {
   const bestsellers = featured.slice(0, 8);
   const newArrivals = featured.slice(0, 8);
   const allReviews = [
-    ...dbReviews.map((r) => ({ name: r.customer_name, text: r.comment || "", rating: r.rating })),
-    ...(dbReviews.length === 0 ? staticReviews : []),
+    ...dbReviews.map((r) => ({ name: r.customer_name, text: r.comment || "", rating: r.rating, product: r.product_name })),
+    ...(dbReviews.length === 0 ? staticReviews.map((r) => ({ ...r, product: null as string | null })) : []),
   ].slice(0, 8);
   const displayedReviews = showAllReviews ? allReviews : allReviews?.slice(0, 3);
 
