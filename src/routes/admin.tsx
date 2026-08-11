@@ -1718,7 +1718,12 @@ function ReviewsManager({ adminCode, reviews, onChange }: {
                               <Star key={j} className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
                             ))}
                           </div>
-                          <div className="font-bold text-sm">{r.customer_name}</div>
+                          <div className="font-bold text-sm">
+                            {r.customer_name}
+                            {r.product_name && (
+                              <span className="font-medium text-muted-foreground"> — قام بشراء: <span className="text-primary">{r.product_name}</span></span>
+                            )}
+                          </div>
                           <div className="text-[11px] text-muted-foreground">
                             {new Date(r.created_at).toLocaleString("ar-IQ")}
                             {prod && <> · <span className="text-primary">{prod.name}</span></>}
