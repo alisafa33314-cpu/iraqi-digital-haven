@@ -21,6 +21,7 @@ export type ReviewRow = {
   order_id: string | null;
   product_id: string | null;
   customer_name: string;
+  product_name: string | null;
   rating: number;
   comment: string | null;
   created_at: string;

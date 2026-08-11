@@ -250,7 +250,14 @@ function ReviewModal({ order, onClose }: { order: OrderRow; onClose: () => void 
       comment: comment.trim(),
     } as any);
     setBusy(false);
-    if (error) return toast.error("فشل إرسال التقييم: " + error.message);
+    if (error) {
+      const msg = /duplicate|unique/i.test(error.message)
+        ? "تم تقييم هذا الطلب مسبقاً"
+        : /row-level|not_allowed/i.test(error.message)
+          ? "التقييم متاح فقط للطلبات المكتملة"
+          : error.message;
+      return toast.error("فشل إرسال التقييم: " + msg);
+    }
     markReviewed(order.id);
     toast.success("شكراً لتقييمك!");
     refreshCatalog();
