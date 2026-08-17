@@ -89,6 +89,10 @@ export const useCatalog = create<CatalogState>((set) => ({
       activationImages: Array.isArray(p.activation_images) ? p.activation_images : [],
       isFeatured: p.is_featured === true,
       displayOrder: p.display_order != null ? Number(p.display_order) : 0,
+      variantGroup: p.variant_group || null,
+      variantLabel: p.variant_label || null,
+      variantSort: p.variant_sort != null ? Number(p.variant_sort) : 0,
+      variantPrimary: p.variant_primary === true,
     }));
 
       for (const c of cats) c.count = prods.filter((p) => p.categorySlug === c.slug).length;

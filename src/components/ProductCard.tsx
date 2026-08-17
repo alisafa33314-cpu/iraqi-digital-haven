@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Star, ShoppingCart, Zap } from "lucide-react";
 import { useCart } from "@/lib/cart";
-import { formatIQD, type Product } from "@/lib/data";
+import { baseProductName, formatIQD, type Product } from "@/lib/data";
 import { toast } from "sonner";
 
 export function ProductCard({ product }: { product: Product }) {
@@ -58,13 +58,18 @@ export function ProductCard({ product }: { product: Product }) {
           params={{ id: product.id }}
           className="font-bold text-sm leading-tight line-clamp-2 hover:text-primary transition min-h-[2.5rem]"
         >
-          {product.name}
+          {baseProductName(product)}
         </Link>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Star className="w-3 h-3 fill-yellow-500 text-yellow-500" />
           <span className="font-medium text-foreground">{product.rating}</span>
           <span>({product.reviews})</span>
         </div>
+        {product.variantLabel && (
+          <div className="text-[11px] text-muted-foreground">
+            يبدأ من <span className="font-bold text-foreground">{product.variantLabel}</span> — عدة مدد متاحة
+          </div>
+        )}
         <div className="flex items-baseline gap-2 mt-auto">
           <span className="font-black text-primary text-glow">{formatIQD(product.price)}</span>
           {product.oldPrice && (
@@ -78,6 +83,16 @@ export function ProductCard({ product }: { product: Product }) {
             {product.stock === 0 ? "نفذت الكمية" : `متوفر: ${product.stock}`}
           </div>
         )}
+        {product.variantGroup ? (
+          <Link
+            to="/product/$id"
+            params={{ id: product.id }}
+            className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 hover:btn-glow transition"
+          >
+            <Zap className="w-4 h-4" />
+            اختر المدة
+          </Link>
+        ) : (
         <div className="grid grid-cols-2 gap-2">
           <button
             onClick={() => {
@@ -105,6 +120,7 @@ export function ProductCard({ product }: { product: Product }) {
             شراء الآن
           </button>
         </div>
+        )}
 
       </div>
     </div>

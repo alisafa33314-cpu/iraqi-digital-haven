@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
-import { reviews as staticReviews } from "@/lib/data";
+import { reviews as staticReviews, listableProducts } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ArrowLeft, Star, Zap, Shield, Clock, Search } from "lucide-react";
 import heroImg from "@/assets/hero-gaming.jpg";
@@ -33,7 +33,7 @@ function Home() {
   const storeImages = useCatalog((s) => s.storeImages);
   const dbReviews = useCatalog((s) => s.reviews);
   const settings = useCatalog((s) => s.settings);
-  const featured = products.filter((p) => p.isFeatured);
+  const featured = listableProducts(products).filter((p) => p.isFeatured);
   const bestsellers = featured.slice(0, 8);
   const newArrivals = featured.slice(0, 8);
   const allReviews = [

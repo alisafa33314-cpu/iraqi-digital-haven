@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
 import { useCatalog } from "@/lib/catalog";
+import { listableProducts } from "@/lib/data";
 
 export const Route = createFileRoute("/category/$slug")({
   component: CategoryPage,
@@ -26,7 +27,7 @@ function CategoryPage() {
   const categories = useCatalog((s) => s.categories);
   const products = useCatalog((s) => s.products);
   const cat = categories.find((c) => c.slug === slug);
-  const items = products.filter((p) => p.categorySlug === slug);
+  const items = listableProducts(products).filter((p) => p.categorySlug === slug);
 
   if (!cat) {
     return (
