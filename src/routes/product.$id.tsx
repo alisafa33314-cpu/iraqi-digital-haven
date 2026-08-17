@@ -102,7 +102,7 @@ function ProductPage() {
                         className={`rounded-xl px-3 py-3 text-right border transition ${
                           active
                             ? "border-primary bg-primary/10 btn-glow"
-                            : "border-border bg-surface hover:border-primary/50"
+                            : "border-border bg-surface-2 hover:border-primary/50"
                         }`}
                       >
                         <div className="text-sm font-bold">{v.variantLabel}</div>
