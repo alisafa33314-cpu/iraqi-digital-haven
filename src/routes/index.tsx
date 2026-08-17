@@ -33,7 +33,7 @@ function Home() {
   const storeImages = useCatalog((s) => s.storeImages);
   const dbReviews = useCatalog((s) => s.reviews);
   const settings = useCatalog((s) => s.settings);
-  const featured = products.filter((p) => p.isFeatured);
+  const featured = listableProducts(products).filter((p) => p.isFeatured);
   const bestsellers = featured.slice(0, 8);
   const newArrivals = featured.slice(0, 8);
   const allReviews = [

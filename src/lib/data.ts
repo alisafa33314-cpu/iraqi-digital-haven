@@ -22,6 +22,10 @@ export type Product = {
   activationImages?: string[];
   isFeatured?: boolean;
   displayOrder?: number;
+  variantGroup?: string | null;
+  variantLabel?: string | null;
+  variantSort?: number;
+  variantPrimary?: boolean;
   // Optional legacy fields, kept for cart-persisted items
   oldPrice?: number;
   bestseller?: boolean;
@@ -48,3 +52,19 @@ export const reviews = [
 
 export const formatIQD = (n: number) =>
   new Intl.NumberFormat("ar-IQ").format(Math.round(n)) + " د.ع";
+
+// Base name of a product that belongs to a duration-variant group
+export const baseProductName = (p: Product) =>
+  p.variantLabel ? p.name.split(" — ")[0] : p.name;
+
+// Products shown in listings: hide secondary duration variants
+export const listableProducts = (products: Product[]) =>
+  products.filter((p) => !p.variantGroup || p.variantPrimary);
+
+// All duration variants of a product, ordered
+export const variantsOf = (products: Product[], p: Product) =>
+  p.variantGroup
+    ? products
+        .filter((x) => x.variantGroup === p.variantGroup)
+        .sort((a, b) => (a.variantSort ?? 0) - (b.variantSort ?? 0))
+    : [];
