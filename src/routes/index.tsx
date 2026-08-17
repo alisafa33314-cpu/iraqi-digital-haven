@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
-import { reviews as staticReviews } from "@/lib/data";
+import { reviews as staticReviews, listableProducts } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ArrowLeft, Star, Zap, Shield, Clock, Search } from "lucide-react";
 import heroImg from "@/assets/hero-gaming.jpg";
