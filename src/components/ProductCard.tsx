@@ -93,7 +93,8 @@ export function ProductCard({ product }: { product: Product }) {
             اختر المدة
           </Link>
         ) : (
-        <div className="grid grid-cols-2 gap-2">          <button
+        <div className="grid grid-cols-2 gap-2">
+          <button
             onClick={() => {
               if (!product.inStock) return;
               if (add(product)) toast.success("تمت الإضافة إلى السلة");
