@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
-import { formatIQD } from "@/lib/data";
+import { baseProductName, formatIQD, variantsOf } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/lib/cart";
@@ -32,7 +32,10 @@ function ProductPage() {
   const products = useCatalog((s) => s.products);
   const paymentMethods = useCatalog((s) => s.paymentMethods);
   const allReviews = useCatalog((s) => s.reviews);
-  const product = products.find((p) => p.id === id);
+  const found = products.find((p) => p.id === id);
+  const variants = found ? variantsOf(products, found) : [];
+  const [variantId, setVariantId] = useState<string | null>(null);
+  const product = (variantId && variants.find((v) => v.id === variantId)) || found;
   const add = useCart((s) => s.add);
   const productReviews = allReviews.filter((r) => r.product_id === id);
 
@@ -82,7 +85,36 @@ function ProductPage() {
             >
               ← عودة إلى القسم
             </Link>
-            <h1 className="text-2xl md:text-3xl font-black mt-3 mb-3">{product.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-black mt-3 mb-3">{baseProductName(product)}</h1>
+
+            {variants.length > 1 && (
+              <div className="mb-5">
+                <div className="text-sm font-bold mb-2">اختر مدة الاشتراك</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {variants.map((v) => {
+                    const active = v.id === product.id;
+                    return (
+                      <button
+                        key={v.id}
+                        type="button"
+                        onClick={() => setVariantId(v.id)}
+                        aria-pressed={active}
+                        className={`rounded-xl px-3 py-3 text-right border transition ${
+                          active
+                            ? "border-primary bg-primary/10 btn-glow"
+                            : "border-border bg-surface hover:border-primary/50"
+                        }`}
+                      >
+                        <div className="text-sm font-bold">{v.variantLabel}</div>
+                        <div className={`text-xs font-black ${active ? "text-primary" : "text-muted-foreground"}`}>
+                          {formatIQD(v.price)}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-baseline gap-3 mb-3">
               <span className="text-4xl font-black text-primary text-glow">{formatIQD(product.price)}</span>
