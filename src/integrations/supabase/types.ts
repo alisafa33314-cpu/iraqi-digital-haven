@@ -440,6 +440,10 @@ export type Database = {
           price: number
           stock: number
           updated_at: string
+          variant_group: string | null
+          variant_label: string | null
+          variant_primary: boolean
+          variant_sort: number
         }
         Insert: {
           activation_images?: string[]
@@ -458,6 +462,10 @@ export type Database = {
           price: number
           stock?: number
           updated_at?: string
+          variant_group?: string | null
+          variant_label?: string | null
+          variant_primary?: boolean
+          variant_sort?: number
         }
         Update: {
           activation_images?: string[]
@@ -476,6 +484,10 @@ export type Database = {
           price?: number
           stock?: number
           updated_at?: string
+          variant_group?: string | null
+          variant_label?: string | null
+          variant_primary?: boolean
+          variant_sort?: number
         }
         Relationships: [
           {
