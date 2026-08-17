@@ -83,8 +83,17 @@ export function ProductCard({ product }: { product: Product }) {
             {product.stock === 0 ? "نفذت الكمية" : `متوفر: ${product.stock}`}
           </div>
         )}
-        <div className="grid grid-cols-2 gap-2">
-          <button
+        {product.variantGroup ? (
+          <Link
+            to="/product/$id"
+            params={{ id: product.id }}
+            className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 hover:btn-glow transition"
+          >
+            <Zap className="w-4 h-4" />
+            اختر المدة
+          </Link>
+        ) : (
+        <div className="grid grid-cols-2 gap-2">          <button
             onClick={() => {
               if (!product.inStock) return;
               if (add(product)) toast.success("تمت الإضافة إلى السلة");
@@ -110,6 +119,7 @@ export function ProductCard({ product }: { product: Product }) {
             شراء الآن
           </button>
         </div>
+        )}
 
       </div>
     </div>
