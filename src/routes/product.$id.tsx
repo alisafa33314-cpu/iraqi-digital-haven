@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
-import { baseProductName, formatIQD, variantsOf } from "@/lib/data";
+import { baseProductName, formatIQD, listableProducts, variantsOf } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/lib/cart";
@@ -50,8 +50,8 @@ function ProductPage() {
     );
   }
 
-  const related = products
-    .filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id)
+  const related = listableProducts(products)
+    .filter((p) => p.categorySlug === product.categorySlug && p.variantGroup !== product.variantGroup && p.id !== product.id)
     .slice(0, 4);
 
   return (
