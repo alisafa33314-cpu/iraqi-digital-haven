@@ -51,7 +51,7 @@ function ProductPage() {
   }
 
   const related = listableProducts(products)
-    .filter((p) => p.categorySlug === product.categorySlug && p.variantGroup !== product.variantGroup && p.id !== product.id)
+    .filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id && !(product.variantGroup && p.variantGroup === product.variantGroup))
     .slice(0, 4);
 
   return (
