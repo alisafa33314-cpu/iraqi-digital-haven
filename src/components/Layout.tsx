@@ -1,8 +1,10 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { ShoppingCart, Search, Menu, X, MessageCircle, Send } from "lucide-react";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { ShoppingCart, Search, Menu, X, MessageCircle, Send, LogOut, Package } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useCart } from "@/lib/cart";
 import { useCatalog } from "@/lib/catalog";
+import { useSession, signOutCustomer } from "@/lib/auth";
+import { GoogleIcon } from "@/components/GoogleIcon";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -53,6 +55,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="flex items-center gap-2">
+            <AuthMenu />
             <Link
               to="/search"
               className="w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center transition"
