@@ -1,5 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ShoppingCart, Search, Menu, X, MessageCircle, Send, LogOut, Package } from "lucide-react";
+import { toast } from "sonner";
 import { useState, type ReactNode } from "react";
 import { useCart } from "@/lib/cart";
 import { useCatalog } from "@/lib/catalog";
@@ -112,7 +113,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 </Link>
               ))}
             </div>
-            <DrawerAuthRow />
+            <DrawerAuthRow onNavigate={() => setOpen(false)} />
             <div className="mt-6 pt-6 border-t border-border">
               <div className="text-xs text-muted-foreground mb-3">الأقسام</div>
               <div className="space-y-1">
@@ -329,11 +330,11 @@ function AuthMenu() {
   );
 }
 
-function DrawerAuthRow() {
+function DrawerAuthRow({ onNavigate }: { onNavigate: () => void }) {
   const user = useSession((s) => s.user);
   if (user) {
     return (
-      <Link to="/orders" onClick={() => setOpenSafe()}
+      <Link to="/orders" onClick={onNavigate}
         className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-surface font-medium">
         {user.avatarUrl ? (
           <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" referrerPolicy="no-referrer" />
@@ -347,17 +348,12 @@ function DrawerAuthRow() {
     );
   }
   return (
-    <Link to="/auth" onClick={() => setOpenSafe()}
+    <Link to="/auth" onClick={onNavigate}
       className="mt-3 inline-flex items-center gap-2 w-full px-3 py-3 rounded-lg bg-primary text-primary-foreground font-bold justify-center">
       <GoogleIcon className="w-4 h-4" /> تسجيل الدخول بحساب جوجل
     </Link>
   );
 }
-
-// the drawer component holds `open` state in Layout; closing it on navigation
-// is handled by each Link's onClick — this helper is a no-op placeholder to
-// keep the drawer open logic centralized.
-function setOpenSafe() {}
 
 export function Container({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`container mx-auto px-4 ${className}`}>{children}</div>;
