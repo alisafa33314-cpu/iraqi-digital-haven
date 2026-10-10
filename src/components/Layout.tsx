@@ -112,6 +112,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 </Link>
               ))}
             </div>
+            <DrawerAuthRow />
             <div className="mt-6 pt-6 border-t border-border">
               <div className="text-xs text-muted-foreground mb-3">الأقسام</div>
               <div className="space-y-1">
