@@ -501,21 +501,27 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
+          email: string | null
           full_name: string | null
           id: string
           phone: string | null
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id: string
           phone?: string | null
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
@@ -775,6 +781,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_count_customers: {
+        Args: { _code: string; _search: string }
+        Returns: number
+      }
       admin_delete_category: {
         Args: { _code: string; _slug: string }
         Returns: undefined
@@ -822,6 +832,24 @@ export type Database = {
           reason: string
           type: string
           value: string
+        }[]
+      }
+      admin_list_customers: {
+        Args: {
+          _code: string
+          _limit: number
+          _offset: number
+          _search: string
+        }
+        Returns: {
+          avatar_url: string
+          email: string
+          full_name: string
+          id: string
+          joined_at: string
+          orders_count: number
+          phone: string
+          role: string
         }[]
       }
       admin_list_orders: {
