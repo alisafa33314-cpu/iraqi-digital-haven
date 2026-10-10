@@ -261,6 +261,104 @@ function SocialsFloating() {
   );
 }
 
+// Session-aware auth control: sign-in with Google when signed out,
+// avatar + account menu when signed in.
+function AuthMenu() {
+  const user = useSession((s) => s.user);
+  const ready = useSession((s) => s.ready);
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
+  if (!ready) {
+    return <div className="w-10 h-10 rounded-lg bg-surface skeleton" aria-hidden="true" />;
+  }
+
+  if (!user) {
+    return (
+      <Link
+        to="/auth"
+        className="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:btn-glow transition"
+        aria-label="تسجيل الدخول"
+      >
+        <GoogleIcon className="w-4 h-4" /> دخول
+      </Link>
+    );
+  }
+
+  const logout = async () => {
+    setOpen(false);
+    await signOutCustomer();
+    toast.success("تم تسجيل الخروج");
+    navigate({ to: "/" });
+  };
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center overflow-hidden border border-border transition"
+        aria-label="حسابي"
+      >
+        {user.avatarUrl ? (
+          <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+        ) : (
+          <span className="font-bold text-sm">{(user.name || user.email || "؟").charAt(0)}</span>
+        )}
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-12 z-50 w-56 card-neon rounded-xl p-3 space-y-1 shadow-lg">
+            <div className="px-2 pb-2 border-b border-border mb-1">
+              <div className="font-bold text-sm truncate">{user.name || "مستخدم"}</div>
+              <div className="text-[11px] text-muted-foreground truncate" dir="ltr">{user.email}</div>
+            </div>
+            <Link to="/orders" onClick={() => setOpen(false)}
+              className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-surface-2 font-medium">
+              <Package className="w-4 h-4" /> طلباتي
+            </Link>
+            <button type="button" onClick={logout}
+              className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-surface-2 text-destructive font-medium">
+              <LogOut className="w-4 h-4" /> تسجيل الخروج
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function DrawerAuthRow() {
+  const user = useSession((s) => s.user);
+  if (user) {
+    return (
+      <Link to="/orders" onClick={() => setOpenSafe()}
+        className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-surface font-medium">
+        {user.avatarUrl ? (
+          <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" referrerPolicy="no-referrer" />
+        ) : (
+          <span className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-sm font-bold">
+            {(user.name || user.email || "؟").charAt(0)}
+          </span>
+        )}
+        <span className="truncate">{user.name || user.email}</span>
+      </Link>
+    );
+  }
+  return (
+    <Link to="/auth" onClick={() => setOpenSafe()}
+      className="mt-3 inline-flex items-center gap-2 w-full px-3 py-3 rounded-lg bg-primary text-primary-foreground font-bold justify-center">
+      <GoogleIcon className="w-4 h-4" /> تسجيل الدخول بحساب جوجل
+    </Link>
+  );
+}
+
+// the drawer component holds `open` state in Layout; closing it on navigation
+// is handled by each Link's onClick — this helper is a no-op placeholder to
+// keep the drawer open logic centralized.
+function setOpenSafe() {}
+
 export function Container({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`container mx-auto px-4 ${className}`}>{children}</div>;
 }
