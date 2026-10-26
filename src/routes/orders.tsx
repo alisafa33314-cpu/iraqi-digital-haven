@@ -43,7 +43,7 @@ function OrdersPage() {
       const { data: sess } = await supabase.auth.getSession();
       const uid = sess.session?.user?.id;
       if (uid) {
-        const { data: owned } = await supabase.from("orders" as any).select("id").eq("user_id" as any, uid);
+        const { data: owned } = await (supabase.from as any)("orders").select("id").eq("user_id", uid);
         const ownedIds = ((owned as any[]) || []).map((r) => r.id as string);
         allIds = Array.from(new Set([...ownedIds, ...ids]));
       }
