@@ -11,7 +11,11 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 // Load all env vars (including non-VITE_ server secrets) into process.env for server routes.
 // These are NOT exposed to the client bundle.
 const serverEnv = loadEnv(process.env.NODE_ENV || "development", process.cwd(), "");
-Object.assign(process.env, serverEnv);
+// Deployment variables must win over the managed .env checked into the source.
+// Otherwise Vercel silently reconnects to the old backend during its build.
+for (const [name, value] of Object.entries(serverEnv)) {
+  if (process.env[name] === undefined) process.env[name] = value;
+}
 
 export default defineConfig({
   tanstackStart: {

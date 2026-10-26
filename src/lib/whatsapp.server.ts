@@ -1,8 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
 
-const CLOUD_URL = 'https://maeniuozqrionnhmssli.supabase.co'
-const CLOUD_PUBLISHABLE_KEY = 'sb_publishable_A-6Q--ON6buJy4QrkIHIYA_j_e3JxNO'
-
 /** Env var names the admin can set as a fallback to the settings table. */
 export const GREEN_ENV_NAMES = {
   idInstance: 'GREEN_API_ID_INSTANCE',
@@ -35,9 +32,9 @@ function keyedFetch(key: string) {
 
 /** Service-role client when available, otherwise null. */
 export function adminSupabase() {
-  const url = process.env['SUPABASE_URL'] || process.env['VITE_SUPABASE_URL'] || CLOUD_URL
+  const url = process.env['SUPABASE_URL'] || process.env['VITE_SUPABASE_URL']
   const key = process.env['SUPABASE_SERVICE_ROLE_KEY']
-  if (!key) return null
+  if (!url || !key) return null
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { fetch: keyedFetch(key) },
@@ -46,11 +43,12 @@ export function adminSupabase() {
 
 /** Publishable-key client — always available, RLS applies. */
 export function publicSupabase() {
-  const url = process.env['SUPABASE_URL'] || process.env['VITE_SUPABASE_URL'] || CLOUD_URL
+  const url = process.env['SUPABASE_URL'] || process.env['VITE_SUPABASE_URL']
   const key =
     process.env['SUPABASE_PUBLISHABLE_KEY'] ||
     process.env['VITE_SUPABASE_PUBLISHABLE_KEY'] ||
-    CLOUD_PUBLISHABLE_KEY
+    process.env['VITE_SUPABASE_ANON_KEY']
+  if (!url || !key) throw new Error('Missing backend URL or public key')
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
     global: { fetch: keyedFetch(key) },

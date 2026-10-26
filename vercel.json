@@ -2,5 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "bun install --frozen-lockfile",
-  "buildCommand": "bun run build"
+  "buildCommand": "bun run build",
+  "env": {
+    "VITE_SUPABASE_PROJECT_ID": "cjriylxkwoqovvlhlruq",
+    "VITE_SUPABASE_URL": "https://cjriylxkwoqovvlhlruq.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "sb_publishable_TXHfpw2Zj1iVpn8ch61N9A_1ROUzfcW",
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_TXHfpw2Zj1iVpn8ch61N9A_1ROUzfcW",
+    "SUPABASE_PROJECT_ID": "cjriylxkwoqovvlhlruq",
+    "SUPABASE_URL": "https://cjriylxkwoqovvlhlruq.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_TXHfpw2Zj1iVpn8ch61N9A_1ROUzfcW"
+  }
 }
