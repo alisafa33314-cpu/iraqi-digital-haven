@@ -126,7 +126,18 @@
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
-@utility animate-marquee { animation: marquee 30s linear infinite; }
+@utility animate-marquee { animation: marquee 30s linear infinite; will-change: transform; }
+
+/* Skeleton shimmer (data-loading placeholders) */
+@keyframes skeleton-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+@utility skeleton {
+  background: linear-gradient(90deg, oklch(0.21 0.02 20) 25%, oklch(0.30 0.03 20) 40%, oklch(0.21 0.02 20) 60%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s linear infinite;
+}
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 10px; height: 10px; }

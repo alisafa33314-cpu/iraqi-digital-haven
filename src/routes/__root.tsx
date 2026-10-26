@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { useCatalog } from "@/lib/catalog";
+import { useSession } from "@/lib/auth";
 import { useAnalytics } from "@/lib/analytics";
 import { useSiteTheme } from "@/lib/theme";
 
@@ -144,6 +145,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const refreshCatalog = useCatalog((s) => s.refresh);
   useEffect(() => { refreshCatalog(); }, [refreshCatalog]);
+  useEffect(() => { useSession.getState().init(); }, []);
   useAnalytics();
   useSiteTheme();
   return (

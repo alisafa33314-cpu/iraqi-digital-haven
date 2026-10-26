@@ -128,3 +128,7 @@ function ProductCardBase({ product }: { product: Product }) {
     </div>
   );
 }
+
+// Memoized: skips re-render when the product prop is unchanged (big grids)
+export const ProductCard = memo(ProductCardBase);
+
