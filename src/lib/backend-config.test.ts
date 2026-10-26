@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import { resolvePublicBackend, googleOAuthRedirect } from "./backend-config";
 import vercel from "../../vercel.json";
