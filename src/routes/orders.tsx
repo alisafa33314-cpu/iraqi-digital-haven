@@ -239,7 +239,8 @@ const OrderCard = memo(function OrderCard({ o, onReview }: { o: OrderRow; onRevi
       </div>
     </div>
   );
-}
+});
+
 
 function ReviewModal({ order, onClose }: { order: OrderRow; onClose: () => void }) {
   const products = useCatalog((s) => s.products);
