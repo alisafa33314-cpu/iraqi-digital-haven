@@ -403,6 +403,139 @@ function AdminSection({ title, defaultOpen = false, children }: {
   );
 }
 
+type CustomerRow = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  phone: string | null;
+  role: string | null;
+  joined_at: string;
+  orders_count: number;
+};
+
+function CustomersManager({ adminCode }: { adminCode: string }) {
+  const [rows, setRows] = useState<CustomerRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const perPage = 20;
+
+  const fetchRows = useCallback(async () => {
+    setLoading(true);
+    const [{ data, error }, { data: cnt }] = await Promise.all([
+      supabase.rpc("admin_list_customers" as any, {
+        _code: adminCode,
+        _search: search.trim(),
+        _limit: perPage,
+        _offset: (page - 1) * perPage,
+      }),
+      supabase.rpc("admin_count_customers" as any, { _code: adminCode, _search: search.trim() }),
+    ]);
+    if (error) {
+      toast.error("فشل جلب الزبائن");
+    } else {
+      setRows(((data as any[]) || []) as CustomerRow[]);
+      const c = Array.isArray(cnt) ? Number((cnt as any)[0]?.admin_count_customers ?? 0) : Number(cnt ?? 0);
+      setTotal(Number.isFinite(c) ? c : 0);
+    }
+    setLoading(false);
+  }, [adminCode, search, page]);
+
+  useEffect(() => {
+    const t = setTimeout(fetchRows, 250);
+    return () => clearTimeout(t);
+  }, [fetchRows]);
+
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+
+  return (
+    <div className="card-neon rounded-2xl p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="font-black">👥 الزبائن المسجلون ({total})</h2>
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="بحث بالاسم أو البريد…"
+          className="w-full sm:w-64 bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"
+        />
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-12 rounded-lg skeleton" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="text-center text-sm text-muted-foreground py-8">لا يوجد زبائن مسجلون بعد</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[620px]">
+            <thead>
+              <tr className="text-xs text-muted-foreground text-right">
+                <th className="py-2 px-2 font-medium">الزبون</th>
+                <th className="py-2 px-2 font-medium">البريد</th>
+                <th className="py-2 px-2 font-medium">الهاتف</th>
+                <th className="py-2 px-2 font-medium">الصلاحية</th>
+                <th className="py-2 px-2 font-medium">الطلبات</th>
+                <th className="py-2 px-2 font-medium">تاريخ التسجيل</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} className="border-t border-border">
+                  <td className="py-2.5 px-2">
+                    <div className="flex items-center gap-2">
+                      {r.avatar_url ? (
+                        <img src={r.avatar_url} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer"
+                          className="w-8 h-8 rounded-full object-cover border border-border" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-xs font-bold">
+                          {(r.full_name || "؟").charAt(0)}
+                        </div>
+                      )}
+                      <span className="font-bold truncate max-w-40">{r.full_name || "بدون اسم"}</span>
+                    </div>
+                  </td>
+                  <td className="py-2.5 px-2 text-xs" dir="ltr">{r.email || "—"}</td>
+                  <td className="py-2.5 px-2 text-xs" dir="ltr">{r.phone || "—"}</td>
+                  <td className="py-2.5 px-2">
+                    <span className={`text-[10px] px-2 py-1 rounded-md font-bold border ${
+                      r.role === "admin"
+                        ? "bg-primary/15 text-primary border-primary/30"
+                        : "bg-surface-2 text-muted-foreground border-border"
+                    }`}>
+                      {r.role === "admin" ? "مدير" : "زبون"}
+                    </span>
+                  </td>
+                  <td className="py-2.5 px-2 font-bold">{r.orders_count}</td>
+                  <td className="py-2.5 px-2 text-xs text-muted-foreground">
+                    {new Date(r.joined_at).toLocaleDateString("ar-IQ")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between gap-2 mt-4">
+        <button type="button" disabled={page <= 1 || loading} onClick={() => setPage((p) => Math.max(1, p - 1))}
+          className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border disabled:opacity-40">
+          السابق
+        </button>
+        <span className="text-xs text-muted-foreground">صفحة {page} من {totalPages}</span>
+        <button type="button" disabled={page >= totalPages || loading} onClick={() => setPage((p) => p + 1)}
+          className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border disabled:opacity-40">
+          التالي
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function OrdersPanel({ orders, loading, adminCode, onChange }: { orders: AdminOrder[]; loading: boolean; adminCode: string; onChange: () => void; }) {
 
   const [perPage, setPerPage] = useState(5);
