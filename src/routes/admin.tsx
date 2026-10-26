@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { formatIQD, type Product, type PaymentMethod, type Category } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2, ChevronDown, ChevronUp } from "lucide-react";
+import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2, ChevronDown, ChevronUp, Search } from "lucide-react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage, resolveAssetUrl } from "@/lib/upload";
@@ -309,6 +309,12 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 
         {/* Orders */}
         <OrdersPanel orders={orders} loading={loading} adminCode={adminCode} onChange={fetchOrders} />
+
+        {/* Registered customers */}
+        <AdminSection title="👥 الزبائن المسجلون">
+          <CustomersManager adminCode={adminCode} />
+        </AdminSection>
+
 
 
         {/* Collapsible management sections */}
