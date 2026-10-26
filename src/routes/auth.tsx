@@ -2,11 +2,29 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { GoogleIcon } from "@/components/GoogleIcon";
 import { useSession, signInWithGoogle } from "@/lib/auth";
+import { cloud as supabase } from "@/lib/cloud-client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loader2, ShieldCheck, Zap } from "lucide-react";
 
+// Origins allowed to receive the session after sign-in on this hosted page
+// (the custom domain runs the same app on external hosting).
+const ALLOWED_RETURN_HOSTS = new Set(["fpistor.com", "www.fpistor.com"]);
+
+function safeReturnTo(raw: string | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw);
+    if (u.protocol === "https:" && ALLOWED_RETURN_HOSTS.has(u.hostname)) return u.origin;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>): { return_to?: string } =>
+    typeof s.return_to === "string" ? { return_to: s.return_to } : {},
   head: () => ({
     meta: [
       { title: "تسجيل الدخول — FPI STOR" },
@@ -21,14 +39,36 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const nav = useNavigate();
+  const { return_to } = Route.useSearch();
+  const returnTo = safeReturnTo(return_to);
   const user = useSession((s) => s.user);
   const ready = useSession((s) => s.ready);
   const [busy, setBusy] = useState(false);
 
-  // Already signed in? Go home.
+  // Send the established session back to the external origin via URL hash
+  // (fragments are never sent to servers; the app there reads them locally).
+  const finishWithSession = async () => {
+    if (returnTo) {
+      const { data } = await supabase.auth.getSession();
+      const sess = data.session;
+      if (sess) {
+        const hash = new URLSearchParams({
+          access_token: sess.access_token,
+          refresh_token: sess.refresh_token,
+          expires_in: String(sess.expires_in ?? 3600),
+          token_type: sess.token_type ?? "bearer",
+        }).toString();
+        window.location.href = `${returnTo}/auth/callback#${hash}`;
+        return;
+      }
+    }
+    nav({ to: "/", replace: true });
+  };
+
+  // Already signed in? Go home (or back to the requesting origin).
   useEffect(() => {
     if (ready && user) {
-      nav({ to: "/", replace: true });
+      finishWithSession();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, user?.id]);
@@ -37,11 +77,14 @@ function AuthPage() {
     if (busy) return;
     setBusy(true);
     try {
+      // Persist the requesting origin so /auth/callback can hand the session
+      // back after the full-page Google redirect.
+      if (returnTo) sessionStorage.setItem("auth_return_to", returnTo);
       const result = await signInWithGoogle();
       if (result.redirected) return; // browser navigates to Google
       // Tokens returned directly (popup flow) — session is set; go home
       toast.success("تم تسجيل الدخول بنجاح");
-      nav({ to: "/", replace: true });
+      await finishWithSession();
     } catch (err: any) {
       toast.error("فشل تسجيل الدخول: " + (err?.message || "خطأ غير معروف"));
     } finally {
