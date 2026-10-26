@@ -3,8 +3,9 @@ import { Layout, Container } from "@/components/Layout";
 import { useMyOrderIds, useReviewedOrders, STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { formatIQD } from "@/lib/data";
 import { PackageOpen, KeyRound, Copy, Star, X, ListChecks } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { cloud as supabase } from "@/lib/cloud-client";
+import { useSession } from "@/lib/auth";
 import { useCatalog } from "@/lib/catalog";
 import { toast } from "sonner";
 
@@ -36,12 +37,25 @@ function OrdersPage() {
   const prevStatuses = useRef<Record<string, string>>({});
 
   const fetchOrders = async () => {
-    if (ids.length === 0) {
+    // اجمع طلبات هذا الحساب (إن كان مسجّلاً) مع الطلبات المحفوظة محلياً
+    let allIds = [...ids];
+    try {
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user?.id;
+      if (uid) {
+        const { data: owned } = await supabase.from("orders" as any).select("id").eq("user_id" as any, uid);
+        const ownedIds = ((owned as any[]) || []).map((r) => r.id as string);
+        allIds = Array.from(new Set([...ownedIds, ...ids]));
+      }
+    } catch {
+      /* تجاهل ومتابعة بالطلبات المحلية */
+    }
+    if (allIds.length === 0) {
       setOrders([]);
       setLoading(false);
       return;
     }
-    const { data, error } = await supabase.rpc("get_orders_by_ids" as any, { _ids: ids });
+    const { data, error } = await supabase.rpc("get_orders_by_ids" as any, { _ids: allIds });
     if (error) toast.error("فشل جلب الطلبات");
     const rows = ((data as any[]) || []) as OrderRow[];
 
@@ -103,7 +117,7 @@ function OrdersPage() {
   );
 }
 
-function OrderCard({ o, onReview }: { o: OrderRow; onReview: () => void }) {
+const OrderCard = memo(function OrderCard({ o, onReview }: { o: OrderRow; onReview: () => void }) {
   const reviewedIds = useReviewedOrders((s) => s.ids);
   const catalogProducts = useCatalog((s) => s.products);
   const alreadyReviewed = reviewedIds.includes(o.id);
