@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "shop-assets read public folders" ON storage.objects;
