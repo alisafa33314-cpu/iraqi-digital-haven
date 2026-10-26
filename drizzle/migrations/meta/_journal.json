@@ -8,6 +8,13 @@
       "when": 1791641212823,
       "tag": "0000_google_auth_profiles_customers",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792977959387,
+      "tag": "0001_claim_guest_orders",
+      "breakpoints": true
     }
   ]
 }

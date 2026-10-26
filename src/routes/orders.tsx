@@ -43,6 +43,10 @@ function OrdersPage() {
       const { data: sess } = await supabase.auth.getSession();
       const uid = sess.session?.user?.id;
       if (uid) {
+        // ربط طلبات الضيف المحفوظة محلياً بحساب الزبون (مرة واحدة)
+        if (ids.length > 0) {
+          await supabase.rpc("claim_my_orders" as any, { _ids: ids });
+        }
         const { data: owned } = await (supabase.from as any)("orders").select("id").eq("user_id", uid);
         const ownedIds = ((owned as any[]) || []).map((r) => r.id as string);
         allIds = Array.from(new Set([...ownedIds, ...ids]));
