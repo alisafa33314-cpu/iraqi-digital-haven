@@ -180,7 +180,7 @@ const OrderCard = memo(function OrderCard({ o, onReview }: { o: OrderRow; onRevi
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {images.map((u, i) => (
                 <a key={i} href={u} target="_blank" rel="noreferrer" className="block">
-                  <img src={u} alt={`مرفق ${i + 1}`} className="w-full h-32 rounded-lg border border-border object-cover bg-surface-2" />
+                  <img loading="lazy" decoding="async" src={u} alt={`مرفق ${i + 1}`} className="w-full h-32 rounded-lg border border-border object-cover bg-surface-2" />
                 </a>
               ))}
             </div>
@@ -215,7 +215,7 @@ const OrderCard = memo(function OrderCard({ o, onReview }: { o: OrderRow; onRevi
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {a.imgs.map((u, i) => (
                     <a key={i} href={u} target="_blank" rel="noreferrer" className="block">
-                      <img src={u} alt={`خطوة ${i + 1}`}
+                      <img loading="lazy" decoding="async" src={u} alt={`خطوة ${i + 1}`}
                         className="w-full h-32 rounded-lg border border-border object-cover bg-surface-2" />
                     </a>
                   ))}

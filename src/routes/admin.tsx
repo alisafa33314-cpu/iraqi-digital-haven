@@ -62,7 +62,7 @@ function ImagePicker({ value, onChange, folder }: {
         <input type="file" accept="image/*" className="hidden"
           onChange={(e) => e.target.files?.[0] && handle(e.target.files[0])} />
       </label>
-      {value && <img src={value} alt="" className="w-24 h-24 rounded-lg object-cover border border-border" />}
+      {value && <img loading="lazy" decoding="async" src={value} alt="" className="w-24 h-24 rounded-lg object-cover border border-border" />}
     </div>
   );
 }
@@ -779,7 +779,7 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
                 {imgs.map((u, i) => (
                   <div key={i} className="relative">
-                    <img src={u} alt="" className="w-full h-24 rounded-lg object-cover border border-border" />
+                    <img loading="lazy" decoding="async" src={u} alt="" className="w-full h-24 rounded-lg object-cover border border-border" />
                     {!done && (
                       <button type="button" onClick={() => removeImg(i)}
                         className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-white text-xs flex items-center justify-center">
@@ -887,7 +887,7 @@ function ProofModal({ raw, onClose }: { raw: string; onClose: () => void }) {
           <div className="p-6 rounded-xl bg-surface-2 border border-border text-sm text-center">جاري التحميل…</div>
         ) : (
           <>
-            <img src={url} alt="إثبات التحويل" onError={() => setFailed(true)}
+            <img loading="lazy" decoding="async" src={url} alt="إثبات التحويل" onError={() => setFailed(true)}
               className="w-full max-h-[80vh] object-contain rounded-xl bg-black" />
             <a href={url} target="_blank" rel="noreferrer"
               className="mt-2 inline-block text-xs text-primary underline">فتح في نافذة جديدة</a>
@@ -950,7 +950,7 @@ function MultiImagePicker({ value, onChange, folder }: {
         <div className="grid grid-cols-3 gap-2">
           {value.map((u, i) => (
             <div key={i} className="relative">
-              <img src={u} alt="" className="w-full h-20 rounded-lg object-cover border border-border" />
+              <img loading="lazy" decoding="async" src={u} alt="" className="w-full h-20 rounded-lg object-cover border border-border" />
               <button type="button" onClick={() => onChange(value.filter((_, idx) => idx !== i))}
                 className="absolute top-1 left-1 w-6 h-6 rounded-md bg-destructive text-white text-xs font-bold">×</button>
             </div>
@@ -1141,7 +1141,7 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
         <div className="space-y-2">
           {products.map((p) => (
             <div key={p.id} className="flex items-center gap-2 p-3 rounded-xl border border-border">
-              <img src={p.image} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+              <img loading="lazy" decoding="async" src={p.image} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm line-clamp-1">{p.name}</div>
                 <div className="text-[11px] text-muted-foreground line-clamp-1">
@@ -1343,7 +1343,7 @@ function PaymentMethodsManager({ adminCode, methods, onChange }: {
           {methods.map((m) => (
             <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
               {m.image_url ? (
-                <img src={m.image_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border shrink-0" />
+                <img loading="lazy" decoding="async" src={m.image_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border shrink-0" />
               ) : (
                 <div className="w-12 h-12 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">💳</div>
               )}
@@ -1521,7 +1521,7 @@ function CategoriesManager({ adminCode, categories, onChange }: {
             <div key={c.slug} className="flex items-center gap-3 p-3 rounded-xl border border-border">
               <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xl shrink-0 overflow-hidden">
                 {c.image_url ? (
-                  <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
+                  <img loading="lazy" decoding="async" src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
                 ) : c.icon}
               </div>
               <div className="flex-1 min-w-0">
@@ -1665,7 +1665,7 @@ function SocialsManager({ adminCode, socials, onChange }: {
           {socials.map((s) => (
             <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
               {s.image_url ? (
-                <img src={s.image_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-border shrink-0" />
+                <img loading="lazy" decoding="async" src={s.image_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-border shrink-0" />
               ) : (
                 <div className="w-10 h-10 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">🔗</div>
               )}
@@ -1794,7 +1794,7 @@ function StoreImagesManager({ adminCode, images, onChange }: {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {images.map((img) => (
             <div key={img.id} className="relative rounded-xl overflow-hidden border border-border">
-              <img src={img.image_url} alt="" className="w-full h-32 object-cover" />
+              <img loading="lazy" decoding="async" src={img.image_url} alt="" className="w-full h-32 object-cover" />
               <button onClick={() => remove(img.id)}
                 className="absolute top-1 right-1 w-7 h-7 rounded-lg bg-destructive text-white flex items-center justify-center">
                 <Trash2 className="w-3.5 h-3.5" />

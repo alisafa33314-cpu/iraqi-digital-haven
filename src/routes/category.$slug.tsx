@@ -50,7 +50,7 @@ function CategoryPage() {
       <Container className="py-10">
         <div className="mb-8 flex items-center gap-4">
           {cat.image_url ? (
-            <img src={cat.image_url} alt={cat.name} className="w-16 h-16 rounded-xl object-cover" />
+            <img loading="lazy" decoding="async" src={cat.image_url} alt={cat.name} className="w-16 h-16 rounded-xl object-cover" />
           ) : (
             <div className="text-5xl">{cat.icon}</div>
           )}

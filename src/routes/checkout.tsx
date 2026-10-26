@@ -302,7 +302,7 @@ function CheckoutPage() {
                       <input type="radio" name="method" checked={methodId === m.id}
                         onChange={() => setMethodId(m.id)} className="accent-primary" />
                       {m.image_url ? (
-                        <img src={m.image_url} alt={m.name} className="w-10 h-10 rounded-lg object-cover border border-border" />
+                        <img loading="lazy" decoding="async" src={m.image_url} alt={m.name} className="w-10 h-10 rounded-lg object-cover border border-border" />
                       ) : (
                         <div className="w-10 h-10 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center text-lg">💳</div>
                       )}
@@ -325,7 +325,7 @@ function CheckoutPage() {
                   <div className="text-xs text-muted-foreground">حوّل المبلغ إلى:</div>
                   <div className="flex items-center gap-3">
                     {selected.image_url && (
-                      <img src={selected.image_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border" />
+                      <img loading="lazy" decoding="async" src={selected.image_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border" />
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="font-black text-primary">{selected.name}</div>
