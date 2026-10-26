@@ -78,6 +78,9 @@ function AuthPage() {
     if (busy) return;
     setBusy(true);
     try {
+      // Persist the requesting origin so /auth/callback can hand the session
+      // back after the full-page Google redirect.
+      if (returnTo) sessionStorage.setItem("auth_return_to", returnTo);
       const result = await signInWithGoogle();
       if (result.redirected) return; // browser navigates to Google
       // Tokens returned directly (popup flow) — session is set; go home
