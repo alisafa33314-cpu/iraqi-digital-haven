@@ -9,6 +9,8 @@ import { Upload, Check, Copy } from "lucide-react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { uploadPaymentProof } from "@/lib/upload";
 import { checkBlocked } from "@/lib/blocked.functions";
+import { useSession, signInWithGoogle } from "@/lib/auth";
+import { GoogleIcon } from "@/components/GoogleIcon";
 
 
 
@@ -28,6 +30,7 @@ function CheckoutPage() {
   const savedInfo = useCustomerInfo((s) => s.info);
   const saveInfo = useCustomerInfo((s) => s.save);
   const clearInfo = useCustomerInfo((s) => s.clearInfo);
+  const user = useSession((s) => s.user);
 
   const [methodId, setMethodId] = useState<string>("");
   const [proof, setProof] = useState<File | null>(null);
@@ -36,6 +39,20 @@ function CheckoutPage() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [autofilled, setAutofilled] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+
+  const handleGoogle = async () => {
+    if (googleBusy) return;
+    setGoogleBusy(true);
+    try {
+      const r = await signInWithGoogle();
+      if (!r.redirected) toast.success("تم تسجيل الدخول");
+    } catch (err: any) {
+      toast.error("فشل تسجيل الدخول: " + (err?.message || ""));
+    } finally {
+      setGoogleBusy(false);
+    }
+  };
 
   useEffect(() => {
     if (!methodId && paymentMethods[0]) setMethodId(paymentMethods[0].id);
@@ -51,6 +68,14 @@ function CheckoutPage() {
     if (savedInfo.name || savedInfo.phone) setAutofilled(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [savedInfo]);
+
+  // تعبئة تلقائية من حساب الزبون المسجّل (جوجل)
+  useEffect(() => {
+    if (!user) return;
+    setName((n) => n || user.name || "");
+    setEmail((e) => e || user.email || "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
 
   const subtotal = items.reduce((a, i) => a + i.qty * i.product.price, 0);
@@ -142,6 +167,7 @@ function CheckoutPage() {
         .from("orders")
         .insert({
           id: orderId,
+          user_id: user?.id ?? null,
           customer_name: name.trim(),
           customer_phone: phone.trim(),
           customer_email: email.trim() || null,
@@ -214,7 +240,19 @@ function CheckoutPage() {
         <form onSubmit={submit} className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-5">
             <div className="card-neon rounded-2xl p-5">
-              <h2 className="font-black mb-4">معلومات الزبون</h2>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <h2 className="font-black">معلومات الزبون</h2>
+                {user ? (
+                  <span className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 font-bold">
+                    <GoogleIcon className="w-3.5 h-3.5" /> مسجل الدخول: {user.email}
+                  </span>
+                ) : (
+                  <button type="button" onClick={handleGoogle} disabled={googleBusy}
+                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-white text-black font-bold hover:opacity-90 transition disabled:opacity-60">
+                    {googleBusy ? "جاري الاتصال…" : (<><GoogleIcon className="w-3.5 h-3.5" /> الدخول بحساب جوجل</>)}
+                  </button>
+                )}
+              </div>
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">الاسم الكامل</label>
