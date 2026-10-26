@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { resolvePublicBackend } from "./backend-config";
 
-const CLOUD_URL = "https://maeniuozqrionnhmssli.supabase.co";
-const CLOUD_PUBLISHABLE_KEY = "sb_publishable_A-6Q--ON6buJy4QrkIHIYA_j_e3JxNO";
+const { url: CLOUD_URL, key: CLOUD_PUBLISHABLE_KEY } = resolvePublicBackend(import.meta.env);
 
 function cloudFetch(input: RequestInfo | URL, init?: RequestInit) {
   const headers = new Headers(

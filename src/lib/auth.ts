@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { cloud as supabase } from "./cloud-client";
+import { googleOAuthRedirect } from "./backend-config";
 
 // Single source of truth for the signed-in customer session.
 // One onAuthStateChange subscriber lives here (init) — never add more.
@@ -53,7 +54,7 @@ export async function signInWithGoogle(): Promise<{ redirected: boolean }> {
   if (!MANAGED_HOST_RE.test(window.location.hostname)) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: { redirectTo: googleOAuthRedirect(window.location.origin) },
     });
     if (error) throw error;
     return { redirected: true };
