@@ -4,12 +4,12 @@
   "installCommand": "bun install --frozen-lockfile",
   "buildCommand": "bun run build",
   "env": {
-    "VITE_SUPABASE_PROJECT_ID": "cjriylxkwoqovvlhlruq",
-    "VITE_SUPABASE_URL": "https://cjriylxkwoqovvlhlruq.supabase.co",
-    "VITE_SUPABASE_ANON_KEY": "sb_publishable_TXHfpw2Zj1iVpn8ch61N9A_1ROUzfcW",
-    "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_TXHfpw2Zj1iVpn8ch61N9A_1ROUzfcW",
-    "SUPABASE_PROJECT_ID": "cjriylxkwoqovvlhlruq",
-    "SUPABASE_URL": "https://cjriylxkwoqovvlhlruq.supabase.co",
-    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_TXHfpw2Zj1iVpn8ch61N9A_1ROUzfcW"
+    "VITE_SUPABASE_PROJECT_ID": "maeniuozqrionnhmssli",
+    "VITE_SUPABASE_URL": "https://maeniuozqrionnhmssli.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "sb_publishable_A-6Q--ON6buJy4QrkIHIYA_j_e3JxNO",
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_A-6Q--ON6buJy4QrkIHIYA_j_e3JxNO",
+    "SUPABASE_PROJECT_ID": "maeniuozqrionnhmssli",
+    "SUPABASE_URL": "https://maeniuozqrionnhmssli.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_A-6Q--ON6buJy4QrkIHIYA_j_e3JxNO"
   }
 }
