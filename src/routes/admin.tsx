@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { formatIQD, type Product, type PaymentMethod, type Category } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2, ChevronDown, ChevronUp } from "lucide-react";
+import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2, ChevronDown, ChevronUp, Search } from "lucide-react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage, resolveAssetUrl } from "@/lib/upload";
@@ -62,7 +62,7 @@ function ImagePicker({ value, onChange, folder }: {
         <input type="file" accept="image/*" className="hidden"
           onChange={(e) => e.target.files?.[0] && handle(e.target.files[0])} />
       </label>
-      {value && <img src={value} alt="" className="w-24 h-24 rounded-lg object-cover border border-border" />}
+      {value && <img loading="lazy" decoding="async" src={value} alt="" className="w-24 h-24 rounded-lg object-cover border border-border" />}
     </div>
   );
 }
@@ -310,6 +310,12 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
         {/* Orders */}
         <OrdersPanel orders={orders} loading={loading} adminCode={adminCode} onChange={fetchOrders} />
 
+        {/* Registered customers */}
+        <AdminSection title="👥 الزبائن المسجلون">
+          <CustomersManager adminCode={adminCode} />
+        </AdminSection>
+
+
 
         {/* Collapsible management sections */}
         <AdminSection title="🗂️ أقسام المتجر">
@@ -393,6 +399,139 @@ function AdminSection({ title, defaultOpen = false, children }: {
           {children}
         </div>
       )}
+    </div>
+  );
+}
+
+type CustomerRow = {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  avatar_url: string | null;
+  phone: string | null;
+  role: string | null;
+  joined_at: string;
+  orders_count: number;
+};
+
+function CustomersManager({ adminCode }: { adminCode: string }) {
+  const [rows, setRows] = useState<CustomerRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const perPage = 20;
+
+  const fetchRows = useCallback(async () => {
+    setLoading(true);
+    const [{ data, error }, { data: cnt }] = await Promise.all([
+      supabase.rpc("admin_list_customers" as any, {
+        _code: adminCode,
+        _search: search.trim(),
+        _limit: perPage,
+        _offset: (page - 1) * perPage,
+      }),
+      supabase.rpc("admin_count_customers" as any, { _code: adminCode, _search: search.trim() }),
+    ]);
+    if (error) {
+      toast.error("فشل جلب الزبائن");
+    } else {
+      setRows(((data as any[]) || []) as CustomerRow[]);
+      const c = Array.isArray(cnt) ? Number((cnt as any)[0]?.admin_count_customers ?? 0) : Number(cnt ?? 0);
+      setTotal(Number.isFinite(c) ? c : 0);
+    }
+    setLoading(false);
+  }, [adminCode, search, page]);
+
+  useEffect(() => {
+    const t = setTimeout(fetchRows, 250);
+    return () => clearTimeout(t);
+  }, [fetchRows]);
+
+  const totalPages = Math.max(1, Math.ceil(total / perPage));
+
+  return (
+    <div className="card-neon rounded-2xl p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h2 className="font-black">👥 الزبائن المسجلون ({total})</h2>
+        <input
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          placeholder="بحث بالاسم أو البريد…"
+          className="w-full sm:w-64 bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"
+        />
+      </div>
+
+      {loading ? (
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="h-12 rounded-lg skeleton" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="text-center text-sm text-muted-foreground py-8">لا يوجد زبائن مسجلون بعد</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[620px]">
+            <thead>
+              <tr className="text-xs text-muted-foreground text-right">
+                <th className="py-2 px-2 font-medium">الزبون</th>
+                <th className="py-2 px-2 font-medium">البريد</th>
+                <th className="py-2 px-2 font-medium">الهاتف</th>
+                <th className="py-2 px-2 font-medium">الصلاحية</th>
+                <th className="py-2 px-2 font-medium">الطلبات</th>
+                <th className="py-2 px-2 font-medium">تاريخ التسجيل</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} className="border-t border-border">
+                  <td className="py-2.5 px-2">
+                    <div className="flex items-center gap-2">
+                      {r.avatar_url ? (
+                        <img src={r.avatar_url} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer"
+                          className="w-8 h-8 rounded-full object-cover border border-border" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-xs font-bold">
+                          {(r.full_name || "؟").charAt(0)}
+                        </div>
+                      )}
+                      <span className="font-bold truncate max-w-40">{r.full_name || "بدون اسم"}</span>
+                    </div>
+                  </td>
+                  <td className="py-2.5 px-2 text-xs" dir="ltr">{r.email || "—"}</td>
+                  <td className="py-2.5 px-2 text-xs" dir="ltr">{r.phone || "—"}</td>
+                  <td className="py-2.5 px-2">
+                    <span className={`text-[10px] px-2 py-1 rounded-md font-bold border ${
+                      r.role === "admin"
+                        ? "bg-primary/15 text-primary border-primary/30"
+                        : "bg-surface-2 text-muted-foreground border-border"
+                    }`}>
+                      {r.role === "admin" ? "مدير" : "زبون"}
+                    </span>
+                  </td>
+                  <td className="py-2.5 px-2 font-bold">{r.orders_count}</td>
+                  <td className="py-2.5 px-2 text-xs text-muted-foreground">
+                    {new Date(r.joined_at).toLocaleDateString("ar-IQ")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between gap-2 mt-4">
+        <button type="button" disabled={page <= 1 || loading} onClick={() => setPage((p) => Math.max(1, p - 1))}
+          className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border disabled:opacity-40">
+          السابق
+        </button>
+        <span className="text-xs text-muted-foreground">صفحة {page} من {totalPages}</span>
+        <button type="button" disabled={page >= totalPages || loading} onClick={() => setPage((p) => p + 1)}
+          className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border disabled:opacity-40">
+          التالي
+        </button>
+      </div>
     </div>
   );
 }
@@ -640,7 +779,7 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
                 {imgs.map((u, i) => (
                   <div key={i} className="relative">
-                    <img src={u} alt="" className="w-full h-24 rounded-lg object-cover border border-border" />
+                    <img loading="lazy" decoding="async" src={u} alt="" className="w-full h-24 rounded-lg object-cover border border-border" />
                     {!done && (
                       <button type="button" onClick={() => removeImg(i)}
                         className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-white text-xs flex items-center justify-center">
@@ -748,7 +887,7 @@ function ProofModal({ raw, onClose }: { raw: string; onClose: () => void }) {
           <div className="p-6 rounded-xl bg-surface-2 border border-border text-sm text-center">جاري التحميل…</div>
         ) : (
           <>
-            <img src={url} alt="إثبات التحويل" onError={() => setFailed(true)}
+            <img loading="lazy" decoding="async" src={url} alt="إثبات التحويل" onError={() => setFailed(true)}
               className="w-full max-h-[80vh] object-contain rounded-xl bg-black" />
             <a href={url} target="_blank" rel="noreferrer"
               className="mt-2 inline-block text-xs text-primary underline">فتح في نافذة جديدة</a>
@@ -811,7 +950,7 @@ function MultiImagePicker({ value, onChange, folder }: {
         <div className="grid grid-cols-3 gap-2">
           {value.map((u, i) => (
             <div key={i} className="relative">
-              <img src={u} alt="" className="w-full h-20 rounded-lg object-cover border border-border" />
+              <img loading="lazy" decoding="async" src={u} alt="" className="w-full h-20 rounded-lg object-cover border border-border" />
               <button type="button" onClick={() => onChange(value.filter((_, idx) => idx !== i))}
                 className="absolute top-1 left-1 w-6 h-6 rounded-md bg-destructive text-white text-xs font-bold">×</button>
             </div>
@@ -1002,7 +1141,7 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
         <div className="space-y-2">
           {products.map((p) => (
             <div key={p.id} className="flex items-center gap-2 p-3 rounded-xl border border-border">
-              <img src={p.image} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
+              <img loading="lazy" decoding="async" src={p.image} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0" />
               <div className="flex-1 min-w-0">
                 <div className="font-bold text-sm line-clamp-1">{p.name}</div>
                 <div className="text-[11px] text-muted-foreground line-clamp-1">
@@ -1204,7 +1343,7 @@ function PaymentMethodsManager({ adminCode, methods, onChange }: {
           {methods.map((m) => (
             <div key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
               {m.image_url ? (
-                <img src={m.image_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border shrink-0" />
+                <img loading="lazy" decoding="async" src={m.image_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border shrink-0" />
               ) : (
                 <div className="w-12 h-12 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">💳</div>
               )}
@@ -1382,7 +1521,7 @@ function CategoriesManager({ adminCode, categories, onChange }: {
             <div key={c.slug} className="flex items-center gap-3 p-3 rounded-xl border border-border">
               <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xl shrink-0 overflow-hidden">
                 {c.image_url ? (
-                  <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
+                  <img loading="lazy" decoding="async" src={c.image_url} alt={c.name} className="w-full h-full object-cover" />
                 ) : c.icon}
               </div>
               <div className="flex-1 min-w-0">
@@ -1526,7 +1665,7 @@ function SocialsManager({ adminCode, socials, onChange }: {
           {socials.map((s) => (
             <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
               {s.image_url ? (
-                <img src={s.image_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-border shrink-0" />
+                <img loading="lazy" decoding="async" src={s.image_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-border shrink-0" />
               ) : (
                 <div className="w-10 h-10 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">🔗</div>
               )}
@@ -1655,7 +1794,7 @@ function StoreImagesManager({ adminCode, images, onChange }: {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
           {images.map((img) => (
             <div key={img.id} className="relative rounded-xl overflow-hidden border border-border">
-              <img src={img.image_url} alt="" className="w-full h-32 object-cover" />
+              <img loading="lazy" decoding="async" src={img.image_url} alt="" className="w-full h-32 object-cover" />
               <button onClick={() => remove(img.id)}
                 className="absolute top-1 right-1 w-7 h-7 rounded-lg bg-destructive text-white flex items-center justify-center">
                 <Trash2 className="w-3.5 h-3.5" />

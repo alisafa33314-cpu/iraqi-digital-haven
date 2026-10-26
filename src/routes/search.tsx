@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
+import { SkeletonGrid } from "@/components/Skeleton";
 import { useCatalog } from "@/lib/catalog";
 import { listableProducts } from "@/lib/data";
 import { Search as SearchIcon } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/search")({
   head: () => ({
@@ -22,17 +23,20 @@ export const Route = createFileRoute("/search")({
 
 function SearchPage() {
   const [q, setQ] = useState("");
-  const products = listableProducts(useCatalog((s) => s.products));
+  const products = useCatalog((s) => s.products);
   const categories = useCatalog((s) => s.categories);
-  const query = q.trim().toLowerCase();
-  const results = query
-    ? products.filter(
-        (p) =>
-          p.name.toLowerCase().includes(query) ||
-          p.description.toLowerCase().includes(query) ||
-          categories.find((c) => c.slug === p.categorySlug)?.name.includes(query),
-      )
-    : products;
+  const ready = useCatalog((s) => s.ready);
+  const results = useMemo(() => {
+    const list = listableProducts(products);
+    const query = q.trim().toLowerCase();
+    if (!query) return list;
+    return list.filter(
+      (p) =>
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        categories.find((c) => c.slug === p.categorySlug)?.name.includes(query),
+    );
+  }, [q, products, categories]);
 
   return (
     <Layout>
@@ -49,11 +53,15 @@ function SearchPage() {
           />
         </div>
         <div className="text-sm text-muted-foreground mb-4">{results.length} نتيجة</div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {results.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        {!ready ? (
+          <SkeletonGrid count={8} />
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {results.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        )}
       </Container>
     </Layout>
   );

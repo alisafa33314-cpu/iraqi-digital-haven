@@ -226,7 +226,7 @@ function SocialsFooter() {
         <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-border hover:border-primary/50 text-xs">
           {s.image_url ? (
-            <img src={s.image_url} alt="" className="w-5 h-5 rounded object-cover" />
+            <img loading="lazy" decoding="async" src={s.image_url} alt="" className="w-5 h-5 rounded object-cover" />
           ) : (
             <MessageCircle className="w-4 h-4" />
           )}
@@ -250,7 +250,7 @@ function SocialsFloating() {
           aria-label={s.name}
           className="w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center overflow-hidden border-2 border-white/20">
           {s.image_url ? (
-            <img src={s.image_url} alt={s.name} className="w-full h-full object-cover" />
+            <img loading="lazy" decoding="async" src={s.image_url} alt={s.name} className="w-full h-full object-cover" />
           ) : s.name.includes("تليجرام") || /telegram/i.test(s.url) ? (
             <Send className="w-6 h-6 text-white" />
           ) : (
@@ -302,7 +302,7 @@ function AuthMenu() {
         aria-label="حسابي"
       >
         {user.avatarUrl ? (
-          <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+          <img loading="lazy" decoding="async" src={user.avatarUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
         ) : (
           <span className="font-bold text-sm">{(user.name || user.email || "؟").charAt(0)}</span>
         )}
@@ -337,7 +337,7 @@ function DrawerAuthRow({ onNavigate }: { onNavigate: () => void }) {
       <Link to="/orders" onClick={onNavigate}
         className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-surface font-medium">
         {user.avatarUrl ? (
-          <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" referrerPolicy="no-referrer" />
+          <img loading="lazy" decoding="async" src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" referrerPolicy="no-referrer" />
         ) : (
           <span className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-sm font-bold">
             {(user.name || user.email || "؟").charAt(0)}

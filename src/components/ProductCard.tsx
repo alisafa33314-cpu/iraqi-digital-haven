@@ -1,10 +1,11 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Star, ShoppingCart, Zap } from "lucide-react";
+import { memo } from "react";
 import { useCart } from "@/lib/cart";
 import { baseProductName, formatIQD, type Product } from "@/lib/data";
 import { toast } from "sonner";
 
-export function ProductCard({ product }: { product: Product }) {
+function ProductCardBase({ product }: { product: Product }) {
   const add = useCart((s) => s.add);
   const clear = useCart((s) => s.clear);
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export function ProductCard({ product }: { product: Product }) {
           src={product.image}
           alt={product.name}
           loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover group-hover:scale-110 transition duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
@@ -126,3 +128,7 @@ export function ProductCard({ product }: { product: Product }) {
     </div>
   );
 }
+
+// Memoized: skips re-render when the product prop is unchanged (big grids)
+export const ProductCard = memo(ProductCardBase);
+

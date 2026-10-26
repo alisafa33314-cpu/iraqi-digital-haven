@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
+import { SkeletonGrid } from "@/components/Skeleton";
 import { useCatalog } from "@/lib/catalog";
 import { listableProducts } from "@/lib/data";
+import { useMemo } from "react";
 
 export const Route = createFileRoute("/category/$slug")({
   component: CategoryPage,
@@ -26,8 +28,12 @@ function CategoryPage() {
   const { slug } = Route.useParams();
   const categories = useCatalog((s) => s.categories);
   const products = useCatalog((s) => s.products);
-  const cat = categories.find((c) => c.slug === slug);
-  const items = listableProducts(products).filter((p) => p.categorySlug === slug);
+  const ready = useCatalog((s) => s.ready);
+  const cat = useMemo(() => categories.find((c) => c.slug === slug), [categories, slug]);
+  const items = useMemo(
+    () => listableProducts(products).filter((p) => p.categorySlug === slug),
+    [products, slug],
+  );
 
   if (!cat) {
     return (
@@ -44,7 +50,7 @@ function CategoryPage() {
       <Container className="py-10">
         <div className="mb-8 flex items-center gap-4">
           {cat.image_url ? (
-            <img src={cat.image_url} alt={cat.name} className="w-16 h-16 rounded-xl object-cover" />
+            <img loading="lazy" decoding="async" src={cat.image_url} alt={cat.name} className="w-16 h-16 rounded-xl object-cover" />
           ) : (
             <div className="text-5xl">{cat.icon}</div>
           )}
@@ -53,7 +59,9 @@ function CategoryPage() {
             <div className="text-sm text-muted-foreground">{items.length} منتج</div>
           </div>
         </div>
-        {items.length === 0 ? (
+        {!ready ? (
+          <SkeletonGrid count={8} />
+        ) : items.length === 0 ? (
           <div className="text-center py-20 text-muted-foreground">
             لا توجد منتجات في هذا القسم حالياً.
           </div>

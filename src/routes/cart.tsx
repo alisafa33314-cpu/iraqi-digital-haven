@@ -43,7 +43,7 @@ function CartPage() {
           <div className="lg:col-span-2 space-y-3">
             {items.map((i) => (
               <div key={i.product.id} className="card-neon rounded-2xl p-4 flex gap-3">
-                <img src={i.product.image} alt={i.product.name} className="w-20 h-20 rounded-xl object-cover" />
+                <img loading="lazy" decoding="async" src={i.product.image} alt={i.product.name} className="w-20 h-20 rounded-xl object-cover" />
                 <div className="flex-1 min-w-0">
                   <Link to="/product/$id" params={{ id: i.product.id }} className="font-bold text-sm line-clamp-1 hover:text-primary">
                     {i.product.name}
