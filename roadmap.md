@@ -1,8 +1,6 @@
 # Backend connection update
 
-- [x] Update Vercel public/server connection settings and remove custom hardcoded old connection values.
-- [x] Point Google sign-in on the store domain back to https://fpistor.com.
-- [x] Test connection configuration and check the new provider endpoint.
-- [ ] Verify Vercel production after redeployment (requires deployment access).
-- [ ] Verify privileged server features against the new project (requires its server-only credential and migrated schema/data).
-- [ ] Restore catalog on Vercel: new project lacks products.old_price and categories, and public products query returns no rows; requires migrating store schema/data to the external project, which is not accessible through this project's managed connection.
+- [x] Point Vercel store back to the original store backend so products load.
+- [x] Google sign-in on the store domain returns to https://fpistor.com.
+- [ ] Redeploy on Vercel (user action).
+- [ ] Google sign-in on fpistor.com: needs user's own Google Client ID/Secret in Cloud sign-in settings and fpistor.com added to allowed redirect URLs (user action).
