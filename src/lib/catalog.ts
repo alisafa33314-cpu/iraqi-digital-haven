@@ -55,12 +55,12 @@ export const useCatalog = create<CatalogState>((set) => ({
 
     try {
       const [pRes, cRes, mRes, sRes, iRes, rRes, stRes] = await Promise.all([
-        supabase.from("products").select("*").eq("is_active", true).order("display_order", { ascending: true }).order("created_at", { ascending: false }),
-        supabase.from("categories").select("*").order("sort_order", { ascending: true }),
-        supabase.from("payment_methods" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-        supabase.from("social_links" as any).select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-        supabase.from("store_images" as any).select("*").order("sort_order", { ascending: true }),
-        supabase.from("reviews" as any).select("*").order("created_at", { ascending: false }),
+        supabase.from("products").select("id,name,description,price,old_price,stock,image_url,category_slug,is_active,activation_instructions,activation_images,is_featured,display_order,variant_group,variant_label,variant_sort,variant_primary").eq("is_active", true).order("display_order", { ascending: true }).order("created_at", { ascending: false }),
+        supabase.from("categories").select("slug,name,icon,image_url,sort_order").order("sort_order", { ascending: true }),
+        supabase.from("payment_methods" as any).select("id,name,account_number,note,image_url,tax,sort_order").eq("is_active", true).order("sort_order", { ascending: true }),
+        supabase.from("social_links" as any).select("id,name,image_url,url,sort_order").eq("is_active", true).order("sort_order", { ascending: true }),
+        supabase.from("store_images" as any).select("id,image_url,sort_order").order("sort_order", { ascending: true }),
+        supabase.from("reviews" as any).select("id,order_id,product_id,customer_name,product_name,rating,comment,created_at").order("created_at", { ascending: false }),
         supabase.from("site_settings" as any).select("key,value"),
       ]);
 
