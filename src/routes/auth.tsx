@@ -23,9 +23,8 @@ function safeReturnTo(raw: string | undefined): string | null {
 }
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>) => ({
-    return_to: typeof s.return_to === "string" ? s.return_to : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): { return_to?: string } =>
+    typeof s.return_to === "string" ? { return_to: s.return_to } : {},
   head: () => ({
     meta: [
       { title: "تسجيل الدخول — FPI STOR" },
