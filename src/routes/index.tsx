@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
+import { SkeletonGrid, SkeletonCards } from "@/components/Skeleton";
 import { reviews as staticReviews, listableProducts } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ArrowLeft, Star, Zap, Shield, Clock, Search } from "lucide-react";
@@ -33,14 +34,17 @@ function Home() {
   const storeImages = useCatalog((s) => s.storeImages);
   const dbReviews = useCatalog((s) => s.reviews);
   const settings = useCatalog((s) => s.settings);
-  const featured = listableProducts(products).filter((p) => p.isFeatured);
-  const bestsellers = featured.slice(0, 8);
-  const newArrivals = featured.slice(0, 8);
-  const allReviews = [
+  const featured = useMemo(() => listableProducts(products).filter((p) => p.isFeatured), [products]);
+  const bestsellers = useMemo(() => featured.slice(0, 8), [featured]);
+  const newArrivals = useMemo(() => featured.slice(0, 8), [featured]);
+  const allReviews = useMemo(() => [
     ...dbReviews.map((r) => ({ name: r.customer_name, text: r.comment || "", rating: r.rating, product: r.product_name })),
     ...(dbReviews.length === 0 ? staticReviews.map((r) => ({ ...r, product: null as string | null })) : []),
-  ].slice(0, 8);
-  const displayedReviews = showAllReviews ? allReviews : allReviews?.slice(0, 3);
+  ].slice(0, 8), [dbReviews]);
+  const displayedReviews = useMemo(
+    () => (showAllReviews ? allReviews : allReviews.slice(0, 3)),
+    [allReviews, showAllReviews],
+  );
 
 
   return (
@@ -110,25 +114,28 @@ function Home() {
             </div>
           )}
           <SectionHeader title="أقسام المتجر" subtitle="اختر ما يناسبك من فئات متنوعة" />
-          {!ready && <div className="mb-5 text-sm text-muted-foreground">جاري تحميل المنتجات...</div>}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {categories.map((c) => (
-              <Link
-                key={c.slug}
-                to="/category/$slug"
-                params={{ slug: c.slug }}
-                className="card-neon rounded-2xl p-5 text-center flex flex-col items-center gap-2"
-              >
-                {c.image_url ? (
-                  <img src={c.image_url} alt={c.name} className="w-14 h-14 rounded-xl object-cover" />
-                ) : (
-                  <div className="text-4xl">{c.icon}</div>
-                )}
-                <div className="font-bold text-sm">{c.name}</div>
-                <div className="text-[11px] text-muted-foreground">{c.count} منتج</div>
-              </Link>
-            ))}
-          </div>
+          {!ready ? (
+            <SkeletonCards />
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {categories.map((c) => (
+                <Link
+                  key={c.slug}
+                  to="/category/$slug"
+                  params={{ slug: c.slug }}
+                  className="card-neon rounded-2xl p-5 text-center flex flex-col items-center gap-2"
+                >
+                  {c.image_url ? (
+                    <img src={c.image_url} alt={c.name} loading="lazy" decoding="async" className="w-14 h-14 rounded-xl object-cover" />
+                  ) : (
+                    <div className="text-4xl">{c.icon}</div>
+                  )}
+                  <div className="font-bold text-sm">{c.name}</div>
+                  <div className="text-[11px] text-muted-foreground">{c.count} منتج</div>
+                </Link>
+              ))}
+            </div>
+          )}
         </Container>
       </section>
 
@@ -170,11 +177,15 @@ function Home() {
       <section className="py-10">
         <Container>
           <SectionHeader title="الأكثر مبيعاً" subtitle="المنتجات المفضلة لدى عملائنا" />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {bestsellers.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          {!ready ? (
+            <SkeletonGrid count={8} />
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {bestsellers.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
         </Container>
       </section>
 
@@ -182,11 +193,15 @@ function Home() {
       <section className="py-10">
         <Container>
           <SectionHeader title="وصل حديثاً" subtitle="أحدث المنتجات في المتجر" />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {newArrivals.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+          {!ready ? (
+            <SkeletonGrid count={8} />
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {newArrivals.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
         </Container>
       </section>
 
