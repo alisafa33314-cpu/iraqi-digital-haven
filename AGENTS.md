@@ -11,7 +11,7 @@
 
 ## Architecture rules
 
-- Customer auth uses the Lovable managed Google OAuth flow (`lovable.auth.signInWithOAuth` from `src/integrations/lovable`, `redirect_uri = window.location.origin`). Never call raw `supabase.auth.signInWithOAuth({ provider: "google" })` — the managed broker handles the iframe-safe web_message flow in the preview.
+- Customer auth uses the Lovable managed Google OAuth flow (`lovable.auth.signInWithOAuth`) on Lovable-hosted origins; only on the externally hosted custom domain (Vercel, no /~oauth broker) `signInWithGoogle` falls back to native `supabase.auth.signInWithOAuth` — why: the broker path does not exist off Lovable hosting.
 - Session state lives in the `useSession` zustand store (`src/lib/auth.ts`); its `init()` registers the single app-wide `onAuthStateChange` subscriber and is called once from `src/routes/__root.tsx`. Do not add competing auth listeners.
 - Signed-in orders are linked by writing `user_id` on the `orders` insert in checkout; the orders page merges account orders (`user_id = auth.uid()`) with localStorage order ids.
 - Admin customer listing goes through the `admin_list_customers` / `admin_count_customers` SECURITY DEFINER RPCs (same `_code` + `has_role` pattern as the other admin functions) so admins can read all profiles without widening profile RLS.
