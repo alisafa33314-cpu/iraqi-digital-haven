@@ -2424,6 +2424,7 @@ function AnalyticsPanel({ adminCode }: { adminCode: string }) {
   const [d, setD] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [open, toggleOpen] = useStoredOpen("fpi_admin_analytics_open");
 
   const load = async () => {
     try {
@@ -2436,11 +2437,12 @@ function AnalyticsPanel({ adminCode }: { adminCode: string }) {
   };
 
   useEffect(() => {
+    if (!open) return;
     load();
     const t = setInterval(load, 15000);
     return () => clearInterval(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminCode]);
+  }, [adminCode, open]);
 
   const fmtMs = (ms: number) => {
     if (!ms) return "0ث";
@@ -2453,10 +2455,27 @@ function AnalyticsPanel({ adminCode }: { adminCode: string }) {
 
   return (
     <div className="card-neon rounded-2xl p-5 mb-6">
-      <div className="flex items-center justify-between mb-4">
+      <button
+        type="button"
+        onClick={toggleOpen}
+        aria-expanded={open}
+        aria-controls="analytics-body"
+        className="w-full flex items-center justify-between gap-2 text-right"
+      >
         <h2 className="font-black text-lg">إحصائيات الزوار</h2>
-        <div className="text-xs text-muted-foreground">تحديث كل 15ث</div>
-      </div>
+        <span className="flex items-center gap-2 shrink-0">
+          {open && <span className="text-xs text-muted-foreground">تحديث كل 15ث</span>}
+          {open ? <ChevronUp className="w-5 h-5 text-primary" /> : <ChevronDown className="w-5 h-5 text-primary" />}
+        </span>
+      </button>
+
+      <div
+        id="analytics-body"
+        inert={!open}
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}
+      >
+        <div className="overflow-hidden min-h-0">
+          <div className="mt-4">
 
       {loading && !d ? (
         <div className="text-center py-8 text-sm text-muted-foreground">جاري التحميل…</div>
@@ -2558,6 +2577,9 @@ function AnalyticsPanel({ adminCode }: { adminCode: string }) {
           </Section>
         </div>
       ) : null}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
