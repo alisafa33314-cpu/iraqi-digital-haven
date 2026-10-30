@@ -1,3 +1,7 @@
+# Admin panel
+
+- [x] Visitor-stats section collapsible with a chevron; open/closed state saved per device.
+
 # Backend connection update
 
 - [x] Point Vercel store back to the original store backend so products load.
