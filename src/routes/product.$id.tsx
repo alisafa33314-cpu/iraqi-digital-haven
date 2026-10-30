@@ -1,11 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { baseProductName, formatIQD, listableProducts, variantsOf } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
 import { useCart } from "@/lib/cart";
 import { useState } from "react";
-import { ShoppingCart, Shield, Zap, Star } from "lucide-react";
+import { ShoppingCart, Shield, Zap, Star, Link2 } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -37,6 +37,8 @@ function ProductPage() {
   const [variantId, setVariantId] = useState<string | null>(null);
   const product = (variantId && variants.find((v) => v.id === variantId)) || found;
   const add = useCart((s) => s.add);
+  const clear = useCart((s) => s.clear);
+  const navigate = useNavigate();
   const productReviews = allReviews.filter((r) => r.product_id === id);
 
 
@@ -50,16 +52,51 @@ function ProductPage() {
     );
   }
 
+  const addToCart = () => {
+    if (!product.inStock) return;
+    if (add(product)) toast.success("تمت الإضافة إلى السلة");
+    else toast.error("لا يمكن إضافة أكثر من الكمية المتوفرة");
+  };
+  const buyNow = () => {
+    if (!product.inStock) return;
+    clear();
+    if (add(product)) navigate({ to: "/checkout" });
+    else toast.error("لا يمكن إضافة أكثر من الكمية المتوفرة");
+  };
+  const copyLink = async () => {
+    const url = `${window.location.origin}/product/${product.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+    }
+    toast.success("تم نسخ رابط المنتج بنجاح");
+  };
+
   const related = listableProducts(products)
     .filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id && !(product.variantGroup && p.variantGroup === product.variantGroup))
     .slice(0, 4);
 
   return (
     <Layout>
-      <Container className="py-8">
+      <Container className="py-8 pb-28 md:pb-8">
+        <div className="pl-14 md:pl-0">
         <div className="grid md:grid-cols-2 gap-8">
           <div className="relative rounded-3xl overflow-hidden bg-surface aspect-square card-neon">
             <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+            <button
+              type="button"
+              onClick={copyLink}
+              aria-label="نسخ رابط المنتج"
+              className="absolute top-3 left-3 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur border border-border flex items-center justify-center hover:border-primary hover:text-primary transition"
+            >
+              <Link2 className="w-5 h-5" />
+            </button>
             <div className="absolute top-3 right-3">
               {product.inStock ? (
                 <span className="px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-black shadow-lg">
@@ -130,25 +167,23 @@ function ProductPage() {
 
             <p className="text-muted-foreground leading-relaxed mb-6 whitespace-pre-wrap">{product.description}</p>
 
-            <div className="flex gap-3 mb-6">
+            <div className="grid grid-cols-2 gap-3 mb-6">
               <button
                 disabled={!product.inStock}
-                onClick={() => {
-                  if (add(product)) toast.success("تمت الإضافة إلى السلة");
-                  else toast.error("لا يمكن إضافة أكثر من الكمية المتوفرة");
-                }}
-                className="flex-1 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2 disabled:opacity-40 btn-glow"
+                onClick={buyNow}
+                className="py-3.5 rounded-xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2 disabled:opacity-40 btn-glow"
+              >
+                <Zap className="w-5 h-5" />
+                شراء الآن
+              </button>
+              <button
+                disabled={!product.inStock}
+                onClick={addToCart}
+                className="py-3.5 rounded-xl bg-surface border border-border font-bold flex items-center justify-center gap-2 disabled:opacity-40 hover:border-primary/50 transition"
               >
                 <ShoppingCart className="w-5 h-5" />
-                أضف للسلة
+                إضافة إلى السلة
               </button>
-              <Link
-                to="/cart"
-                onClick={() => { if (product.inStock) add(product); }}
-                className="flex-1 py-3.5 rounded-xl bg-surface border border-border font-bold text-center hover:border-primary/50 transition"
-              >
-                اشترِ الآن
-              </Link>
             </div>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -233,7 +268,33 @@ function ProductPage() {
           </div>
         )}
 
+        </div>
       </Container>
+
+      {/* Mobile sticky purchase bar; left padding keeps clear of floating contact buttons */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-20 bg-background/95 backdrop-blur border-t border-border pr-3 pl-20 py-2.5 flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          {product.variantLabel && <div className="text-[10px] text-muted-foreground truncate">{product.variantLabel}</div>}
+          <div className="font-black text-primary text-sm truncate">{formatIQD(product.price)}</div>
+        </div>
+        <button
+          disabled={!product.inStock}
+          onClick={addToCart}
+          aria-label="إضافة إلى السلة"
+          className="h-10 px-3 rounded-lg bg-surface-2 border border-border text-xs font-bold flex items-center gap-1 disabled:opacity-40"
+        >
+          <ShoppingCart className="w-4 h-4" />
+          السلة
+        </button>
+        <button
+          disabled={!product.inStock}
+          onClick={buyNow}
+          className="h-10 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1 disabled:opacity-40"
+        >
+          <Zap className="w-4 h-4" />
+          شراء الآن
+        </button>
+      </div>
     </Layout>
   );
 }
