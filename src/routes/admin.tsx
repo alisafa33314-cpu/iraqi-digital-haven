@@ -2420,6 +2420,28 @@ function TelegramManager({ adminCode }: { adminCode: string }) {
 
 type AnalyticsData = { visitors24h: number; views24h: number; visitors7d: number; views7d: number; liveUsers: number; livePages: { path: string; n: number }[]; topPages: { path: string; views: number; avgMs: number }[]; countries: { k: string; n: number }[]; cities: { k: string; n: number }[]; devices: { k: string; n: number }[]; recentEvents: any[] };
 
+/* -------------------- Persistent collapsible state -------------------- */
+
+function useStoredOpen(key: string, defaultOpen = true) {
+  const [open, setOpen] = useState(() => {
+    if (typeof window === "undefined") return defaultOpen;
+    try {
+      const saved = window.localStorage.getItem(key);
+      return saved === null ? defaultOpen : saved === "1";
+    } catch {
+      return defaultOpen;
+    }
+  });
+
+  useEffect(() => {
+    try { window.localStorage.setItem(key, open ? "1" : "0"); } catch { /* تجاهل */ }
+  }, [key, open]);
+
+  const toggle = useCallback(() => setOpen((v) => !v), []);
+
+  return [open, toggle] as const;
+}
+
 function AnalyticsPanel({ adminCode }: { adminCode: string }) {
   const [d, setD] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
