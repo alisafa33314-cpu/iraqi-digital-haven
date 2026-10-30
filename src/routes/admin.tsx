@@ -10,7 +10,6 @@ import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage, resolveAssetUrl } from "@/lib/upload";
 import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
 import { readTheme, applyTheme, THEME_KEYS, THEME_LABELS, THEME_DEFAULTS, themeSettingKey } from "@/lib/theme";
-import { adminAnalytics } from "@/lib/track.functions";
 import { telegramTestSend } from "@/lib/telegram-test.functions";
 
 
@@ -2419,7 +2418,7 @@ function TelegramManager({ adminCode }: { adminCode: string }) {
 }
 
 
-type AnalyticsData = Awaited<ReturnType<typeof adminAnalytics>>;
+type AnalyticsData = { visitors24h: number; views24h: number; visitors7d: number; views7d: number; liveUsers: number; livePages: { path: string; n: number }[]; topPages: { path: string; views: number; avgMs: number }[]; countries: { k: string; n: number }[]; cities: { k: string; n: number }[]; devices: { k: string; n: number }[]; recentEvents: any[] };
 
 function AnalyticsPanel({ adminCode }: { adminCode: string }) {
   const [d, setD] = useState<AnalyticsData | null>(null);
@@ -2428,7 +2427,9 @@ function AnalyticsPanel({ adminCode }: { adminCode: string }) {
 
   const load = async () => {
     try {
-      const res = await adminAnalytics({ data: { code: adminCode } });
+      const { data: rpcData, error: rpcErr } = await supabase.rpc("admin_analytics" as any, { _code: adminCode } as any);
+      if (rpcErr) throw rpcErr;
+      const res = rpcData as unknown as AnalyticsData;
       setD(res); setErr("");
     } catch (e: any) { setErr(e?.message || "فشل التحميل"); }
     finally { setLoading(false); }

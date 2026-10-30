@@ -767,6 +767,7 @@ export type Database = {
         Args: { _code: string; _image_url: string; _sort_order: number }
         Returns: string
       }
+      admin_analytics: { Args: { _code: string }; Returns: Json }
       admin_block_entity: {
         Args: { _code: string; _reason: string; _type: string; _value: string }
         Returns: string
@@ -1045,6 +1046,20 @@ export type Database = {
         }[]
       }
       telegram_notify_order: { Args: { _order_id: string }; Returns: Json }
+      track_ping: {
+        Args: { _duration: number; _id: string; _session: string }
+        Returns: undefined
+      }
+      track_view: {
+        Args: {
+          _device: string
+          _path: string
+          _referrer: string
+          _session: string
+          _ua: string
+        }
+        Returns: string
+      }
       whatsapp_notify_order: { Args: { _order_id: string }; Returns: Json }
       whatsapp_test_send: { Args: { _code: string }; Returns: Json }
     }
