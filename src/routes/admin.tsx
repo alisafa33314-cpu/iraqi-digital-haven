@@ -550,10 +550,7 @@ function OrdersPanel({ orders, loading, adminCode, onChange }: { orders: AdminOr
 
   // بحث فوري برقم الطلب: يقبل مع # أو بدونه، وبسطور كبيرة أو صغيرة،
   // وحتى لو كتب الزبون الرقم بدون شرطَات.
-  const norm = q.trim().toLowerCase().replace(/^#+/, "").replace(/[\s-]/g, "");
-  const filtered = norm
-    ? orders.filter((o) => o.id.toLowerCase().replace(/[\s-]/g, "").includes(norm))
-    : orders;
+  const filtered = filterOrdersByNumber(orders, q);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const current = Math.min(page, totalPages);
