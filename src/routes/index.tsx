@@ -84,6 +84,8 @@ function Home() {
         </Container>
       </section>
 
+      <HowToBuySection />
+
       {/* Categories */}
       <section className="py-12">
         <Container>
