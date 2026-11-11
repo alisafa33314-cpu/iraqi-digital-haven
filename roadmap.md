@@ -1,3 +1,9 @@
+# Language
+
+- [ ] Add a persistent Arabic/English switch at the top of the store.
+- [ ] Translate storefront and administration controls, current public product content, dates and currency labels; keep customer-entered information unchanged.
+- [ ] Verify switching, navigation, persistence and mobile layout.
+
 # Admin panel
 
 - [x] Visitor-stats section collapsible with a chevron; open/closed state saved per device.
