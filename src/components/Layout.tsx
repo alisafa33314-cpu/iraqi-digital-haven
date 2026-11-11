@@ -249,7 +249,7 @@ function DrawerAuthRow({ onNavigate }: {
       </Link>);
     }
     return (<Link to="/auth" onClick={onNavigate} className="mt-3 inline-flex items-center gap-2 w-full px-3 py-3 rounded-lg bg-primary text-primary-foreground font-bold justify-center">
-      <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0"><GoogleIcon className="w-4 h-4"/></span>{t(" \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062F\u062E\u0648\u0644 \u0628\u062D\u0633\u0627\u0628 \u062C\u0648\u062C\u0644 ")}</Link>);
+      <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0"><GoogleIcon className="w-4 h-4"/></span>{t("الدخول بحساب جوجل")}</Link>);
 }
 export function Container({ children, className = "" }: {
     children: ReactNode;
