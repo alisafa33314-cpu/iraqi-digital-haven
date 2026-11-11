@@ -51,6 +51,8 @@ function OrdersPage() {
                 if (ids.length > 0) {
                     await supabase.rpc("claim_my_orders" as any, { _ids: ids });
                 }
+                // ربط طلبات الضيف المطابقة لإيميل/هاتف الحساب — حتى تظهر الطلبات من أي جهاز
+                await supabase.rpc("claim_my_orders_by_contact" as any).then(() => { }, () => { });
                 const { data: owned } = await (supabase.from as any)("orders").select("id").eq("user_id", uid);
                 const ownedIds = ((owned as any[]) || []).map((r) => r.id as string);
                 allIds = Array.from(new Set([...ownedIds, ...ids]));
