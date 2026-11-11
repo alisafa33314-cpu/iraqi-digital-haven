@@ -8,7 +8,7 @@ export function resolvePublicBackend(env: Record<string, string | undefined>) {
 export function googleOAuthRedirect(origin: string) {
   const url = new URL(origin);
   if (url.hostname === "fpistor.com" || url.hostname === "www.fpistor.com") {
-    return "https://fpistor.com";
+    return url.origin;
   }
   return `${url.origin}/auth/callback`;
 }
