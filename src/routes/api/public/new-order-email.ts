@@ -9,9 +9,6 @@ export const Route = createFileRoute('/api/public/new-order-email')({
     handlers: {
       POST: async ({ request }) => {
         const { isChannelEnabled } = await import('@/lib/notify-settings.server')
-        if (!(await isChannelEnabled('notify_admin_email'))) {
-          return Response.json({ success: false, reason: 'channel_disabled' })
-        }
         const { sendTemplateEmailInternal } = await import('@/lib/email/send-internal.server')
         const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
         const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -52,6 +49,35 @@ export const Route = createFileRoute('/api/public/new-order-email')({
           .from('order_items')
           .select('product_name, quantity, unit_price')
           .eq('order_id', orderId)
+
+        const itemList = (items || []).map((i: any) => ({
+          name: i.product_name,
+          qty: i.quantity,
+          price: Number(i.unit_price),
+        }))
+
+        // Customer confirmation: "we received your order" + order-status button.
+        const customerEmail = String(order.customer_email || '').trim()
+        let customerSent = false
+        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
+          const r = await sendTemplateEmailInternal({
+            templateName: 'order-received',
+            recipientEmail: customerEmail,
+            idempotencyKey: `order-received-${orderId}`,
+            templateData: {
+              orderId: order.id,
+              customerName: order.customer_name,
+              items: itemList,
+              total: Number(order.total),
+              ordersUrl: 'https://fpistor.com/orders',
+            },
+          })
+          customerSent = r.ok
+        }
+
+        if (!(await isChannelEnabled('notify_admin_email'))) {
+          return Response.json({ success: true, customerSent, admin: 'channel_disabled' })
+        }
 
         const result = await sendTemplateEmailInternal({
           templateName: 'new-order-admin',
