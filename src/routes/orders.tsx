@@ -2,8 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { useMyOrderIds, useReviewedOrders, STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { formatIQD } from "@/lib/data";
-import { PackageOpen, KeyRound, Copy, Star, X, ListChecks } from "lucide-react";
+import { PackageOpen, KeyRound, Copy, Star, X, ListChecks, Check, XCircle } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { useSession } from "@/lib/auth";
 import { useCatalog } from "@/lib/catalog";
@@ -24,6 +25,7 @@ type OrderRow = {
   subscription_info: string | null;
   subscription_image_url: string | null;
   subscription_image_urls: string[] | null;
+  rejection_reason: string | null;
   created_at: string;
   items: { product_name: string; quantity: number; unit_price: number }[];
 };
