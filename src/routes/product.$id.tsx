@@ -3,6 +3,7 @@ import { Layout, Container } from "@/components/Layout";
 import { baseProductName, formatIQD, listableProducts, variantsOf } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
+import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { useState } from "react";
 import { ShoppingCart, Shield, Zap, Star, Link2 } from "lucide-react";
@@ -18,6 +19,9 @@ export const Route = createFileRoute("/product/$id")({
     meta: [
       { title: `منتج — FPI STOR` },
       { name: "description", content: "اطلب منتجك الرقمي من FPI STOR بالدينار العراقي مع تسليم فوري." },
+      { property: "og:title", content: "تفاصيل المنتج — FPI STOR" },
+      { property: "og:description", content: "اختر مدة اشتراكك واطلب منتجك الرقمي بالدينار العراقي من FPI STOR." },
+      { name: "twitter:card", content: "summary" },
       { property: "og:type", content: "product" },
       { property: "og:url", content: `https://fpistor.com/product/${params.id}` },
     ],
@@ -66,16 +70,24 @@ function ProductPage() {
   const copyLink = async () => {
     const url = `${window.location.origin}/product/${product.id}`;
     try {
-      await navigator.clipboard.writeText(url);
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch {
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        ta.setAttribute("readonly", "");
+        document.body.appendChild(ta);
+        try {
+          ta.select();
+          if (!document.execCommand("copy")) throw new Error("Copy failed");
+        } finally {
+          ta.remove();
+        }
+      }
+      toast.success("تم نسخ رابط المنتج بنجاح");
     } catch {
-      const ta = document.createElement("textarea");
-      ta.value = url;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      ta.remove();
+      toast.error("تعذر نسخ الرابط، حاول مرة ثانية");
     }
-    toast.success("تم نسخ رابط المنتج بنجاح");
   };
 
   const related = listableProducts(products)
@@ -84,19 +96,22 @@ function ProductPage() {
 
   return (
     <Layout>
-      <Container className="py-8 pb-28 md:pb-8">
+      <Container className="py-8 pb-40 md:pb-8">
         <div className="pl-14 md:pl-0">
         <div className="grid md:grid-cols-2 gap-8">
           <div className="relative rounded-3xl overflow-hidden bg-surface aspect-square card-neon">
             <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-            <button
+            <Button
+              variant="outline"
+              size="icon"
               type="button"
               onClick={copyLink}
               aria-label="نسخ رابط المنتج"
+              title="نسخ رابط المنتج"
               className="absolute top-3 left-3 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur border border-border flex items-center justify-center hover:border-primary hover:text-primary transition"
             >
               <Link2 className="w-5 h-5" />
-            </button>
+            </Button>
             <div className="absolute top-3 right-3">
               {product.inStock ? (
                 <span className="px-3 py-1.5 rounded-lg bg-green-500 text-white text-xs font-black shadow-lg">
@@ -154,7 +169,7 @@ function ProductPage() {
             )}
 
             <div className="flex items-baseline gap-3 mb-3">
-              <span className="text-4xl font-black text-primary text-glow">{formatIQD(product.price)}</span>
+              <span className="text-3xl md:text-4xl font-black text-primary text-glow break-words">{formatIQD(product.price)}</span>
               {product.oldPrice && (
                 <span className="text-lg text-muted-foreground line-through">{formatIQD(product.oldPrice)}</span>
               )}
@@ -168,22 +183,23 @@ function ProductPage() {
             <p className="text-muted-foreground leading-relaxed mb-6 whitespace-pre-wrap">{product.description}</p>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <button
+              <Button
                 disabled={!product.inStock}
                 onClick={buyNow}
-                className="py-3.5 rounded-xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2 disabled:opacity-40 btn-glow"
+                className="h-auto min-h-12 px-2 py-3 rounded-lg font-bold whitespace-normal btn-glow"
               >
                 <Zap className="w-5 h-5" />
                 شراء الآن
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="outline"
                 disabled={!product.inStock}
                 onClick={addToCart}
-                className="py-3.5 rounded-xl bg-surface border border-border font-bold flex items-center justify-center gap-2 disabled:opacity-40 hover:border-primary/50 transition"
+                className="h-auto min-h-12 px-2 py-3 rounded-lg font-bold whitespace-normal"
               >
                 <ShoppingCart className="w-5 h-5" />
                 إضافة إلى السلة
-              </button>
+              </Button>
             </div>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -272,28 +288,31 @@ function ProductPage() {
       </Container>
 
       {/* Mobile sticky purchase bar; left padding keeps clear of floating contact buttons */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-20 bg-background/95 backdrop-blur border-t border-border pr-3 pl-20 py-2.5 flex items-center gap-2">
-        <div className="min-w-0 flex-1">
-          {product.variantLabel && <div className="text-[10px] text-muted-foreground truncate">{product.variantLabel}</div>}
-          <div className="font-black text-primary text-sm truncate">{formatIQD(product.price)}</div>
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-20 bg-background/95 backdrop-blur border-t border-border pr-3 pl-20 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          {product.variantLabel && <div className="text-xs text-muted-foreground break-words">{product.variantLabel}</div>}
+          <div className="font-black text-primary text-base">{formatIQD(product.price)}</div>
         </div>
-        <button
+        <div className="grid grid-cols-2 gap-2">
+        <Button
+          variant="outline"
           disabled={!product.inStock}
           onClick={addToCart}
           aria-label="إضافة إلى السلة"
-          className="h-10 px-3 rounded-lg bg-surface-2 border border-border text-xs font-bold flex items-center gap-1 disabled:opacity-40"
+          className="h-11 px-2 text-xs font-bold gap-1"
         >
           <ShoppingCart className="w-4 h-4" />
           السلة
-        </button>
-        <button
+        </Button>
+        <Button
           disabled={!product.inStock}
           onClick={buyNow}
-          className="h-10 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center gap-1 disabled:opacity-40"
+          className="h-11 px-2 text-xs font-bold gap-1"
         >
           <Zap className="w-4 h-4" />
           شراء الآن
-        </button>
+        </Button>
+        </div>
       </div>
     </Layout>
   );
