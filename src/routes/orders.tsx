@@ -61,6 +61,7 @@ function OrdersPage() {
       setLoading(false);
       return;
     }
+    await supabase.rpc("auto_advance_pending_orders" as any).then(() => {}, () => {});
     const { data, error } = await supabase.rpc("get_orders_by_ids" as any, { _ids: allIds });
     if (error) toast.error("فشل جلب الطلبات");
     const rows = ((data as any[]) || []) as OrderRow[];
