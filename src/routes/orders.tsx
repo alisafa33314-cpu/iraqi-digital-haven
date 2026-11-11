@@ -123,6 +123,80 @@ function OrdersPage() {
   );
 }
 
+const ORDER_STEPS = [
+  { key: "pending", label: "قيد التنفيذ" },
+  { key: "processing", label: "جاري التجهيز" },
+  { key: "completed", label: "مكتمل" },
+];
+
+/** أفقي: الخطوات المنجزة بالأحمر مع علامة صح، والحالية تنبض خفيف. */
+function OrderStepper({ status }: { status: string }) {
+  const finished = status === "completed";
+  const found = ORDER_STEPS.findIndex((s) => s.key === status);
+  const idx = found === -1 ? 0 : found;
+
+  return (
+    <ol className="flex items-start w-full mb-4" aria-label="مراحل الطلب">
+      {ORDER_STEPS.map((s, i) => {
+        const done = finished || i < idx;
+        const active = !finished && i === idx;
+        const last = i === ORDER_STEPS.length - 1;
+        return (
+          <li key={s.key} className={cn("flex items-start", last ? "" : "flex-1")}>
+            <div className="flex flex-col items-center gap-1.5 shrink-0">
+              <span
+                aria-current={active ? "step" : undefined}
+                className={cn(
+                  "w-8 h-8 rounded-full border flex items-center justify-center text-xs font-black transition-colors",
+                  done && "bg-primary text-primary-foreground border-primary",
+                  active && "bg-primary/15 text-primary border-primary animate-step-pulse",
+                  !done && !active && "bg-surface-2 text-muted-foreground border-border",
+                )}
+              >
+                {done ? <Check className="w-4 h-4" strokeWidth={3} /> : i + 1}
+              </span>
+              <span
+                className={cn(
+                  "text-[10px] sm:text-xs font-bold whitespace-nowrap",
+                  done ? "text-primary" : active ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {s.label}
+              </span>
+            </div>
+            {!last && (
+              <div
+                className={cn(
+                  "flex-1 h-0.5 mt-[15px] mx-1 rounded-full transition-colors",
+                  done ? "bg-primary" : "bg-border",
+                )}
+              />
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** شارة حمراء واضحة + سبب الرفض بدل الخطوات. */
+function RejectedBanner({ reason }: { reason: string | null }) {
+  const text = (reason || "").trim();
+  return (
+    <div className="mb-4 rounded-xl border-2 border-destructive/60 bg-destructive/10 p-3 flex items-start gap-3">
+      <XCircle className="w-6 h-6 text-destructive shrink-0 mt-0.5" />
+      <div className="min-w-0 flex-1">
+        <span className="inline-flex items-center gap-1.5 rounded-lg bg-destructive text-destructive-foreground px-3 py-1 text-xs font-black">
+          <X className="w-3 h-3" strokeWidth={3} /> طلب مرفوض
+        </span>
+        <div className="text-sm font-bold text-destructive mt-2 break-words">
+          سبب الرفض: {text || "لم يُذكر سبب للرفض"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const OrderCard = memo(function OrderCard({ o, onReview }: { o: OrderRow; onReview: () => void }) {
   const reviewedIds = useReviewedOrders((s) => s.ids);
   const catalogProducts = useCatalog((s) => s.products);
@@ -154,6 +228,10 @@ const OrderCard = memo(function OrderCard({ o, onReview }: { o: OrderRow; onRevi
           {STATUS_AR[o.status] || o.status}
         </span>
       </div>
+
+      {o.status === "cancelled"
+        ? <RejectedBanner reason={o.rejection_reason} />
+        : <OrderStepper status={o.status} />}
 
       <div className="space-y-2 mb-4">
         {o.items.map((i, idx) => (
