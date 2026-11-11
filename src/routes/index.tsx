@@ -109,13 +109,13 @@ function Home() {
               <div className="absolute inset-0 bg-grid opacity-20"/>
               <div className="relative flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
-                  {settings["promo_subtitle"] && (<div className="text-white/80 text-sm mb-2">{settings["promo_subtitle"]}</div>)}
+                  {settings["promo_subtitle"] && (<div className="text-white/80 text-sm mb-2">{t(settings["promo_subtitle"])}</div>)}
                   <div className="text-3xl md:text-4xl font-black text-white">
-                    {settings["promo_title"] || ""}
+                    {t(settings["promo_title"] || "")}
                   </div>
                 </div>
                 {settings["promo_cta_slug"] && (<Link to="/category/$slug" params={{ slug: settings["promo_cta_slug"] }} className="px-6 py-3 rounded-xl bg-white text-primary font-black shrink-0">
-                    {settings["promo_cta_label"] || t("اطلب الآن")}
+                    {t(settings["promo_cta_label"] || "اطلب الآن")}
                   </Link>)}
               </div>
             </div>
@@ -167,7 +167,7 @@ function Home() {
                   </div>
                   <div className="text-sm font-bold">
                     {t(r.name ?? "")}
-                    {r.product && (<span className="block text-[11px] font-medium text-muted-foreground">{t(" \u0642\u0627\u0645 \u0628\u0634\u0631\u0627\u0621: ")}<span className="text-primary">{r.product}</span>
+                    {r.product && (<span className="block text-[11px] font-medium text-muted-foreground">{t(" \u0642\u0627\u0645 \u0628\u0634\u0631\u0627\u0621: ")}<span className="text-primary">{t(r.product)}</span>
                       </span>)}
                   </div>
                 </div>

@@ -23,11 +23,11 @@ export function translate(text: string, language: Language): string {
   if (language === "ar" || !/[\u0600-\u06ff]/.test(text)) return text;
   const key = normalize(text);
   if (dictionary[key]) return dictionary[key];
-  let result = text;
+  let result = key;
   for (const phrase of phrases) {
     if (result.includes(phrase)) result = result.split(phrase).join(dictionary[phrase]);
   }
-  return result;
+  return text.startsWith(" ") ? ` ${result} ` : result;
 }
 
 export const t = (text: string) => translate(text, useLanguage.getState().language);

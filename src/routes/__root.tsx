@@ -8,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
@@ -143,9 +143,15 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const language = useLanguage((s) => s.language);
+  const [languageReady, setLanguageReady] = useState(false);
   useEffect(() => {
     try { useLanguage.getState().setLanguage(resolveLanguage(localStorage.getItem(LANGUAGE_KEY))); } catch { /* Storage is optional. */ }
+    setLanguageReady(true);
   }, []);
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.documentElement.dir = languageDirection(language);
+  }, [language]);
   const { queryClient } = Route.useRouteContext();
   const refreshCatalog = useCatalog((s) => s.refresh);
   useEffect(() => { refreshCatalog(); }, [refreshCatalog]);
@@ -154,7 +160,7 @@ function RootComponent() {
   useSiteTheme();
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      {languageReady ? <Outlet /> : <div className="min-h-screen bg-background" />}
       <Toaster position="top-center" theme="dark" richColors dir={languageDirection(language)} duration={3000} />
     </QueryClientProvider>
   );

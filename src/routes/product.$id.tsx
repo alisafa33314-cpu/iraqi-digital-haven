@@ -111,7 +111,7 @@ function ProductPage() {
           </div>
           <div>
             <Link to="/category/$slug" params={{ slug: product.categorySlug }} className="text-xs text-primary font-bold">{t(" \u2190 \u0639\u0648\u062F\u0629 \u0625\u0644\u0649 \u0627\u0644\u0642\u0633\u0645 ")}</Link>
-            <h1 className="text-2xl md:text-3xl font-black mt-3 mb-3">{baseProductName(product)}</h1>
+            <h1 className="text-2xl md:text-3xl font-black mt-3 mb-3">{t(baseProductName(product))}</h1>
 
             {variants.length > 1 && (<div className="mb-5">
                 <div className="text-sm font-bold mb-2">{t("\u0627\u062E\u062A\u0631 \u0645\u062F\u0629 \u0627\u0644\u0627\u0634\u062A\u0631\u0627\u0643")}</div>

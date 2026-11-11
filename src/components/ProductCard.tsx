@@ -31,7 +31,7 @@ function ProductCardBase({ product }: {
       </Link>
       <div className="p-3 flex-1 flex flex-col gap-2">
         <Link to="/product/$id" params={{ id: product.id }} className="font-bold text-sm leading-tight line-clamp-2 hover:text-primary transition min-h-[2.5rem]">
-          {baseProductName(product)}
+          {t(baseProductName(product))}
         </Link>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Star className="w-3 h-3 fill-yellow-500 text-yellow-500"/>
@@ -46,7 +46,7 @@ function ProductCardBase({ product }: {
             </span>)}
         </div>
         {product.inStock && typeof product.stock === "number" && (<div className={`text-[11px] font-bold ${product.stock === 0 ? "text-destructive" : product.stock <= 5 ? "text-orange-500" : "text-emerald-500"}`}>
-            {product.stock === 0 ? t("نفذت الكمية") : `متوفر: ${product.stock}`}
+            {product.stock === 0 ? t("نفذت الكمية") : t(`متوفر: ${product.stock}`)}
           </div>)}
         {product.variantGroup ? (<Link to="/product/$id" params={{ id: product.id }} className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 hover:btn-glow transition">
             <Zap className="w-4 h-4"/>{t(" \u0627\u062E\u062A\u0631 \u0627\u0644\u0645\u062F\u0629 ")}</Link>) : (<div className="grid grid-cols-2 gap-2">
