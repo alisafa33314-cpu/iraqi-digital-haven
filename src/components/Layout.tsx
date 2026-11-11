@@ -207,8 +207,8 @@ function AuthMenu() {
         return <div className="w-10 h-10 rounded-lg bg-surface skeleton" aria-hidden="true"/>;
     }
     if (!user) {
-        return (<Link to="/auth" className="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:btn-glow transition" aria-label={t("تسجيل الدخول")}>
-        <GoogleIcon className="w-4 h-4"/>{t(" \u062F\u062E\u0648\u0644 ")}</Link>);
+        return (<Link to="/auth" className="inline-flex items-center justify-center sm:justify-start gap-2 h-10 w-10 sm:w-auto px-0 sm:px-3 shrink-0 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:btn-glow transition" aria-label={t("تسجيل الدخول")}>
+        <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0"><GoogleIcon className="w-4 h-4"/></span><span className="hidden sm:inline">{t(" \u062F\u062E\u0648\u0644 ")}</span></Link>);
     }
     const logout = async () => {
         setOpen(false);
@@ -249,7 +249,7 @@ function DrawerAuthRow({ onNavigate }: {
       </Link>);
     }
     return (<Link to="/auth" onClick={onNavigate} className="mt-3 inline-flex items-center gap-2 w-full px-3 py-3 rounded-lg bg-primary text-primary-foreground font-bold justify-center">
-      <GoogleIcon className="w-4 h-4"/>{t(" \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062F\u062E\u0648\u0644 \u0628\u062D\u0633\u0627\u0628 \u062C\u0648\u062C\u0644 ")}</Link>);
+      <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0"><GoogleIcon className="w-4 h-4"/></span>{t("الدخول بحساب جوجل")}</Link>);
 }
 export function Container({ children, className = "" }: {
     children: ReactNode;
