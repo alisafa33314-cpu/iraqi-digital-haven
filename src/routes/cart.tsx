@@ -10,7 +10,7 @@ export const Route = createFileRoute("/cart")({
         meta: [
             { title: "السلة — FPI STOR" },
             { name: "description", content: "راجع منتجاتك واستكمل عملية الشراء." },
-        ],
+        {property:"og:title", content:"السلة — FPI STOR"},{property:"og:description", content:"راجع منتجاتك واستكمل عملية الشراء."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}],
     }),
     component: CartPage,
 });

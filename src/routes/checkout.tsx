@@ -13,7 +13,7 @@ import { checkBlocked } from "@/lib/blocked.functions";
 import { useSession, signInWithGoogle } from "@/lib/auth";
 import { GoogleIcon } from "@/components/GoogleIcon";
 export const Route = createFileRoute("/checkout")({
-    head: () => ({ meta: [{ title: "إتمام الطلب — FPI STOR" }] }),
+    head: () => ({ meta: [{ title: "إتمام الطلب — FPI STOR" },{name:"description", content:"Manage your FPI STOR orders and account."},{property:"og:title", content:"إتمام الطلب — FPI STOR"},{property:"og:description", content:"Manage your FPI STOR orders and account."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}] }),
     component: CheckoutPage,
 });
 function CheckoutPage() {

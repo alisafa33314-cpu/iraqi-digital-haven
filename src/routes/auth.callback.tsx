@@ -26,7 +26,7 @@ function safeReturnTo(raw: string | null): string | null {
 // session tokens from the URL hash automatically, then we go home — or hand
 // the session back to the external origin that requested the sign-in.
 export const Route = createFileRoute("/auth/callback")({
-    head: () => ({ meta: [{ title: "جاري تسجيل الدخول — FPI STOR" }, { name: "robots", content: "noindex" }] }),
+    head: () => ({ meta: [{ title: "جاري تسجيل الدخول — FPI STOR" }, { name: "robots", content: "noindex" },{name:"description", content:"Manage your FPI STOR orders and account."},{property:"og:title", content:"جاري تسجيل الدخول — FPI STOR"},{property:"og:description", content:"Manage your FPI STOR orders and account."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}] }),
     component: AuthCallbackPage,
 });
 function AuthCallbackPage() {

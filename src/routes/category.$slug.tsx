@@ -16,7 +16,7 @@ export const Route = createFileRoute("/category/$slug")({
             { property: "og:title", content: `قسم ${params.slug} — FPI STOR` },
             { property: "og:description", content: `منتجات قسم ${params.slug} بالدينار العراقي.` },
             { property: "og:url", content: `https://fpistor.com/category/${params.slug}` },
-        ],
+        {property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}],
         links: [{ rel: "canonical", href: `https://fpistor.com/category/${params.slug}` }],
     }),
 });

@@ -11,7 +11,7 @@ import { useSession } from "@/lib/auth";
 import { useCatalog } from "@/lib/catalog";
 import { toast } from "sonner";
 export const Route = createFileRoute("/orders")({
-    head: () => ({ meta: [{ title: "طلباتي — FPI STOR" }] }),
+    head: () => ({ meta: [{ title: "طلباتي — FPI STOR" },{name:"description", content:"Manage your FPI STOR orders and account."},{property:"og:title", content:"طلباتي — FPI STOR"},{property:"og:description", content:"Manage your FPI STOR orders and account."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}] }),
     component: OrdersPage,
 });
 type OrderRow = {

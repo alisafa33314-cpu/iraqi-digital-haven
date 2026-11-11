@@ -34,7 +34,7 @@ export const Route = createFileRoute("/auth")({
             { name: "robots", content: "noindex, follow" },
             { property: "og:title", content: "تسجيل الدخول — FPI STOR" },
             { property: "og:description", content: "سجّل الدخول بحساب جوجل لمتابعة طلباتك في FPI STOR." },
-        ],
+        {property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}],
     }),
     component: AuthPage,
 });

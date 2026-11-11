@@ -15,7 +15,7 @@ import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
 import { readTheme, applyTheme, THEME_KEYS, THEME_LABELS, THEME_DEFAULTS, themeSettingKey } from "@/lib/theme";
 import { telegramTestSend } from "@/lib/telegram-test.functions";
 export const Route = createFileRoute("/admin")({
-    head: () => ({ meta: [{ title: "لوحة الإدارة — FPI STOR" }] }),
+    head: () => ({ meta: [{ title: "لوحة الإدارة — FPI STOR" },{name:"description", content:"Manage your FPI STOR orders and account."},{property:"og:title", content:"لوحة الإدارة — FPI STOR"},{property:"og:description", content:"Manage your FPI STOR orders and account."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}] }),
     component: AdminPage,
 });
 type AdminOrder = {

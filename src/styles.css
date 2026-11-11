@@ -151,3 +151,10 @@
 ::-webkit-scrollbar-track { background: oklch(0.14 0.01 20); }
 ::-webkit-scrollbar-thumb { background: oklch(0.35 0.10 22); border-radius: 8px; }
 ::-webkit-scrollbar-thumb:hover { background: oklch(0.55 0.20 22); }
+
+/* Language-aware alignment without changing fixed-position contact controls. */
+html[dir="ltr"] .text-right { text-align: left; }
+html[dir="ltr"] .text-left { text-align: right; }
+html[dir="ltr"] .container { text-align: start; }
+html[dir="ltr"] .container .text-center { text-align: center; }
+html[dir="ltr"] .card-neon button { white-space: normal; }

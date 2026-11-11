@@ -14,13 +14,13 @@ export const Route = createFileRoute("/search")({
             { name: "description", content: "ابحث عن اشتراكات، ألعاب، حسابات وكفت كارد في متجر FPI STOR." },
             { name: "robots", content: "noindex, follow" },
             { property: "og:url", content: "https://fpistor.com/search" },
-        ],
+        {property:"og:title", content:"بحث — FPI STOR"},{property:"og:description", content:"ابحث عن اشتراكات، ألعاب، حسابات وكفت كارد في متجر FPI STOR."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}],
         links: [{ rel: "canonical", href: "https://fpistor.com/search" }],
     }),
     component: SearchPage,
 });
 function SearchPage() {
-    useLanguage();
+    const language = useLanguage((s) => s.language);
     const [q, setQ] = useState("");
     const products = useCatalog((s) => s.products);
     const categories = useCatalog((s) => s.categories);
@@ -32,8 +32,9 @@ function SearchPage() {
             return list;
         return list.filter((p) => p.name.toLowerCase().includes(query) ||
             p.description.toLowerCase().includes(query) ||
+            t(p.name).toLowerCase().includes(query) || t(p.description).toLowerCase().includes(query) ||
             categories.find((c) => c.slug === p.categorySlug)?.name.includes(query));
-    }, [q, products, categories]);
+    }, [q, products, categories, language]);
     return (<Layout>
       <Container className="py-10">
         <h1 className="text-3xl font-black mb-5">{t("\u0627\u0644\u0628\u062D\u062B \u0641\u064A \u0627\u0644\u0645\u062A\u062C\u0631")}</h1>
