@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Plus, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCatalog } from "@/lib/catalog";
-import { uploadImage, resolveAssetUrl } from "@/lib/upload";
+import { uploadImage } from "@/lib/upload";
 import { parseHowToBuy, type HowToBuyStep } from "@/lib/how-to-buy";
 
 const inputCls = "w-full px-3 py-2 rounded-lg bg-surface-2 border border-border focus:border-primary outline-none text-sm";
@@ -89,7 +89,7 @@ export function HowToBuyManager({ adminCode, onChange }: { adminCode: string; on
           <input value={s.title} onChange={(e) => update(i, { title: e.target.value })} className={inputCls} placeholder="عنوان الخطوة (مثال: اختر المنتج)" />
           <textarea value={s.text} onChange={(e) => update(i, { text: e.target.value })} className={inputCls} rows={2} placeholder="شرح الخطوة" />
           <div className="flex items-center gap-3 flex-wrap">
-            {s.image && <img src={resolveAssetUrl(s.image)} alt="" className="w-20 h-14 object-cover rounded-lg border border-border" />}
+            {s.image && <img src={s.image} alt="" className="w-20 h-14 object-cover rounded-lg border border-border" />}
             <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-2 border border-border cursor-pointer text-xs hover:border-primary/50">
               <Upload className="w-3.5 h-3.5" /> {uploadingIdx === i ? "جاري الرفع…" : s.image ? "تغيير الصورة" : "إضافة صورة"}
               <input type="file" accept="image/*" className="hidden" disabled={uploadingIdx !== null}

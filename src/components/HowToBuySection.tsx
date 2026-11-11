@@ -1,5 +1,4 @@
 import { useCatalog } from "@/lib/catalog";
-import { resolveAssetUrl } from "@/lib/upload";
 import { parseHowToBuy } from "@/lib/how-to-buy";
 
 export function HowToBuySection() {
@@ -20,7 +19,7 @@ export function HowToBuySection() {
             <li key={i} className="card-neon rounded-2xl overflow-hidden flex flex-col">
               {s.image && (
                 <div className="aspect-video bg-surface-2">
-                  <img src={resolveAssetUrl(s.image)} alt={s.title || `الخطوة ${i + 1}`} loading="lazy"
+                  <img src={s.image} alt={s.title || `الخطوة ${i + 1}`} loading="lazy"
                     className="w-full h-full object-cover" />
                 </div>
               )}
