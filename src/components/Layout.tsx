@@ -19,6 +19,7 @@ export function Layout({ children }: {
     const nav = [
         { to: "/", label: "الرئيسية" },
         { to: "/categories", label: "الأقسام" },
+        { to: "/how-to-buy", label: "دليل الشراء" },
         { to: "/orders", label: "طلباتي" },
         { to: "/admin", label: "الإدارة" },
     ];
@@ -115,6 +116,7 @@ export function Layout({ children }: {
               <Link to="/" className="block hover:text-primary">{t("\u0627\u0644\u0631\u0626\u064A\u0633\u064A\u0629")}</Link>
               <Link to="/categories" className="block hover:text-primary">{t("\u0627\u0644\u0623\u0642\u0633\u0627\u0645")}</Link>
               <Link to="/orders" className="block hover:text-primary">{t("\u0637\u0644\u0628\u0627\u062A\u064A")}</Link>
+              <Link to="/how-to-buy" className="block hover:text-primary">{t("دليل الشراء")}</Link>
               <Link to="/cart" className="block hover:text-primary">{t("\u0627\u0644\u0633\u0644\u0629")}</Link>
             </div>
           </div>
