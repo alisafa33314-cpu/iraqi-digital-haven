@@ -191,13 +191,13 @@ const OrderCard = memo(function OrderCard({ o, onReview }: {
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div>
           <button type="button" dir="ltr" aria-label={t("نسخ رقم الطلب")} onClick={async () => {
-            const t = o.id.slice(0, 8).toUpperCase();
+            const number = o.id.slice(0, 8).toUpperCase();
             try {
-                await navigator.clipboard.writeText(t);
-                toast.success(t(t("تم نسخ رقم الطلب")));
+                await navigator.clipboard.writeText(number);
+                toast.success(t("تم نسخ رقم الطلب"));
             }
             catch {
-                toast.error(t(t("تعذّر النسخ")));
+                toast.error(t("تعذّر النسخ"));
             }
         }} className="font-black text-lg inline-flex items-center gap-1.5 hover:text-primary transition-colors">
             #{o.id.slice(0, 8).toUpperCase()}
