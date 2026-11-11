@@ -17,3 +17,4 @@
 - Session state lives in the `useSession` zustand store (`src/lib/auth.ts`); its `init()` registers the single app-wide `onAuthStateChange` subscriber and is called once from `src/routes/__root.tsx`. Do not add competing auth listeners.
 - Signed-in orders are linked by writing `user_id` on the `orders` insert in checkout; the orders page merges account orders (`user_id = auth.uid()`) with localStorage order ids.
 - Admin customer listing goes through the `admin_list_customers` / `admin_count_customers` SECURITY DEFINER RPCs (same `_code` + `has_role` pattern as the other admin functions) so admins can read all profiles without widening profile RLS.
+- Storefront styling is shared through the global semantic tokens and the storefront layout scope; product tiles use the shared Button primitives — why: every shopping page stays visually consistent while editable brand colors remain supported.
