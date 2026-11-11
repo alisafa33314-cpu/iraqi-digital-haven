@@ -79,6 +79,12 @@ function Home() {
               >
                 تصفح المتجر <ArrowLeft className="w-4 h-4" />
               </Link>
+              <Link
+                to="/search"
+                className="px-6 py-3 rounded-xl bg-surface border border-border font-bold inline-flex items-center gap-2 hover:border-primary/50 transition"
+              >
+                <Search className="w-4 h-4" /> بحث
+              </Link>
               <a
                 href="#how-to-buy"
                 onClick={(e) => { const el = document.getElementById("how-to-buy"); if (el) { e.preventDefault(); el.scrollIntoView({ behavior: "smooth", block: "start" }); } }}
