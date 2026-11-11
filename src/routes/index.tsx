@@ -210,6 +210,8 @@ function Home() {
 
 
       {/* Reviews */}
+      <HowToBuySection />
+
       <section className="py-14 border-t border-border bg-surface/40">
         <Container>
           <SectionHeader title="آراء عملائنا" subtitle="ثقتك شرفنا" />
