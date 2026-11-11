@@ -1,10 +1,5 @@
 # Admin panel
 
-# Store redesign
-
-- [x] Refresh the shared visual system, navigation, home, and product cards without changing commerce rules.
-- [x] Verify browsing, search, cart, and checkout on mobile and desktop (no order submitted).
-
 - [x] Visitor-stats section collapsible with a chevron; open/closed state saved per device.
 
 # Backend connection update

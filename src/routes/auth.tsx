@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
-import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "@/components/GoogleIcon";
 import { useSession, signInWithGoogle } from "@/lib/auth";
 import { cloud as supabase } from "@/lib/cloud-client";
@@ -28,8 +27,6 @@ export const Route = createFileRoute("/auth")({
     typeof s.return_to === "string" ? { return_to: s.return_to } : {},
   head: () => ({
     meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { title: "تسجيل الدخول — FPI STOR" },
       { name: "description", content: "سجّل الدخول إلى FPI STOR بحساب جوجل لمتابعة طلباتك بسرعة وأمان." },
       { name: "robots", content: "noindex, follow" },
@@ -97,8 +94,8 @@ function AuthPage() {
 
   return (
     <Layout>
-      <Container className="py-16">
-        <div className="mx-auto max-w-md py-8 text-center">
+      <Container className="py-16 max-w-md">
+        <div className="card-neon rounded-3xl p-8 text-center">
           <div className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center mx-auto mb-4">
             <ShieldCheck className="w-8 h-8 text-primary" />
           </div>
@@ -107,20 +104,19 @@ function AuthPage() {
             سجّل الدخول لمتابعة طلباتك وحفظ بياناتك للشراء السريع
           </p>
 
-          <Button
+          <button
             type="button"
             onClick={handleGoogle}
             disabled={busy}
-            variant="outline"
-            className="google-sign-in w-full h-12 font-medium gap-2.5"
+            className="w-full py-3.5 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-3 hover:bg-white/90 active:scale-[0.98] transition disabled:opacity-60"
           >
             {busy ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <GoogleIcon className="w-[18px] h-[18px]" />
+              <GoogleIcon className="w-5 h-5" />
             )}
-            <span>{busy ? "جاري الاتصال بجوجل…" : "تسجيل الدخول باستخدام Google"}</span>
-          </Button>
+            <span>{busy ? "جاري الاتصال بجوجل…" : "الدخول بحساب جوجل"}</span>
+          </button>
 
           <div className="mt-6 pt-6 border-t border-border space-y-2 text-xs text-muted-foreground">
             <div className="flex items-center justify-center gap-2">

@@ -10,10 +10,6 @@ import { useMemo, useState } from "react";
 export const Route = createFileRoute("/search")({
   head: () => ({
     meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { property: "og:title", content: "البحث في المتجر — FPI STOR" },
-      { property: "og:description", content: "البحث في المتجر في متجر FPI STOR للمنتجات الرقمية بالدينار العراقي." },
       { title: "بحث — FPI STOR" },
       { name: "description", content: "ابحث عن اشتراكات، ألعاب، حسابات وكفت كارد في متجر FPI STOR." },
       { name: "robots", content: "noindex, follow" },
@@ -49,7 +45,6 @@ function SearchPage() {
         <div className="relative mb-8">
           <SearchIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
           <input
-            aria-label="البحث عن منتج"
             autoFocus
             value={q}
             onChange={(e) => setQ(e.target.value)}

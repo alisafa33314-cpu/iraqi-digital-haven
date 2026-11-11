@@ -13,8 +13,6 @@ export const Route = createFileRoute("/category/$slug")({
   ),
   head: ({ params }) => ({
     meta: [
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
       { title: `قسم ${params.slug} — FPI STOR` },
       { name: "description", content: `تصفح منتجات قسم ${params.slug} في متجر FPI STOR بالدينار العراقي مع تسليم فوري.` },
       { property: "og:title", content: `قسم ${params.slug} — FPI STOR` },

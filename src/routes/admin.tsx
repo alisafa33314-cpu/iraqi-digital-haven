@@ -15,15 +15,7 @@ import { telegramTestSend } from "@/lib/telegram-test.functions";
 
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [
-    { title: "لوحة الإدارة — FPI STOR" },
-    { name: "description", content: "إدارة منتجات وطلبات متجر FPI STOR." },
-    { property: "og:title", content: "لوحة الإدارة — FPI STOR" },
-    { property: "og:description", content: "إدارة منتجات وطلبات متجر FPI STOR." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary" },
-    { name: "robots", content: "noindex, follow" },
-  ] }),
+  head: () => ({ meta: [{ title: "لوحة الإدارة — FPI STOR" }] }),
   component: AdminPage,
 });
 
