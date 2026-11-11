@@ -84,6 +84,8 @@ function Home() {
         </Container>
       </section>
 
+      <HowToBuySection />
+
       {/* Categories */}
       <section className="py-12">
         <Container>
@@ -148,8 +150,6 @@ function Home() {
 
 
       {/* Reviews */}
-      <HowToBuySection />
-
       <section className="py-14 border-t border-border bg-surface/40">
         <Container>
           <SectionHeader title={t("آراء عملائنا")} subtitle={t("ثقتك شرفنا")}/>
