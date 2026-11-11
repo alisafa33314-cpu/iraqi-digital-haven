@@ -4,7 +4,7 @@ import { formatIQD, type Product, type PaymentMethod, type Category } from "@/li
 import { useCatalog } from "@/lib/catalog";
 import { useEffect, useState, useCallback, memo } from "react";
 import { toast } from "sonner";
-import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2, ChevronDown, ChevronUp, Search } from "lucide-react";
+import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2, ChevronDown, ChevronUp, Search, XCircle } from "lucide-react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage, resolveAssetUrl } from "@/lib/upload";
@@ -614,6 +614,8 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
   const [busy, setBusy] = useState(false);
   const [proofOpen, setProofOpen] = useState(false);
   const [blockOpen, setBlockOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
 
 
   const handleUpload = async (files: FileList) => {
@@ -665,10 +667,13 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
     setBusy(true);
     const { error } = await supabase.rpc("admin_update_status" as any, {
       _code: adminCode, _order_id: order.id, _status: "cancelled",
+      _reason: rejectReason.trim() || null,
     });
     setBusy(false);
     if (error) return toast.error("فشل التحديث");
     toast.success("تم رفض الطلب");
+    setRejectOpen(false);
+    setRejectReason("");
     onChange();
   };
 
