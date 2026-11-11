@@ -6,6 +6,8 @@ import { useCatalog } from "@/lib/catalog";
 export const Route = createFileRoute("/categories")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { title: "الأقسام — FPI STOR" },
       { name: "description", content: "تصفح جميع أقسام متجر FPI STOR: بلايستيشن، اكس بوكس، بث، كفت كارد، ستيم، وخدمات ذكاء اصطناعي بالدينار العراقي." },
       { property: "og:title", content: "الأقسام — FPI STOR" },
@@ -35,7 +37,7 @@ function CategoriesPage() {
                 key={c.slug}
                 to="/category/$slug"
                 params={{ slug: c.slug }}
-                className="card-neon rounded-2xl p-6 flex flex-col items-center text-center gap-2"
+                className="rounded-lg border border-border bg-surface hover:border-muted-foreground transition-colors p-6 flex flex-col items-center text-center gap-2"
               >
                 {c.image_url ? (
                   <img src={c.image_url} alt={c.name} loading="lazy" decoding="async" className="w-20 h-20 rounded-xl object-cover mb-1" />

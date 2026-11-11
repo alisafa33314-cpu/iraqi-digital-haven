@@ -11,12 +11,21 @@ import { uploadPaymentProof } from "@/lib/upload";
 import { checkBlocked } from "@/lib/blocked.functions";
 import { useSession, signInWithGoogle } from "@/lib/auth";
 import { GoogleIcon } from "@/components/GoogleIcon";
+import { Button } from "@/components/ui/button";
 
 
 
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({ meta: [{ title: "إتمام الطلب — FPI STOR" }] }),
+  head: () => ({ meta: [
+    { title: "إتمام الطلب — FPI STOR" },
+    { name: "description", content: "راجع طلبك واختر طريقة الدفع وأكمل الشراء في FPI STOR." },
+    { property: "og:title", content: "إتمام الطلب — FPI STOR" },
+    { property: "og:description", content: "راجع طلبك واختر طريقة الدفع وأكمل الشراء في FPI STOR." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex, follow" },
+  ] }),
   component: CheckoutPage,
 });
 
@@ -247,10 +256,10 @@ function CheckoutPage() {
                     <GoogleIcon className="w-3.5 h-3.5" /> مسجل الدخول: {user.email}
                   </span>
                 ) : (
-                  <button type="button" onClick={handleGoogle} disabled={googleBusy}
-                    className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-white text-black font-bold hover:opacity-90 transition disabled:opacity-60">
-                    {googleBusy ? "جاري الاتصال…" : (<><GoogleIcon className="w-3.5 h-3.5" /> الدخول بحساب جوجل</>)}
-                  </button>
+                  <Button variant="outline" type="button" onClick={handleGoogle} disabled={googleBusy}
+                    className="google-sign-in gap-2.5 px-3 h-10 text-sm font-medium">
+                    {googleBusy ? "جاري الاتصال…" : (<><GoogleIcon className="w-[18px] h-[18px]" /> تسجيل الدخول باستخدام Google</>)}
+                  </Button>
                 )}
               </div>
               <div className="grid sm:grid-cols-2 gap-3">

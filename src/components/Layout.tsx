@@ -6,6 +6,7 @@ import { useCart } from "@/lib/cart";
 import { useCatalog } from "@/lib/catalog";
 import { useSession, signOutCustomer } from "@/lib/auth";
 import { GoogleIcon } from "@/components/GoogleIcon";
+import { Button } from "@/components/ui/button";
 
 export function Layout({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -21,21 +22,21 @@ export function Layout({ children }: { children: ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="storefront min-h-screen flex flex-col">
       {/* Announcement bar */}
       <MarqueeBar />
 
 
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-background/80 border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
+        <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center font-black text-lg shadow-glow btn-glow">
+            <div className="w-10 h-10 rounded-md bg-primary text-primary-foreground flex items-center justify-center font-black text-lg">
               F
             </div>
             <div className="leading-tight">
-              <div className="font-black text-lg text-glow">FPI STOR</div>
-              <div className="text-[10px] text-muted-foreground">متجر رقمي عراقي</div>
+              <div className="font-black text-lg">FPI STOR</div>
+              <div className="text-xs text-muted-foreground">متجر رقمي عراقي</div>
             </div>
           </Link>
 
@@ -46,7 +47,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 to={n.to}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                   pathname === n.to
-                    ? "bg-primary/15 text-primary"
+                    ? "text-foreground border-b-2 border-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-surface"
                 }`}
               >
@@ -76,13 +77,15 @@ export function Layout({ children }: { children: ReactNode }) {
                 </span>
               )}
             </Link>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setOpen(true)}
               className="lg:hidden w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center"
               aria-label="القائمة"
             >
               <Menu className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </header>
@@ -90,16 +93,19 @@ export function Layout({ children }: { children: ReactNode }) {
       {/* Mobile drawer */}
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/70" onClick={() => setOpen(false)} />
+          <div className="absolute inset-0 bg-background/80" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-0 bottom-0 w-80 max-w-[85%] bg-background border-l border-border p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <div className="font-black text-lg text-glow">FPI STOR</div>
-              <button
+              <div className="font-black text-lg">FPI STOR</div>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="إغلاق القائمة"
                 onClick={() => setOpen(false)}
                 className="w-9 h-9 rounded-lg bg-surface"
               >
                 <X className="w-4 h-4 mx-auto" />
-              </button>
+              </Button>
             </div>
             <div className="space-y-1">
               {nav.map((n) => (
@@ -148,7 +154,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <div className="font-black">FPI STOR</div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              متجرك العراقي الأول للاشتراكات الرقمية والألعاب وبطاقات الهدايا. تسليم فوري وأسعار منافسة.
+              اشتراكات رقمية، ألعاب وبطاقات هدايا في مكان واحد. الدفع بالدينار العراقي.
             </p>
           </div>
           <div>
@@ -198,8 +204,8 @@ function MarqueeBar() {
   } catch { items = []; }
   if (!enabled || items.length === 0) return null;
   return (
-    <div className="bg-primary/10 border-b border-primary/20 text-xs overflow-hidden">
-      <div className="flex whitespace-nowrap animate-marquee py-2">
+    <div className="bg-surface border-b border-border text-muted-foreground text-xs overflow-hidden">
+      <div className="flex whitespace-nowrap animate-marquee py-2.5">
         {Array.from({ length: 2 }).map((_, i) => (
           <div key={i} className="flex gap-8 px-4 shrink-0">
             {items.map((t, j) => <span key={j}>{t}</span>)}
@@ -248,13 +254,13 @@ function SocialsFloating() {
       {list.map((s) => (
         <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer"
           aria-label={s.name}
-          className="w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center overflow-hidden border-2 border-white/20">
+          className="w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center overflow-hidden border-2 border-border">
           {s.image_url ? (
             <img loading="lazy" decoding="async" src={s.image_url} alt={s.name} className="w-full h-full object-cover" />
           ) : s.name.includes("تليجرام") || /telegram/i.test(s.url) ? (
-            <Send className="w-6 h-6 text-white" />
+            <Send className="w-6 h-6 text-primary-foreground" />
           ) : (
-            <MessageCircle className="w-6 h-6 text-white" />
+            <MessageCircle className="w-6 h-6 text-primary-foreground" />
           )}
         </a>
       ))}
@@ -295,7 +301,7 @@ function AuthMenu() {
 
   return (
     <div className="relative">
-      <button
+      <Button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center overflow-hidden border border-border transition"
@@ -306,7 +312,7 @@ function AuthMenu() {
         ) : (
           <span className="font-bold text-sm">{(user.name || user.email || "؟").charAt(0)}</span>
         )}
-      </button>
+      </Button>
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
@@ -319,10 +325,10 @@ function AuthMenu() {
               className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-surface-2 font-medium">
               <Package className="w-4 h-4" /> طلباتي
             </Link>
-            <button type="button" onClick={logout}
+            <Button type="button" onClick={logout}
               className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-surface-2 text-destructive font-medium">
               <LogOut className="w-4 h-4" /> تسجيل الخروج
-            </button>
+            </Button>
           </div>
         </>
       )}
