@@ -6,6 +6,7 @@
 
 - [x] Horizontal 3-step status bar per order (قيد التنفيذ ← جاري التجهيز ← مكتمل): done steps red with a check, current step pulses lightly.
 - [x] Rejected orders show a red badge with the rejection reason instead of the steps; admin can type that reason when rejecting.
+- [x] Admin orders panel: live search by order number (accepts # or no #, any case, with or without dashes), with a clear button and a "no such order" message.
 
 # Backend connection update
 
