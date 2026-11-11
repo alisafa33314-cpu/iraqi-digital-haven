@@ -222,7 +222,16 @@ const OrderCard = memo(function OrderCard({ o, onReview }: { o: OrderRow; onRevi
     <div className="card-neon rounded-2xl p-5">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
         <div>
-          <div className="font-black text-lg" dir="ltr">#{o.id.slice(0, 8).toUpperCase()}</div>
+          <button type="button" dir="ltr" aria-label="نسخ رقم الطلب"
+            onClick={async () => {
+              const t = o.id.slice(0, 8).toUpperCase();
+              try { await navigator.clipboard.writeText(t); toast.success("تم نسخ رقم الطلب"); }
+              catch { toast.error("تعذّر النسخ"); }
+            }}
+            className="font-black text-lg inline-flex items-center gap-1.5 hover:text-primary transition-colors">
+            #{o.id.slice(0, 8).toUpperCase()}
+            <Copy className="w-4 h-4 text-muted-foreground" />
+          </button>
           <div className="text-xs text-muted-foreground">{new Date(o.created_at).toLocaleString("ar-IQ")}</div>
         </div>
         <span className={`text-xs px-3 py-1.5 rounded-lg border font-bold ${STATUS_STYLES[o.status] || ""}`}>
