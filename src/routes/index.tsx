@@ -102,6 +102,7 @@ function Home() {
           </div>
         </Container>
       </section>
+      <HowToBuySection />
 
       {/* Categories */}
       <section className="py-12">
@@ -206,7 +207,6 @@ function Home() {
         </Container>
       </section>
 
-      <HowToBuySection />
 
       {/* Reviews */}
       <section className="py-14 border-t border-border bg-surface/40">
