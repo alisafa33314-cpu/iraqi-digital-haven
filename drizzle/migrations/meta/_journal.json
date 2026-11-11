@@ -43,6 +43,13 @@
       "when": 1794388548446,
       "tag": "0005_admin_list_orders_rejection_reason",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794389074317,
+      "tag": "0006_order_received_email",
+      "breakpoints": true
     }
   ]
 }
