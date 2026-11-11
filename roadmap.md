@@ -2,6 +2,11 @@
 
 - [x] Visitor-stats section collapsible with a chevron; open/closed state saved per device.
 
+# Orders page
+
+- [x] Horizontal 3-step status bar per order (قيد التنفيذ ← جاري التجهيز ← مكتمل): done steps red with a check, current step pulses lightly.
+- [x] Rejected orders show a red badge with the rejection reason instead of the steps; admin can type that reason when rejecting.
+
 # Backend connection update
 
 - [x] Point Vercel store back to the original store backend so products load.
