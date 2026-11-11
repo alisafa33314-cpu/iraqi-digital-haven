@@ -42,7 +42,11 @@ export function Layout({ children }: {
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
-            
+            {nav.map((n) => (<Link key={n.to} to={n.to} className={`px-4 py-2 rounded-lg text-sm font-medium transition ${pathname === n.to
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-surface"}`}>
+                {t(n.label ?? "")}
+              </Link>))}
           </nav>
 
           <div className="flex items-center gap-2">
@@ -52,9 +56,11 @@ export function Layout({ children }: {
             </Link>
             <Link to="/cart" className="relative w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center transition" aria-label={t("السلة")}>
               <ShoppingCart className="w-4 h-4"/>
-              
+              {count > 0 && (<span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                  {count}
+                </span>)}
             </Link>
-            <button onClick= className="lg:hidden w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center" aria-label={t("القائمة")}>
+            <button onClick={() => setOpen(true)} className="lg:hidden w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center" aria-label={t("القائمة")}>
               <Menu className="w-4 h-4"/>
             </button>
           </div>
@@ -62,9 +68,34 @@ export function Layout({ children }: {
       </header>
 
       {/* Mobile drawer */}
-      
+      {open && (<div className="fixed inset-0 z-50 lg:hidden">
+          <div className="absolute inset-0 bg-black/70" onClick={() => setOpen(false)}/>
+          <div className="absolute right-0 top-0 bottom-0 w-80 max-w-[85%] bg-background border-l border-border p-6 overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <div className="font-black text-lg text-glow">FPI STOR</div>
+              <button onClick={() => setOpen(false)} className="w-9 h-9 rounded-lg bg-surface">
+                <X className="w-4 h-4 mx-auto"/>
+              </button>
+            </div>
+            <div className="space-y-1">
+              {nav.map((n) => (<Link key={n.to} to={n.to} onClick={() => setOpen(false)} className="block px-3 py-3 rounded-lg hover:bg-surface font-medium">
+                  {t(n.label ?? "")}
+                </Link>))}
+            </div>
+            <DrawerAuthRow onNavigate={() => setOpen(false)}/>
+            <div className="mt-6 pt-6 border-t border-border">
+              <div className="text-xs text-muted-foreground mb-3">{t("\u0627\u0644\u0623\u0642\u0633\u0627\u0645")}</div>
+              <div className="space-y-1">
+                {categories.map((c) => (<Link key={c.slug} to="/category/$slug" params={{ slug: c.slug }} onClick={() => setOpen(false)} className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-surface text-sm">
+                    <span className="text-lg">{c.icon}</span>
+                    <span>{t(c.name ?? "")}</span>
+                  </Link>))}
+              </div>
+            </div>
+          </div>
+        </div>)}
 
-      <main className="flex-1"></main>
+      <main className="flex-1">{children}</main>
 
       {/* Footer */}
       <footer className="mt-16 border-t border-border bg-surface/50">
@@ -102,7 +133,7 @@ export function Layout({ children }: {
 
         </div>
         <div className="border-t border-border py-4 text-center text-xs text-muted-foreground">
-          © {t(" FPI STOR \u2014 \u062C\u0645\u064A\u0639 \u0627\u0644\u062D\u0642\u0648\u0642 \u0645\u062D\u0641\u0648\u0638\u0629 ")}</div>
+          © {new Date().getFullYear()}{t(" FPI STOR \u2014 \u062C\u0645\u064A\u0639 \u0627\u0644\u062D\u0642\u0648\u0642 \u0645\u062D\u0641\u0648\u0638\u0629 ")}</div>
       </footer>
 
       {/* Floating action buttons: dynamic socials */}
@@ -127,7 +158,9 @@ function MarqueeBar() {
         return null;
     return (<div className="bg-primary/10 border-b border-primary/20 text-xs overflow-hidden">
       <div className="flex whitespace-nowrap animate-marquee py-2">
-        
+        {Array.from({ length: 2 }).map((_, i) => (<div key={i} className="flex gap-8 px-4 shrink-0">
+            {items.map((item, j) => <span key={j}>{t(item)}</span>)}
+          </div>))}
       </div>
     </div>);
 }
@@ -141,7 +174,10 @@ function SocialsFooter() {
       </div>);
     }
     return (<div className="flex flex-wrap gap-2">
-      
+      {socials.map((s) => (<a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-border hover:border-primary/50 text-xs">
+          {s.image_url ? (<img loading="lazy" decoding="async" src={s.image_url} alt="" className="w-5 h-5 rounded object-cover"/>) : (<MessageCircle className="w-4 h-4"/>)}
+          {t(s.name ?? "")}
+        </a>))}
     </div>);
 }
 function SocialsFloating() {
@@ -152,7 +188,9 @@ function SocialsFloating() {
         { id: "tg", name: "تليجرام", url: "https://t.me/FPI101", image_url: null as string | null },
     ];
     return (<div className="fixed bottom-5 left-5 z-30 flex flex-col gap-3">
-      
+      {list.map((s) => (<a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={t(s.name ?? "")} className="w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center overflow-hidden border-2 border-white/20">
+          {s.image_url ? (<img loading="lazy" decoding="async" src={s.image_url} alt={t(s.name ?? "")} className="w-full h-full object-cover"/>) : s.name.includes(t("تليجرام")) || /telegram/i.test(s.url) ? (<Send className="w-6 h-6 text-white"/>) : (<MessageCircle className="w-6 h-6 text-white"/>)}
+        </a>))}
     </div>);
 }
 // Session-aware auth control: sign-in with Google when signed out,
@@ -177,10 +215,22 @@ function AuthMenu() {
         navigate({ to: "/" });
     };
     return (<div className="relative">
-      <button type="button" onClick= className="w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center overflow-hidden border border-border transition" aria-label={t("حسابي")}>
-        
+      <button type="button" onClick={() => setOpen((v) => !v)} className="w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center overflow-hidden border border-border transition" aria-label={t("حسابي")}>
+        {user.avatarUrl ? (<img loading="lazy" decoding="async" src={user.avatarUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer"/>) : (<span className="font-bold text-sm">{(user.name || user.email || t("؟")).charAt(0)}</span>)}
       </button>
-      
+      {open && (<>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)}/>
+          <div className="absolute left-0 top-12 z-50 w-56 card-neon rounded-xl p-3 space-y-1 shadow-lg">
+            <div className="px-2 pb-2 border-b border-border mb-1">
+              <div className="font-bold text-sm truncate">{user.name || t("مستخدم")}</div>
+              <div className="text-[11px] text-muted-foreground truncate" dir="ltr">{user.email}</div>
+            </div>
+            <Link to="/orders" onClick={() => setOpen(false)} className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-surface-2 font-medium">
+              <Package className="w-4 h-4"/>{t(" \u0637\u0644\u0628\u0627\u062A\u064A ")}</Link>
+            <button type="button" onClick={logout} className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm hover:bg-surface-2 text-destructive font-medium">
+              <LogOut className="w-4 h-4"/>{t(" \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062E\u0631\u0648\u062C ")}</button>
+          </div>
+        </>)}
     </div>);
 }
 function DrawerAuthRow({ onNavigate }: {
@@ -189,12 +239,14 @@ function DrawerAuthRow({ onNavigate }: {
     useLanguage();
     const user = useSession((s) => s.user);
     if (user) {
-        return (<Link to="/orders" onClick= className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-surface font-medium">
-        
-        <span className="truncate"></span>
+        return (<Link to="/orders" onClick={onNavigate} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-surface font-medium">
+        {user.avatarUrl ? (<img loading="lazy" decoding="async" src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" referrerPolicy="no-referrer"/>) : (<span className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-sm font-bold">
+            {(user.name || user.email || t("؟")).charAt(0)}
+          </span>)}
+        <span className="truncate">{user.name || user.email}</span>
       </Link>);
     }
-    return (<Link to="/auth" onClick= className="mt-3 inline-flex items-center gap-2 w-full px-3 py-3 rounded-lg bg-primary text-primary-foreground font-bold justify-center">
+    return (<Link to="/auth" onClick={onNavigate} className="mt-3 inline-flex items-center gap-2 w-full px-3 py-3 rounded-lg bg-primary text-primary-foreground font-bold justify-center">
       <GoogleIcon className="w-4 h-4"/>{t(" \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062F\u062E\u0648\u0644 \u0628\u062D\u0633\u0627\u0628 \u062C\u0648\u062C\u0644 ")}</Link>);
 }
 export function Container({ children, className = "" }: {
@@ -202,5 +254,5 @@ export function Container({ children, className = "" }: {
     className?: string;
 }) {
     useLanguage();
-    return <div className=></div>;
+    return <div className={`container mx-auto px-4 ${className}`}>{children}</div>;
 }

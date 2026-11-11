@@ -77,20 +77,39 @@ export function HowToBuyManager({ adminCode, onChange }: {
     };
     return (<div className="card-neon rounded-2xl p-5 mb-6 space-y-4">
       <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked= onChange= className="accent-primary"/>{t(" \u0625\u0638\u0647\u0627\u0631 \u0627\u0644\u0642\u0633\u0645 \u0641\u064A \u0627\u0644\u0635\u0641\u062D\u0629 \u0627\u0644\u0631\u0626\u064A\u0633\u064A\u0629 ")}</label>
+        <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="accent-primary"/>{t(" \u0625\u0638\u0647\u0627\u0631 \u0627\u0644\u0642\u0633\u0645 \u0641\u064A \u0627\u0644\u0635\u0641\u062D\u0629 \u0627\u0644\u0631\u0626\u064A\u0633\u064A\u0629 ")}</label>
       <div className="grid sm:grid-cols-2 gap-3">
-        <input value= onChange= className= placeholder={t("عنوان القسم")}/>
-        <input value= onChange= className= placeholder={t("وصف قصير")}/>
+        <input value={t(title ?? "")} onChange={(e) => setTitle(e.target.value)} className={inputCls} placeholder={t("عنوان القسم")}/>
+        <input value={t(subtitle ?? "")} onChange={(e) => setSubtitle(e.target.value)} className={inputCls} placeholder={t("وصف قصير")}/>
       </div>
 
-      
+      {steps.length === 0 && <p className="text-sm text-muted-foreground">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u062E\u0637\u0648\u0627\u062A \u0628\u0639\u062F \u2014 \u0623\u0636\u0641 \u0623\u0648\u0644 \u062E\u0637\u0648\u0629.")}</p>}
 
-      
+      {steps.map((s, i) => (<div key={i} className="rounded-xl border border-border bg-surface/50 p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-black flex items-center justify-center">{i + 1}</span>
+            <span className="font-bold text-sm flex-1">{t("\u0627\u0644\u062E\u0637\u0648\u0629 ")}{i + 1}</span>
+            <button onClick={() => move(i, -1)} className="p-1.5 rounded bg-surface-2" aria-label={t("تحريك للأعلى")}><ArrowUp className="w-4 h-4"/></button>
+            <button onClick={() => move(i, 1)} className="p-1.5 rounded bg-surface-2" aria-label={t("تحريك للأسفل")}><ArrowDown className="w-4 h-4"/></button>
+            <button onClick={() => setSteps((a) => a.filter((_, j) => j !== i))} className="p-1.5 rounded bg-surface-2 text-destructive" aria-label={t("حذف الخطوة")}><Trash2 className="w-4 h-4"/></button>
+          </div>
+          <input value={t(s.title ?? "")} onChange={(e) => update(i, { title: e.target.value })} className={inputCls} placeholder={t("عنوان الخطوة (مثال: اختر المنتج)")}/>
+          <textarea value={t(s.text ?? "")} onChange={(e) => update(i, { text: e.target.value })} className={inputCls} rows={2} placeholder={t("شرح الخطوة")}/>
+          <div className="flex items-center gap-3 flex-wrap">
+            {s.image && <img src={s.image} alt="" className="w-20 h-14 object-cover rounded-lg border border-border"/>}
+            <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-2 border border-border cursor-pointer text-xs hover:border-primary/50">
+              <Upload className="w-3.5 h-3.5"/> {uploadingIdx === i ? t("جاري الرفع…") : s.image ? t("تغيير الصورة") : t("إضافة صورة")}
+              <input type="file" accept="image/*" className="hidden" disabled={uploadingIdx !== null} onChange={(e) => { const f = e.target.files?.[0]; if (f)
+            upload(i, f); e.target.value = ""; }}/>
+            </label>
+            {s.image && <button onClick={() => update(i, { image: "" })} className="text-xs text-destructive">{t("\u0625\u0632\u0627\u0644\u0629 \u0627\u0644\u0635\u0648\u0631\u0629")}</button>}
+          </div>
+        </div>))}
 
-      <button onClick= className="w-full py-2.5 rounded-lg border border-dashed border-primary/50 text-primary font-bold flex items-center justify-center gap-2">
+      <button onClick={() => setSteps((a) => [...a, { title: "", text: "", image: "" }])} className="w-full py-2.5 rounded-lg border border-dashed border-primary/50 text-primary font-bold flex items-center justify-center gap-2">
         <Plus className="w-4 h-4"/>{t(" \u0625\u0636\u0627\u0641\u0629 \u062E\u0637\u0648\u0629 ")}</button>
-      <button onClick= disabled= className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-        
+      <button onClick={save} disabled={busy || uploadingIdx !== null} className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+        {busy ? t("جاري الحفظ…") : t("حفظ")}
       </button>
     </div>);
 }

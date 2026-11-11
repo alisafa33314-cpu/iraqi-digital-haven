@@ -61,13 +61,13 @@ function ImagePicker({ value, onChange, folder }: {
         }
     };
     return (<div className="space-y-2">
-      <input value= onChange= className= dir="ltr" placeholder={t("https://... أو ارفع صورة")}/>
+      <input value={value} onChange={(e) => onChange(e.target.value)} className={inputCls} dir="ltr" placeholder={t("https://... أو ارفع صورة")}/>
       <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-2 border border-border cursor-pointer text-xs hover:border-primary/50">
         <Upload className="w-3.5 h-3.5"/>
-        
-        <input type="file" accept="image/*" className="hidden" onChange=/>
+        {busy ? t("جاري الرفع…") : t("رفع من الجهاز")}
+        <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handle(e.target.files[0])}/>
       </label>
-      
+      {value && <img loading="lazy" decoding="async" src={value} alt="" className="w-24 h-24 rounded-lg object-cover border border-border"/>}
     </div>);
 }
 function AdminPage() {
@@ -128,8 +128,8 @@ function AdminPage() {
     if (!userId)
         return <AdminLogin />;
     if (!isAdmin)
-        return <AdminClaim onDone= onSignOut=/>;
-    return <AdminDashboard adminCode="" onLogout=/>;
+        return <AdminClaim onDone={() => checkRole(userId)} onSignOut={signOut}/>;
+    return <AdminDashboard adminCode="" onLogout={signOut}/>;
 }
 function AdminShell({ title, hint, children }: {
     title: string;
@@ -143,9 +143,9 @@ function AdminShell({ title, hint, children }: {
           <div className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center mx-auto mb-4">
             <ShieldCheck className="w-8 h-8 text-primary"/>
           </div>
-          <h1 className="text-2xl font-black mb-2 text-center"></h1>
-          <p className="text-sm text-muted-foreground mb-6 text-center"></p>
-          
+          <h1 className="text-2xl font-black mb-2 text-center">{t(title ?? "")}</h1>
+          <p className="text-sm text-muted-foreground mb-6 text-center">{hint}</p>
+          {children}
         </div>
       </Container>
     </Layout>);
@@ -190,14 +190,14 @@ function AdminLogin() {
         }
     };
     return (<AdminShell title={t("لوحة الإدارة")} hint={t("الدخول متاح لحسابات الإدارة فقط")}>
-      <form onSubmit= className="space-y-3">
-        <input type="email" value= onChange= placeholder={t("البريد الإلكتروني")} dir="ltr" autoComplete="email" className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 focus:border-primary outline-none"/>
-        <input type="password" value= onChange= placeholder={t("كلمة المرور")} dir="ltr" autoComplete= className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 focus:border-primary outline-none"/>
-        <button type="submit" disabled= className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-          
+      <form onSubmit={submit} className="space-y-3">
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("البريد الإلكتروني")} dir="ltr" autoComplete="email" className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 focus:border-primary outline-none"/>
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("كلمة المرور")} dir="ltr" autoComplete={mode === "in" ? "current-password" : "new-password"} className="w-full bg-surface-2 border border-border rounded-xl px-4 py-3 focus:border-primary outline-none"/>
+        <button type="submit" disabled={busy} className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? "…" : mode === "in" ? t("دخول") : t("إنشاء حساب الإدارة")}
         </button>
-        <button type="button" onClick= className="w-full text-xs text-muted-foreground hover:text-primary">
-          
+        <button type="button" onClick={() => setMode(mode === "in" ? "up" : "in")} className="w-full text-xs text-muted-foreground hover:text-primary">
+          {mode === "in" ? t("ليس لديك حساب إدارة؟ إنشاء حساب") : t("لدي حساب — تسجيل الدخول")}
         </button>
       </form>
     </AdminShell>);
@@ -226,11 +226,11 @@ function AdminClaim({ onDone, onSignOut }: {
     };
     return (<AdminShell title={t("لا تملك صلاحية الإدارة")} hint={t("لأول مرة فقط: أدخل رمز الإدارة القديم لتحويل حسابك إلى أدمن")}>
       <div className="space-y-3">
-        <input type="password" value= onChange= placeholder={t("رمز الإدارة")} dir="ltr" className="w-full text-center bg-surface-2 border border-border rounded-xl px-4 py-3 focus:border-primary outline-none tracking-widest"/>
-        <button onClick= disabled= className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-          
+        <input type="password" value={code} onChange={(e) => setCode(e.target.value)} placeholder={t("رمز الإدارة")} dir="ltr" className="w-full text-center bg-surface-2 border border-border rounded-xl px-4 py-3 focus:border-primary outline-none tracking-widest"/>
+        <button onClick={claim} disabled={busy} className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? "…" : t("منح الصلاحية")}
         </button>
-        <button onClick= className="w-full text-xs text-muted-foreground hover:text-primary">{t("\u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062E\u0631\u0648\u062C")}</button>
+        <button onClick={onSignOut} className="w-full text-xs text-muted-foreground hover:text-primary">{t("\u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062E\u0631\u0648\u062C")}</button>
       </div>
     </AdminShell>);
 }
@@ -284,82 +284,88 @@ function AdminDashboard({ adminCode, onLogout }: {
               <div className="text-xs text-muted-foreground">{t("\u0625\u062F\u0627\u0631\u0629 \u0627\u0644\u0645\u062A\u062C\u0631 \u0648\u0627\u0644\u0637\u0644\u0628\u0627\u062A")}</div>
             </div>
           </div>
-          <button onClick= className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50">
+          <button onClick={onLogout} className="inline-flex items-center gap-2 text-xs px-3 py-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50">
             <LogOut className="w-3 h-3"/>{t(" \u062E\u0631\u0648\u062C ")}</button>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
-          
+          {stats.map((s) => (<div key={t(s.label ?? "")} className="card-neon rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs text-muted-foreground">{t(s.label ?? "")}</div>
+                <s.icon className={`w-4 h-4 ${s.color}`}/>
+              </div>
+              <div className="text-xl font-black">{s.value}</div>
+            </div>))}
         </div>
 
         {/* Analytics */}
-        <AnalyticsPanel adminCode=/>
+        <AnalyticsPanel adminCode={adminCode}/>
 
         {/* Orders */}
-        <OrdersPanel orders= loading= adminCode= onChange=/>
+        <OrdersPanel orders={orders} loading={loading} adminCode={adminCode} onChange={fetchOrders}/>
 
         {/* Registered customers */}
         <AdminSection title={t("👥 الزبائن المسجلون")}>
-          <CustomersManager adminCode=/>
+          <CustomersManager adminCode={adminCode}/>
         </AdminSection>
 
 
 
         {/* Collapsible management sections */}
         <AdminSection title={t("🗂️ أقسام المتجر")}>
-          <CategoriesManager adminCode= categories= onChange=/>
+          <CategoriesManager adminCode={adminCode} categories={categories} onChange={refreshCatalog}/>
         </AdminSection>
 
         <AdminSection title={t("📦 المنتجات")}>
-          <ProductsManager adminCode= products= categories= onChange=/>
+          <ProductsManager adminCode={adminCode} products={products} categories={categories} onChange={refreshCatalog}/>
         </AdminSection>
 
         <AdminSection title={t("💳 طرق الدفع / منصات الدفع")}>
-          <PaymentMethodsManager adminCode= methods= onChange=/>
+          <PaymentMethodsManager adminCode={adminCode} methods={paymentMethods} onChange={refreshCatalog}/>
         </AdminSection>
 
         <AdminSection title={t("🔗 روابط التواصل")}>
-          <SocialsManager adminCode= socials= onChange=/>
+          <SocialsManager adminCode={adminCode} socials={socials} onChange={refreshCatalog}/>
         </AdminSection>
 
         <AdminSection title={t("🖼️ صور المتجر")}>
-          <StoreImagesManager adminCode= images= onChange=/>
+          <StoreImagesManager adminCode={adminCode} images={storeImages} onChange={refreshCatalog}/>
         </AdminSection>
 
         {/* Reviews management (has its own collapse) */}
-        <ReviewsManager adminCode= reviews= onChange=/>
+        <ReviewsManager adminCode={adminCode} reviews={reviews} onChange={refreshCatalog}/>
 
         <AdminSection title={t("🎨 ألوان وتصميم الموقع")}>
-          <ThemeManager adminCode= onChange=/>
+          <ThemeManager adminCode={adminCode} onChange={refreshCatalog}/>
         </AdminSection>
 
         <AdminSection title={t("📢 الشريط المتحرك")}>
-          <MarqueeManager adminCode= onChange=/>
+          <MarqueeManager adminCode={adminCode} onChange={refreshCatalog}/>
         </AdminSection>
 
         <AdminSection title={t("🛒 كيفية الشراء (الصفحة الرئيسية)")}>
-          <HowToBuyManager adminCode= onChange=/>
+          <HowToBuyManager adminCode={adminCode} onChange={refreshCatalog}/>
         </AdminSection>
 
         <AdminSection title={t("🏷️ بانر العرض")}>
-          <PromoManager adminCode= categories= onChange=/>
+          <PromoManager adminCode={adminCode} categories={categories} onChange={refreshCatalog}/>
         </AdminSection>
 
         <AdminSection title={t("🔔 إعدادات الإشعارات والتنبيهات")}>
-          <NotificationsManager adminCode= onChange=/>
+          <NotificationsManager adminCode={adminCode} onChange={refreshCatalog}/>
         </AdminSection>
 
         <AdminSection title={t("💬 إشعارات الواتساب للمشرف")}>
-          <WhatsAppManager adminCode=/>
+          <WhatsAppManager adminCode={adminCode}/>
         </AdminSection>
 
         <AdminSection title={t("✈️ إشعارات التليجرام للمشرف")}>
-          <TelegramManager adminCode=/>
+          <TelegramManager adminCode={adminCode}/>
         </AdminSection>
 
 
         <AdminSection title={t("🚫 قائمة المحظورين")}>
-          <BlockedManager adminCode=/>
+          <BlockedManager adminCode={adminCode}/>
         </AdminSection>
 
 
@@ -377,11 +383,13 @@ function AdminSection({ title, defaultOpen = false, children }: {
     useLanguage();
     const [open, setOpen] = useState(defaultOpen);
     return (<div className="mt-8">
-      <button type="button" onClick= aria-expanded= className=>
-        <span className="font-black text-lg"></span>
-        <span className="text-primary text-sm"></span>
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className={`w-full card-neon rounded-2xl px-5 py-4 flex items-center justify-between gap-3 text-right hover:border-primary/50 transition ${open ? "rounded-b-none" : ""}`}>
+        <span className="font-black text-lg">{t(title ?? "")}</span>
+        <span className="text-primary text-sm">{open ? "▲" : "▼"}</span>
       </button>
-      
+      {open && (<div className="animate-in fade-in slide-in-from-top-1 duration-200 [&>div]:mt-0 [&>div]:rounded-t-none [&>div]:border-t-0 [&>div>h2]:hidden">
+          {children}
+        </div>)}
     </div>);
 }
 type CustomerRow = {
@@ -432,16 +440,56 @@ function CustomersManager({ adminCode }: {
     const totalPages = Math.max(1, Math.ceil(total / perPage));
     return (<div className="card-neon rounded-2xl p-5">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="font-black">{t("\uD83D\uDC65 \u0627\u0644\u0632\u0628\u0627\u0626\u0646 \u0627\u0644\u0645\u0633\u062C\u0644\u0648\u0646 (")})</h2>
-        <input value= onChange= placeholder={t("بحث بالاسم أو البريد…")} className="w-full sm:w-64 bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"/>
+        <h2 className="font-black">{t("\uD83D\uDC65 \u0627\u0644\u0632\u0628\u0627\u0626\u0646 \u0627\u0644\u0645\u0633\u062C\u0644\u0648\u0646 (")}{total})</h2>
+        <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder={t("بحث بالاسم أو البريد…")} className="w-full sm:w-64 bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"/>
       </div>
 
-      
+      {loading ? (<div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (<div key={i} className="h-12 rounded-lg skeleton"/>))}
+        </div>) : rows.length === 0 ? (<div className="text-center text-sm text-muted-foreground py-8">{t("\u0644\u0627 \u064A\u0648\u062C\u062F \u0632\u0628\u0627\u0626\u0646 \u0645\u0633\u062C\u0644\u0648\u0646 \u0628\u0639\u062F")}</div>) : (<div className="overflow-x-auto">
+          <table className="w-full text-sm min-w-[620px]">
+            <thead>
+              <tr className="text-xs text-muted-foreground text-right">
+                <th className="py-2 px-2 font-medium">{t("\u0627\u0644\u0632\u0628\u0648\u0646")}</th>
+                <th className="py-2 px-2 font-medium">{t("\u0627\u0644\u0628\u0631\u064A\u062F")}</th>
+                <th className="py-2 px-2 font-medium">{t("\u0627\u0644\u0647\u0627\u062A\u0641")}</th>
+                <th className="py-2 px-2 font-medium">{t("\u0627\u0644\u0635\u0644\u0627\u062D\u064A\u0629")}</th>
+                <th className="py-2 px-2 font-medium">{t("\u0627\u0644\u0637\u0644\u0628\u0627\u062A")}</th>
+                <th className="py-2 px-2 font-medium">{t("\u062A\u0627\u0631\u064A\u062E \u0627\u0644\u062A\u0633\u062C\u064A\u0644")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (<tr key={r.id} className="border-t border-border">
+                  <td className="py-2.5 px-2">
+                    <div className="flex items-center gap-2">
+                      {r.avatar_url ? (<img src={r.avatar_url} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" className="w-8 h-8 rounded-full object-cover border border-border"/>) : (<div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-xs font-bold">
+                          {(r.full_name || t("؟")).charAt(0)}
+                        </div>)}
+                      <span className="font-bold truncate max-w-40">{r.full_name || t("بدون اسم")}</span>
+                    </div>
+                  </td>
+                  <td className="py-2.5 px-2 text-xs" dir="ltr">{r.email || "—"}</td>
+                  <td className="py-2.5 px-2 text-xs" dir="ltr">{r.phone || "—"}</td>
+                  <td className="py-2.5 px-2">
+                    <span className={`text-[10px] px-2 py-1 rounded-md font-bold border ${r.role === "admin"
+                    ? "bg-primary/15 text-primary border-primary/30"
+                    : "bg-surface-2 text-muted-foreground border-border"}`}>
+                      {r.role === "admin" ? t("مدير") : t("زبون")}
+                    </span>
+                  </td>
+                  <td className="py-2.5 px-2 font-bold">{r.orders_count}</td>
+                  <td className="py-2.5 px-2 text-xs text-muted-foreground">
+                    {new Date(r.joined_at).toLocaleDateString(locale())}
+                  </td>
+                </tr>))}
+            </tbody>
+          </table>
+        </div>)}
 
       <div className="flex items-center justify-between gap-2 mt-4">
-        <button type="button" disabled= onClick= className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border disabled:opacity-40">{t(" \u0627\u0644\u0633\u0627\u0628\u0642 ")}</button>
-        <span className="text-xs text-muted-foreground">{t("\u0635\u0641\u062D\u0629 ")}{t(" \u0645\u0646 ")}</span>
-        <button type="button" disabled= onClick= className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border disabled:opacity-40">{t(" \u0627\u0644\u062A\u0627\u0644\u064A ")}</button>
+        <button type="button" disabled={page <= 1 || loading} onClick={() => setPage((p) => Math.max(1, p - 1))} className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border disabled:opacity-40">{t(" \u0627\u0644\u0633\u0627\u0628\u0642 ")}</button>
+        <span className="text-xs text-muted-foreground">{t("\u0635\u0641\u062D\u0629 ")}{page}{t(" \u0645\u0646 ")}{totalPages}</span>
+        <button type="button" disabled={page >= totalPages || loading} onClick={() => setPage((p) => p + 1)} className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border disabled:opacity-40">{t(" \u0627\u0644\u062A\u0627\u0644\u064A ")}</button>
       </div>
     </div>);
 }
@@ -465,25 +513,45 @@ function OrdersPanel({ orders, loading, adminCode, onChange }: {
     const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
     return (<div className="card-neon rounded-2xl p-5 mb-6">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="font-black text-lg">{t("\u0627\u0644\u0637\u0644\u0628\u0627\u062A ")}<span className="text-xs text-muted-foreground font-bold">()</span></h2>
+        <h2 className="font-black text-lg">{t("\u0627\u0644\u0637\u0644\u0628\u0627\u062A ")}<span className="text-xs text-muted-foreground font-bold">({filtered.length})</span></h2>
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative w-full sm:w-60">
             <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"/>
-            <input value= onChange= placeholder={t("ابحث برقم الطلب…")} dir="ltr" className="w-full bg-surface-2 border border-border rounded-lg pr-9 pl-8 py-2 text-sm focus:border-primary outline-none"/>
-            
+            <input value={q} onChange={(e) => {
+            setQ(e.target.value);
+            setPage(1);
+            if (e.target.value.trim())
+                setCollapsed(false);
+        }} placeholder={t("ابحث برقم الطلب…")} dir="ltr" className="w-full bg-surface-2 border border-border rounded-lg pr-9 pl-8 py-2 text-sm focus:border-primary outline-none"/>
+            {q && (<button type="button" onClick={() => { setQ(""); setPage(1); }} aria-label={t("مسح البحث")} className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="w-3.5 h-3.5"/>
+              </button>)}
           </div>
-          <select value= onChange= className="bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs font-bold">
-            <option value=>{t("5 \u0644\u0643\u0644 \u0635\u0641\u062D\u0629")}</option>
-            <option value=>{t("10 \u0644\u0643\u0644 \u0635\u0641\u062D\u0629")}</option>
-            <option value=>{t("20 \u0644\u0643\u0644 \u0635\u0641\u062D\u0629")}</option>
+          <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }} className="bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs font-bold">
+            <option value={5}>{t("5 \u0644\u0643\u0644 \u0635\u0641\u062D\u0629")}</option>
+            <option value={10}>{t("10 \u0644\u0643\u0644 \u0635\u0641\u062D\u0629")}</option>
+            <option value={20}>{t("20 \u0644\u0643\u0644 \u0635\u0641\u062D\u0629")}</option>
           </select>
-          <button onClick= className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border font-bold">
-            
+          <button onClick={() => setCollapsed((v) => !v)} className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border font-bold">
+            {collapsed ? t("إظهار الطلبات") : t("طي الطلبات")}
           </button>
         </div>
       </div>
 
-      
+      {loading ? (<div className="text-center py-8 text-sm text-muted-foreground">{t("\u062C\u0627\u0631\u064A \u0627\u0644\u062A\u062D\u0645\u064A\u0644\u2026")}</div>) : orders.length === 0 ? (<div className="text-center py-8 text-sm text-muted-foreground">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u0637\u0644\u0628\u0627\u062A \u0628\u0639\u062F.")}</div>) : filtered.length === 0 ? (<div className="text-center py-8 text-sm text-muted-foreground">{t(" \u0644\u0627 \u064A\u0648\u062C\u062F \u0637\u0644\u0628 \u0628\u0631\u0642\u0645 \u00AB")}<span dir="ltr" className="font-bold text-foreground">{q.trim()}</span>».
+        </div>) : collapsed ? (<div className="text-center py-4 text-xs text-muted-foreground">{t("\u0627\u0644\u0637\u0644\u0628\u0627\u062A \u0645\u0637\u0648\u064A\u0629 \u2014 \u0627\u0636\u063A\u0637 \u00AB\u0625\u0638\u0647\u0627\u0631 \u0627\u0644\u0637\u0644\u0628\u0627\u062A\u00BB \u0644\u0639\u0631\u0636\u0647\u0627.")}</div>) : (<>
+          <div className="space-y-3">
+            {slice.map((o) => (<OrderRow key={o.id} order={o} adminCode={adminCode} onChange={onChange}/>))}
+          </div>
+
+          {totalPages > 1 && (<div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center justify-center gap-2">
+              <button onClick={() => setPage(current - 1)} disabled={current === 1} className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border font-bold disabled:opacity-40">{t(" \u0627\u0644\u0633\u0627\u0628\u0642 ")}</button>
+              {pages.map((p) => (<button key={p} onClick={() => setPage(p)} className={`text-xs w-8 h-8 rounded-lg border font-bold ${p === current ? "bg-primary text-primary-foreground border-primary" : "bg-surface-2 border-border"}`}>
+                  {p}
+                </button>))}
+              <button onClick={() => setPage(current + 1)} disabled={current === totalPages} className="text-xs px-3 py-1.5 rounded-lg bg-surface-2 border border-border font-bold disabled:opacity-40">{t(" \u0627\u0644\u062A\u0627\u0644\u064A ")}</button>
+            </div>)}
+        </>)}
     </div>);
 }
 function OrderRow({ order, adminCode, onChange }: {
@@ -595,26 +663,106 @@ function OrderRow({ order, adminCode, onChange }: {
     };
     const done = order.status === "completed";
     return (<div className="border border-border rounded-xl overflow-hidden">
-      <button onClick= className="w-full p-4 flex flex-wrap items-center justify-between gap-3 hover:bg-surface-2/50 text-right">
+      <button onClick={() => setOpen(!open)} className="w-full p-4 flex flex-wrap items-center justify-between gap-3 hover:bg-surface-2/50 text-right">
         <div>
-          <div className="font-black" dir="ltr">#</div>
+          <div className="font-black" dir="ltr">#{order.id.slice(0, 8).toUpperCase()}</div>
           <div className="text-xs text-muted-foreground">
-             ·  · 
+            {new Date(order.created_at).toLocaleString(locale())} · {order.customer_name} · {order.customer_phone}
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="font-black text-primary"></div>
-          <span className=>
-            
+          <div className="font-black text-primary">{formatIQD(Number(order.total))}</div>
+          <span className={`text-[10px] px-2 py-1 rounded-md border font-bold ${STATUS_STYLES[order.status] || ""}`}>
+            {STATUS_AR[order.status] || order.status}
           </span>
         </div>
       </button>
 
-      
+      {open && (<div className="p-4 border-t border-border bg-surface-2/30 space-y-4">
+          {order.status === "cancelled" && (<div className="rounded-xl border-2 border-destructive/60 bg-destructive/10 p-3 flex items-start gap-3">
+              <XCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5"/>
+              <div className="min-w-0">
+                <div className="text-xs font-black text-destructive">{t("\u0637\u0644\u0628 \u0645\u0631\u0641\u0648\u0636 \u2014 \u0627\u0644\u0633\u0628\u0628 \u0627\u0644\u0645\u0631\u0633\u0644 \u0644\u0644\u0632\u0628\u0648\u0646")}</div>
+                <div className="text-sm font-bold text-destructive mt-1 break-words">
+                  {(order.rejection_reason || "").trim() || t("لم يُذكر سبب للرفض")}
+                </div>
+              </div>
+            </div>)}
+          <div className="text-xs space-y-1">
+            <div>{t("\u0627\u0644\u0647\u0627\u062A\u0641: ")}<span dir="ltr" className="font-bold">{order.customer_phone}</span></div>
+            {order.customer_email && (<div>{t("\u0627\u0644\u0625\u064A\u0645\u064A\u0644: ")}<span dir="ltr" className="font-bold">{order.customer_email}</span></div>)}
+            <div className="flex items-center gap-2">
+              <span>{t("\u0639\u0646\u0648\u0627\u0646 IP:")}</span>
+              <span dir="ltr" className="font-mono font-bold text-primary">{order.customer_ip || "—"}</span>
+              {order.customer_ip && (<button type="button" onClick={() => navigator.clipboard?.writeText(order.customer_ip!).then(() => toast.success(t(t("تم نسخ IP"))), () => { })} className="px-2 py-0.5 rounded-md bg-surface-2 border border-border text-[10px] font-bold">{t("\u0646\u0633\u062E")}</button>)}
+            </div>
+
+            {order.payment_method_name && (<div>{t("\u0648\u0633\u064A\u0644\u0629 \u0627\u0644\u062F\u0641\u0639: ")}<span className="font-bold text-primary">{order.payment_method_name}</span></div>)}
+            {order.payment_proof_url ? (<button type="button" onClick={() => setProofOpen(true)} className="inline-flex items-center gap-1.5 mt-1 px-3 py-1.5 rounded-md bg-green-500/15 border border-green-500/30 text-green-400 font-bold hover:bg-green-500/25">
+                <Eye className="w-3.5 h-3.5"/>{t(" \u2713 \u0639\u0631\u0636 \u0625\u062B\u0628\u0627\u062A \u0627\u0644\u062A\u062D\u0648\u064A\u0644 ")}</button>) : (<div className="inline-flex items-center gap-1.5 mt-1 px-2 py-1 rounded-md bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 font-bold">{t(" \u26A0 \u0644\u0645 \u064A\u0635\u0644 \u0625\u062B\u0628\u0627\u062A \u0627\u0644\u062A\u062D\u0648\u064A\u0644 ")}</div>)}
+          </div>
+          <div className="space-y-1">
+            <div className="text-xs text-muted-foreground">{t("\u0627\u0644\u0645\u0646\u062A\u062C\u0627\u062A:")}</div>
+            {order.items.map((i, idx) => (<div key={idx} className="text-sm flex justify-between">
+                <span>{t(i.product_name ?? "")} × {i.quantity}</span>
+                <span className="font-bold">{formatIQD(Number(i.unit_price) * i.quantity)}</span>
+              </div>))}
+          </div>
+          <div>
+            <label className="text-xs font-bold mb-1 flex items-center gap-1">
+              <KeyRound className="w-3 h-3"/>{t(" \u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u0627\u0634\u062A\u0631\u0627\u0643 (\u062A\u064F\u0631\u0633\u0644 \u0644\u0644\u0632\u0628\u0648\u0646) ")}</label>
+            <textarea value={info} onChange={(e) => setInfo(e.target.value)} rows={4} placeholder={t("مثال:&#10;Email: user@example.com&#10;Password: ******")} disabled={done} className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm font-mono focus:border-primary outline-none disabled:opacity-70" dir="ltr"/>
+          </div>
+          <div>
+            <label className="text-xs font-bold mb-1 flex items-center gap-1">
+              <Upload className="w-3 h-3"/>{t(" \u0635\u0648\u0631 \u0645\u0631\u0641\u0642\u0629 \u0645\u0639 \u0627\u0644\u0627\u0634\u062A\u0631\u0627\u0643 (\u064A\u0645\u0643\u0646 \u0627\u062E\u062A\u064A\u0627\u0631 \u0623\u0643\u062B\u0631 \u0645\u0646 \u0635\u0648\u0631\u0629) ")}</label>
+            {imgs.length > 0 && (<div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
+                {imgs.map((u, i) => (<div key={i} className="relative">
+                    <img loading="lazy" decoding="async" src={u} alt="" className="w-full h-24 rounded-lg object-cover border border-border"/>
+                    {!done && (<button type="button" onClick={() => removeImg(i)} className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-white text-xs flex items-center justify-center">
+                        <X className="w-3 h-3"/>
+                      </button>)}
+                  </div>))}
+              </div>)}
+            {!done && (<label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-2 border border-border cursor-pointer text-xs hover:border-primary/50">
+                <Upload className="w-3.5 h-3.5"/>
+                {uploading ? t("جاري الرفع…") : t("إضافة صور من الجهاز")}
+                <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && e.target.files.length > 0 && handleUpload(e.target.files)}/>
+              </label>)}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {!done && (<button onClick={complete} disabled={busy || uploading} className="px-4 py-2 rounded-lg bg-green-500 text-white font-bold text-sm disabled:opacity-60">{t(" \u2713 \u0625\u0643\u0645\u0627\u0644 \u0627\u0644\u0637\u0644\u0628 \u0648\u0625\u0631\u0633\u0627\u0644 \u0627\u0644\u0645\u0639\u0644\u0648\u0645\u0627\u062A ")}</button>)}
+            {order.status === "pending" && !rejectOpen && (<button onClick={() => setRejectOpen(true)} disabled={busy} className="px-4 py-2 rounded-lg bg-destructive text-white font-bold text-sm disabled:opacity-60">{t(" \u0631\u0641\u0636 ")}</button>)}
+            {order.status === "pending" && rejectOpen && (<div className="w-full rounded-xl border-2 border-destructive/50 bg-destructive/5 p-3 space-y-2">
+                <label className="text-xs font-bold text-destructive flex items-center gap-1.5">
+                  <XCircle className="w-3.5 h-3.5"/>{t(" \u0633\u0628\u0628 \u0627\u0644\u0631\u0641\u0636 \u2014 \u064A\u0638\u0647\u0631 \u0644\u0644\u0632\u0628\u0648\u0646 \u0641\u064A \u0635\u0641\u062D\u0629 \u00AB\u0637\u0644\u0628\u0627\u062A\u064A\u00BB ")}</label>
+                <input value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder={t("مثال: لم يصل إثبات التحويل")} className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-destructive outline-none"/>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={cancel} disabled={busy} className="px-4 py-2 rounded-lg bg-destructive text-white font-bold text-sm disabled:opacity-60">
+                    {busy ? t("جاري الرفض…") : t("تأكيد الرفض")}
+                  </button>
+                  <button onClick={() => { setRejectOpen(false); setRejectReason(""); }} disabled={busy} className="px-4 py-2 rounded-lg bg-surface-2 border border-border font-bold text-sm disabled:opacity-60">{t(" \u0625\u0644\u063A\u0627\u0621 ")}</button>
+                </div>
+              </div>)}
+            {done && (<div className="text-xs text-green-400 font-bold">{t("\u2713 \u062A\u0645 \u0625\u0643\u0645\u0627\u0644 \u0627\u0644\u0637\u0644\u0628")}</div>)}
+            <button onClick={remove} disabled={busy} className="px-4 py-2 rounded-lg bg-destructive/20 border border-destructive text-destructive font-bold text-sm disabled:opacity-60 mr-auto">{t(" \uD83D\uDDD1 \u062D\u0630\u0641 \u0627\u0644\u0637\u0644\u0628 ")}</button>
+          </div>
+
+          {/* حظر الزبون — بنقرة واحدة */}
+          <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/5 p-3 space-y-2">
+            <button onClick={() => setBlockOpen(true)} disabled={busy} className="w-full py-3.5 rounded-xl bg-yellow-500 text-black font-black text-base disabled:opacity-60">{t(" \uD83D\uDEAB \u062D\u0638\u0631 \u0627\u0644\u0632\u0628\u0648\u0646 ")}</button>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => quickBlock("ip")} disabled={busy || !order.customer_ip} className="py-2 rounded-lg bg-surface-2 border border-yellow-500/40 text-yellow-400 font-bold text-xs disabled:opacity-40">{t(" \u062D\u0638\u0631 IP \u0628\u0646\u0642\u0631\u0629 ")}</button>
+              <button onClick={() => quickBlock("phone")} disabled={busy || !order.customer_phone} className="py-2 rounded-lg bg-surface-2 border border-yellow-500/40 text-yellow-400 font-bold text-xs disabled:opacity-40">{t(" \u062D\u0638\u0631 \u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062A\u0641 \u0628\u0646\u0642\u0631\u0629 ")}</button>
+            </div>
+          </div>
+
+          {blockOpen && (<BlockCustomerModal order={order} adminCode={adminCode} onClose={() => setBlockOpen(false)}/>)}
+        </div>)}
 
 
 
-      
+      {proofOpen && order.payment_proof_url && (<ProofModal raw={order.payment_proof_url} onClose={() => setProofOpen(false)}/>)}
     </div>);
 }
 /* -------------------- Payment proof viewer -------------------- */
@@ -637,15 +785,19 @@ function ProofModal({ raw, onClose }: {
         });
         return () => { alive = false; };
     }, [raw]);
-    return (<div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick=>
-      <div className="max-w-3xl w-full" onClick=>
+    return (<div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="max-w-3xl w-full" onClick={(e) => e.stopPropagation()}>
         <div className="flex justify-between mb-2">
           <div className="text-white font-bold">{t("\u0625\u062B\u0628\u0627\u062A \u0627\u0644\u062A\u062D\u0648\u064A\u0644")}</div>
-          <button onClick= className="w-8 h-8 rounded-lg bg-white/10 text-white">
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/10 text-white">
             <X className="w-4 h-4 mx-auto"/>
           </button>
         </div>
-        
+        {failed ? (<div className="p-6 rounded-xl bg-surface-2 border border-border text-sm text-center">{t(" \u062A\u0639\u0630\u0651\u0631 \u062A\u062D\u0645\u064A\u0644 \u0635\u0648\u0631\u0629 \u0625\u062B\u0628\u0627\u062A \u0627\u0644\u062F\u0641\u0639 ")}<div className="mt-2 text-[11px] font-mono text-muted-foreground break-all" dir="ltr">{raw}</div>
+          </div>) : !url ? (<div className="p-6 rounded-xl bg-surface-2 border border-border text-sm text-center">{t("\u062C\u0627\u0631\u064A \u0627\u0644\u062A\u062D\u0645\u064A\u0644\u2026")}</div>) : (<>
+            <img loading="lazy" decoding="async" src={url} alt={t("إثبات التحويل")} onError={() => setFailed(true)} className="w-full max-h-[80vh] object-contain rounded-xl bg-black"/>
+            <a href={url} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-primary underline">{t("\u0641\u062A\u062D \u0641\u064A \u0646\u0627\u0641\u0630\u0629 \u062C\u062F\u064A\u062F\u0629")}</a>
+          </>)}
       </div>
     </div>);
 }
@@ -697,10 +849,15 @@ function MultiImagePicker({ value, onChange, folder }: {
     return (<div className="space-y-2">
       <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-2 border border-border cursor-pointer text-xs hover:border-primary/50">
         <Upload className="w-3.5 h-3.5"/>
-        
-        <input type="file" accept="image/*" multiple className="hidden" onChange=/>
+        {busy ? t("جاري الرفع…") : t("رفع صور الشرح")}
+        <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files?.length && handle(e.target.files)}/>
       </label>
-      
+      {value.length > 0 && (<div className="grid grid-cols-3 gap-2">
+          {value.map((u, i) => (<div key={i} className="relative">
+              <img loading="lazy" decoding="async" src={u} alt="" className="w-full h-20 rounded-lg object-cover border border-border"/>
+              <button type="button" onClick={() => onChange(value.filter((_, idx) => idx !== i))} className="absolute top-1 left-1 w-6 h-6 rounded-md bg-destructive text-white text-xs font-bold">×</button>
+            </div>))}
+        </div>)}
     </div>);
 }
 function StockQuickEdit({ product, adminCode, onSaved }: {
@@ -737,9 +894,11 @@ function StockQuickEdit({ product, adminCode, onSaved }: {
     const current = Number(product.stock ?? 0);
     return (<div className="flex items-center gap-1 mt-1.5">
       <span className="text-[11px] text-muted-foreground">{t("\u0627\u0644\u0643\u0645\u064A\u0629:")}</span>
-      <button disabled= onClick= className="w-6 h-6 rounded-md bg-surface-2 border border-border text-sm font-bold disabled:opacity-50">−</button>
-      <input type="number" inputMode="numeric" value= disabled= onChange= onBlur= onKeyDown= className="w-14 h-6 text-center rounded-md bg-surface-2 border border-border text-xs font-bold" dir="ltr"/>
-      <button disabled= onClick= className="w-6 h-6 rounded-md bg-surface-2 border border-border text-sm font-bold disabled:opacity-50">+</button>
+      <button disabled={busy} onClick={() => save(current - 1)} className="w-6 h-6 rounded-md bg-surface-2 border border-border text-sm font-bold disabled:opacity-50">−</button>
+      <input type="number" inputMode="numeric" value={val} disabled={busy} onChange={(e) => setVal(e.target.value)} onBlur={() => { const n = Number(val); if (!Number.isNaN(n) && n !== current)
+        save(n); }} onKeyDown={(e) => { if (e.key === "Enter")
+        (e.target as HTMLInputElement).blur(); }} className="w-14 h-6 text-center rounded-md bg-surface-2 border border-border text-xs font-bold" dir="ltr"/>
+      <button disabled={busy} onClick={() => save(current + 1)} className="w-6 h-6 rounded-md bg-surface-2 border border-border text-sm font-bold disabled:opacity-50">+</button>
     </div>);
 }
 function AutoStockModal({ product, adminCode, onClose, onChanged }: {
@@ -789,24 +948,32 @@ function AutoStockModal({ product, adminCode, onClose, onChanged }: {
         onChanged();
     };
     const available = rows.filter((r) => !r.is_used).length;
-    return (<div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick=>
-      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick=>
+    return (<div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <h3 className="font-black text-lg mb-1">{t("\u0645\u062E\u0632\u0648\u0646 \u0627\u0644\u062A\u0633\u0644\u064A\u0645 \u0627\u0644\u062A\u0644\u0642\u0627\u0626\u064A")}</h3>
         <p className="text-xs text-muted-foreground mb-4">
-          {t(" \u2014 \u0627\u0644\u0645\u062A\u0648\u0641\u0631: ")}<span className="text-primary font-bold"></span>{t(" \u062D\u0633\u0627\u0628 ")}</p>
+          {t(product.name ?? "")}{t(" \u2014 \u0627\u0644\u0645\u062A\u0648\u0641\u0631: ")}<span className="text-primary font-bold">{available}</span>{t(" \u062D\u0633\u0627\u0628 ")}</p>
 
         <Field label={t("أضف حسابات / أكواد (كل سطر = حساب واحد)")}>
-          <textarea value= onChange= rows= className= dir="ltr" placeholder=/>
+          <textarea value={bulk} onChange={(e) => setBulk(e.target.value)} rows={5} className={inputCls} dir="ltr" placeholder={"email:pass\ncode-1234\n..."}/>
         </Field>
-        <button onClick= disabled= className="mt-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-          
+        <button onClick={add} disabled={busy} className="mt-2 w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? t("جاري الإضافة…") : t("إضافة إلى المخزون")}
         </button>
 
         <div className="mt-5 space-y-1.5">
-          
+          {rows.length === 0 ? (<div className="text-center text-xs text-muted-foreground py-4">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u062D\u0633\u0627\u0628\u0627\u062A \u0641\u064A \u0627\u0644\u0645\u062E\u0632\u0648\u0646.")}</div>) : rows.map((r) => (<div key={r.id} className="flex items-center gap-2 p-2 rounded-lg border border-border text-xs">
+              <span className={`px-1.5 py-0.5 rounded font-bold ${r.is_used ? "bg-destructive/15 text-destructive" : "bg-green-500/15 text-green-400"}`}>
+                {r.is_used ? t("مُستخدم") : t("متوفر")}
+              </span>
+              <span className="flex-1 min-w-0 break-all" dir="ltr">{r.account_details}</span>
+              <button onClick={() => del(r.id)} className="p-1.5 rounded-md bg-surface-2 border border-border text-destructive">
+                <Trash2 className="w-3.5 h-3.5"/>
+              </button>
+            </div>))}
         </div>
 
-        <button onClick= className="mt-5 w-full py-2.5 rounded-lg bg-surface-2 border border-border font-bold">{t(" \u0625\u063A\u0644\u0627\u0642 ")}</button>
+        <button onClick={onClose} className="mt-5 w-full py-2.5 rounded-lg bg-surface-2 border border-border font-bold">{t(" \u0625\u063A\u0644\u0627\u0642 ")}</button>
       </div>
     </div>);
 }
@@ -851,15 +1018,37 @@ function ProductsManager({ adminCode, products, categories, onChange }: {
     return (<div className="card-neon rounded-2xl p-5 mb-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-black text-lg flex items-center gap-2"><Package className="w-5 h-5"/>{t(" \u0627\u0644\u0645\u0646\u062A\u062C\u0627\u062A")}</h2>
-        <button onClick= className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
+        <button onClick={startNew} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
           <Plus className="w-4 h-4"/>{t(" \u0625\u0636\u0627\u0641\u0629 \u0645\u0646\u062A\u062C ")}</button>
       </div>
 
-      
+      {products.length === 0 ? (<div className="text-center py-8 text-sm text-muted-foreground">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u0645\u0646\u062A\u062C\u0627\u062A \u2014 \u0627\u0636\u063A\u0637 \"\u0625\u0636\u0627\u0641\u0629 \u0645\u0646\u062A\u062C\".")}</div>) : (<div className="space-y-2">
+          {products.map((p) => (<div key={p.id} className="flex items-center gap-2 p-3 rounded-xl border border-border">
+              <img loading="lazy" decoding="async" src={p.image} alt="" className="w-12 h-12 rounded-lg object-cover shrink-0"/>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm line-clamp-1">{t(p.name ?? "")}</div>
+                <div className="text-[11px] text-muted-foreground line-clamp-1">
+                  {categories.find((c) => c.slug === p.categorySlug)?.name || "—"} · <span className="text-primary font-bold">{formatIQD(p.price)}</span>
+                </div>
+                <StockQuickEdit product={p} adminCode={adminCode} onSaved={onChange}/>
+                <button onClick={() => setStockFor(p)} className={`mt-1.5 inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md border font-bold ${(counts[p.id] || 0) > 0
+                    ? "bg-green-500/10 border-green-500/40 text-green-400"
+                    : "bg-surface-2 border-border text-muted-foreground"}`}>{t(" \u26A1 \u062A\u0633\u0644\u064A\u0645 \u062A\u0644\u0642\u0627\u0626\u064A: ")}{counts[p.id] || 0}{t(" \u062D\u0633\u0627\u0628 ")}</button>
+              </div>
+              <div className="flex flex-col gap-1 shrink-0">
+                <button onClick={() => startEdit(p)} className="p-2 rounded-lg bg-surface-2 border border-border hover:border-primary/50">
+                  <Edit className="w-3.5 h-3.5"/>
+                </button>
+                <button onClick={() => remove(p.id, p.name)} className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive">
+                  <Trash2 className="w-3.5 h-3.5"/>
+                </button>
+              </div>
+            </div>))}
+        </div>)}
 
-      
+      {editing && (<ProductEditor form={editing} categories={categories} adminCode={adminCode} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); onChange(); }}/>)}
 
-      
+      {stockFor && (<AutoStockModal product={stockFor} adminCode={adminCode} onClose={() => setStockFor(null)} onChanged={loadCounts}/>)}
     </div>);
 }
 function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
@@ -898,57 +1087,57 @@ function ProductEditor({ form, categories, adminCode, onClose, onSaved }: {
         toast.success(t(f.id ? "تم التعديل" : "تمت الإضافة"));
         onSaved();
     };
-    return (<div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick=>
-      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick=>
-        <h3 className="font-black text-lg mb-4"></h3>
+    return (<div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-black text-lg mb-4">{f.id ? t("تعديل منتج") : t("إضافة منتج")}</h3>
         <div className="space-y-3">
           <Field label={t("الاسم")}>
-            <input value= onChange= className=/>
+            <input value={t(f.name ?? "")} onChange={(e) => setF({ ...f, name: e.target.value })} className={inputCls}/>
           </Field>
           <Field label={t("الوصف")}>
-            <textarea value= onChange= rows= className=/>
+            <textarea value={t(f.description ?? "")} onChange={(e) => setF({ ...f, description: e.target.value })} rows={4} className={inputCls}/>
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("السعر (د.ع)")}>
-              <input type="number" value= onChange= className= dir="ltr"/>
+              <input type="number" value={f.price} onChange={(e) => setF({ ...f, price: e.target.value })} className={inputCls} dir="ltr"/>
             </Field>
             <Field label={t("السعر قبل الخصم (اختياري)")}>
-              <input type="number" value= onChange= className= dir="ltr" placeholder={t("لعرض خصم")}/>
+              <input type="number" value={f.old_price} onChange={(e) => setF({ ...f, old_price: e.target.value })} className={inputCls} dir="ltr" placeholder={t("لعرض خصم")}/>
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("الكمية المتوفرة")}>
-              <input type="number" value= onChange= className= dir="ltr"/>
+              <input type="number" value={f.stock} onChange={(e) => setF({ ...f, stock: e.target.value })} className={inputCls} dir="ltr"/>
             </Field>
             <Field label={t("القسم")}>
-              <select value= onChange= className=>
+              <select value={f.category_slug} onChange={(e) => setF({ ...f, category_slug: e.target.value })} className={inputCls}>
                 <option value="">{t("\u2014 \u0628\u062F\u0648\u0646 \u0642\u0633\u0645 \u2014")}</option>
-                
+                {categories.map((c) => <option key={c.slug} value={c.slug}>{t(c.name ?? "")}</option>)}
               </select>
             </Field>
           </div>
           <Field label={t("صورة المنتج")}>
-            <ImagePicker value= onChange= folder="products"/>
+            <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="products"/>
           </Field>
           <Field label={t("خطوات التفعيل (تُرسل للزبون بعد الشراء)")}>
-            <textarea value= onChange= rows= className= placeholder=/>
+            <textarea value={f.activation_instructions} onChange={(e) => setF({ ...f, activation_instructions: e.target.value })} rows={5} className={inputCls} placeholder={t("1. افتح التطبيق\n2. اضغط تسجيل الدخول\n3. أدخل البيانات المرسلة")}/>
           </Field>
           <Field label={t("صور شرح التفعيل")}>
-            <MultiImagePicker value= onChange= folder="activation"/>
+            <MultiImagePicker value={f.activation_images} onChange={(urls) => setF({ ...f, activation_images: urls })} folder="activation"/>
           </Field>
           <Field label={t("ترتيب الظهور (الأصغر يظهر أولاً)")}>
-            <input type="number" value= onChange= className= dir="ltr"/>
+            <input type="number" value={f.display_order} onChange={(e) => setF({ ...f, display_order: e.target.value })} className={inputCls} dir="ltr"/>
           </Field>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked= onChange= className="accent-primary"/>{t(" \u0639\u0631\u0636 \u0641\u064A \u0627\u0644\u0635\u0641\u062D\u0629 \u0627\u0644\u0631\u0626\u064A\u0633\u064A\u0629 ")}</label>
+            <input type="checkbox" checked={f.is_featured} onChange={(e) => setF({ ...f, is_featured: e.target.checked })} className="accent-primary"/>{t(" \u0639\u0631\u0636 \u0641\u064A \u0627\u0644\u0635\u0641\u062D\u0629 \u0627\u0644\u0631\u0626\u064A\u0633\u064A\u0629 ")}</label>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked= onChange= className="accent-primary"/>{t(" \u0645\u062A\u0648\u0641\u0631 (\u064A\u0638\u0647\u0631 \u0644\u0644\u0632\u0628\u0627\u0626\u0646) ")}</label>
+            <input type="checkbox" checked={f.is_active} onChange={(e) => setF({ ...f, is_active: e.target.checked })} className="accent-primary"/>{t(" \u0645\u062A\u0648\u0641\u0631 (\u064A\u0638\u0647\u0631 \u0644\u0644\u0632\u0628\u0627\u0626\u0646) ")}</label>
         </div>
         <div className="flex gap-2 mt-5">
-          <button onClick= disabled= className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-            
+          <button onClick={save} disabled={busy} className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+            {busy ? t("جاري الحفظ…") : t("حفظ")}
           </button>
-          <button onClick= className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">{t(" \u0625\u0644\u063A\u0627\u0621 ")}</button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">{t(" \u0625\u0644\u063A\u0627\u0621 ")}</button>
         </div>
       </div>
     </div>);
@@ -991,13 +1180,32 @@ function PaymentMethodsManager({ adminCode, methods, onChange }: {
     return (<div className="card-neon rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-black text-lg flex items-center gap-2"><CreditCard className="w-5 h-5"/>{t(" \u0637\u0631\u0642 \u0627\u0644\u062F\u0641\u0639")}</h2>
-        <button onClick= className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
+        <button onClick={() => setEditing({ ...emptyPM })} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
           <Plus className="w-4 h-4"/>{t(" \u0625\u0636\u0627\u0641\u0629 ")}</button>
       </div>
 
-      
+      {methods.length === 0 ? (<div className="text-center py-8 text-sm text-muted-foreground">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u0637\u0631\u0642 \u062F\u0641\u0639.")}</div>) : (<div className="space-y-2">
+          {methods.map((m) => (<div key={m.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
+              {m.image_url ? (<img loading="lazy" decoding="async" src={m.image_url} alt="" className="w-12 h-12 rounded-lg object-cover border border-border shrink-0"/>) : (<div className="w-12 h-12 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">💳</div>)}
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm line-clamp-1">{t(m.name ?? "")}</div>
+                <div className="text-[11px] text-muted-foreground" dir="ltr">{m.number}</div>
+              </div>
+              {m.tax ? (<span className="text-[10px] px-2 py-1 rounded-md bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 font-bold shrink-0">
+                  +{Math.round(m.tax * 100)}%
+                </span>) : null}
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => startEdit(m)} className="p-2 rounded-lg bg-surface-2 border border-border hover:border-primary/50">
+                  <Edit className="w-3.5 h-3.5"/>
+                </button>
+                <button onClick={() => remove(m.id, m.name)} className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive">
+                  <Trash2 className="w-3.5 h-3.5"/>
+                </button>
+              </div>
+            </div>))}
+        </div>)}
 
-      
+      {editing && (<PMEditor form={editing} adminCode={adminCode} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); onChange(); }}/>)}
     </div>);
 }
 function PMEditor({ form, adminCode, onClose, onSaved }: {
@@ -1030,38 +1238,38 @@ function PMEditor({ form, adminCode, onClose, onSaved }: {
         toast.success(t(f.id ? "تم التعديل" : "تمت الإضافة"));
         onSaved();
     };
-    return (<div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick=>
-      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick=>
-        <h3 className="font-black text-lg mb-4"></h3>
+    return (<div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-black text-lg mb-4">{f.id ? t("تعديل طريقة دفع") : t("إضافة طريقة دفع")}</h3>
         <div className="space-y-3">
           <Field label={t("الاسم")}>
-            <input value= onChange= className=/>
+            <input value={t(f.name ?? "")} onChange={(e) => setF({ ...f, name: e.target.value })} className={inputCls}/>
           </Field>
           <Field label={t("رقم الحساب / المحفظة")}>
-            <input value= onChange= className= dir="ltr"/>
+            <input value={f.account_number} onChange={(e) => setF({ ...f, account_number: e.target.value })} className={inputCls} dir="ltr"/>
           </Field>
           <Field label={t("ملاحظة للزبون (اختياري)")}>
-            <input value= onChange= className=/>
+            <input value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} className={inputCls}/>
           </Field>
           <Field label={t("صورة الشعار")}>
-            <ImagePicker value= onChange= folder="payments"/>
+            <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="payments"/>
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("ضريبة % (0 = بدون)")}>
-              <input type="number" value= onChange= className= dir="ltr"/>
+              <input type="number" value={f.tax} onChange={(e) => setF({ ...f, tax: e.target.value })} className={inputCls} dir="ltr"/>
             </Field>
             <Field label={t("الترتيب")}>
-              <input type="number" value= onChange= className= dir="ltr"/>
+              <input type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: e.target.value })} className={inputCls} dir="ltr"/>
             </Field>
           </div>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked= onChange= className="accent-primary"/>{t(" \u0645\u0641\u0639\u0651\u0644\u0629 (\u062A\u0638\u0647\u0631 \u0644\u0644\u0632\u0628\u0627\u0626\u0646) ")}</label>
+            <input type="checkbox" checked={f.is_active} onChange={(e) => setF({ ...f, is_active: e.target.checked })} className="accent-primary"/>{t(" \u0645\u0641\u0639\u0651\u0644\u0629 (\u062A\u0638\u0647\u0631 \u0644\u0644\u0632\u0628\u0627\u0626\u0646) ")}</label>
         </div>
         <div className="flex gap-2 mt-5">
-          <button onClick= disabled= className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-            
+          <button onClick={save} disabled={busy} className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+            {busy ? t("جاري الحفظ…") : t("حفظ")}
           </button>
-          <button onClick= className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">{t(" \u0625\u0644\u063A\u0627\u0621 ")}</button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">{t(" \u0625\u0644\u063A\u0627\u0621 ")}</button>
         </div>
       </div>
     </div>);
@@ -1073,8 +1281,8 @@ function Field({ label, children }: {
 }) {
     useLanguage();
     return (<div>
-      <label className="text-xs text-muted-foreground mb-1 block"></label>
-      
+      <label className="text-xs text-muted-foreground mb-1 block">{label}</label>
+      {children}
     </div>);
 }
 /* -------------------- Categories Manager -------------------- */
@@ -1122,13 +1330,38 @@ function CategoriesManager({ adminCode, categories, onChange }: {
     return (<div className="card-neon rounded-2xl p-5 mb-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-black text-lg flex items-center gap-2"><Users className="w-5 h-5"/>{t(" \u0627\u0644\u0623\u0642\u0633\u0627\u0645")}</h2>
-        <button onClick= className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
+        <button onClick={() => setEditing({ ...emptyCat, sort_order: String(categories.length) })} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
           <Plus className="w-4 h-4"/>{t(" \u0625\u0636\u0627\u0641\u0629 \u0642\u0633\u0645 ")}</button>
       </div>
 
-      
+      {categories.length === 0 ? (<div className="text-center py-8 text-sm text-muted-foreground">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u0623\u0642\u0633\u0627\u0645.")}</div>) : (<div className="space-y-2">
+          {categories.map((c, i) => (<div key={c.slug} className="flex items-center gap-3 p-3 rounded-xl border border-border">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-xl shrink-0 overflow-hidden">
+                {c.image_url ? (<img loading="lazy" decoding="async" src={c.image_url} alt={t(c.name ?? "")} className="w-full h-full object-cover"/>) : c.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm line-clamp-1">{t(c.name ?? "")}</div>
+                <div className="text-[11px] text-muted-foreground" dir="ltr">/{c.slug} · {c.count}{t(" \u0645\u0646\u062A\u062C")}</div>
+              </div>
+              <div className="flex flex-col gap-0.5 shrink-0">
+                <button disabled={i === 0 || busySlug === c.slug} onClick={() => move(c.slug, -1)} className="px-1.5 py-0.5 rounded bg-surface-2 border border-border text-[10px] disabled:opacity-30">▲</button>
+                <button disabled={i === categories.length - 1 || busySlug === c.slug} onClick={() => move(c.slug, 1)} className="px-1.5 py-0.5 rounded bg-surface-2 border border-border text-[10px] disabled:opacity-30">▼</button>
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => setEditing({
+                    original_slug: c.slug, slug: c.slug, name: c.name, icon: c.icon,
+                    image_url: c.image_url || "", sort_order: String(i),
+                })} className="p-2 rounded-lg bg-surface-2 border border-border hover:border-primary/50">
+                  <Edit className="w-3.5 h-3.5"/>
+                </button>
+                <button onClick={() => remove(c.slug, c.name)} className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive">
+                  <Trash2 className="w-3.5 h-3.5"/>
+                </button>
+              </div>
+            </div>))}
+        </div>)}
 
-      
+      {editing && (<CategoryEditor form={editing} adminCode={adminCode} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); onChange(); }}/>)}
     </div>);
 }
 function CategoryEditor({ form, adminCode, onClose, onSaved }: {
@@ -1159,33 +1392,33 @@ function CategoryEditor({ form, adminCode, onClose, onSaved }: {
         toast.success(t(f.original_slug ? "تم التعديل" : "تمت الإضافة"));
         onSaved();
     };
-    return (<div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick=>
-      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-md" onClick=>
-        <h3 className="font-black text-lg mb-4"></h3>
+    return (<div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-black text-lg mb-4">{f.original_slug ? t("تعديل قسم") : t("إضافة قسم")}</h3>
         <div className="space-y-3">
           <Field label={t("الاسم بالعربية")}>
-            <input value= onChange= className=/>
+            <input value={t(f.name ?? "")} onChange={(e) => setF({ ...f, name: e.target.value })} className={inputCls}/>
           </Field>
           <Field label={t("المعرف (slug) — إنكليزي بدون مسافات")}>
-            <input value= onChange= className= dir="ltr" placeholder="games"/>
+            <input value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value })} className={inputCls} dir="ltr" placeholder="games"/>
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label={t("الأيقونة (إيموجي)")}>
-              <input value= onChange= className=/>
+              <input value={f.icon} onChange={(e) => setF({ ...f, icon: e.target.value })} className={inputCls}/>
             </Field>
             <Field label={t("الترتيب")}>
-              <input type="number" value= onChange= className= dir="ltr"/>
+              <input type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: e.target.value })} className={inputCls} dir="ltr"/>
             </Field>
           </div>
           <Field label={t("صورة القسم (اختياري — تُستخدم بدل الأيقونة)")}>
-            <ImagePicker value= onChange= folder="categories"/>
+            <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="categories"/>
           </Field>
         </div>
         <div className="flex gap-2 mt-5">
-          <button onClick= disabled= className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-            
+          <button onClick={save} disabled={busy} className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+            {busy ? t("جاري الحفظ…") : t("حفظ")}
           </button>
-          <button onClick= className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">{t(" \u0625\u0644\u063A\u0627\u0621 ")}</button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">{t(" \u0625\u0644\u063A\u0627\u0621 ")}</button>
         </div>
       </div>
     </div>);
@@ -1219,11 +1452,30 @@ function SocialsManager({ adminCode, socials, onChange }: {
     return (<div className="card-neon rounded-2xl p-5 mb-6 mt-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-black text-lg flex items-center gap-2"><Share2 className="w-5 h-5"/>{t(" \u0645\u0646\u0635\u0627\u062A \u0627\u0644\u062A\u0648\u0627\u0635\u0644")}</h2>
-        <button onClick= className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
+        <button onClick={() => setEditing({ ...emptySocial, sort_order: String(socials.length) })} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow">
           <Plus className="w-4 h-4"/>{t(" \u0625\u0636\u0627\u0641\u0629 \u0645\u0646\u0635\u0629 ")}</button>
       </div>
-      
-      
+      {socials.length === 0 ? (<div className="text-center py-8 text-sm text-muted-foreground">{t("\u0644\u0645 \u062A\u064F\u0636\u0641 \u0623\u064A \u0645\u0646\u0635\u0629 \u0628\u0639\u062F.")}</div>) : (<div className="space-y-2">
+          {socials.map((s) => (<div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border border-border">
+              {s.image_url ? (<img loading="lazy" decoding="async" src={s.image_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-border shrink-0"/>) : (<div className="w-10 h-10 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">🔗</div>)}
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm">{t(s.name ?? "")}</div>
+                <div className="text-[11px] text-muted-foreground line-clamp-1" dir="ltr">{s.url}</div>
+              </div>
+              <div className="flex gap-1 shrink-0">
+                <button onClick={() => setEditing({
+                    id: s.id, name: s.name, url: s.url, image_url: s.image_url || "",
+                    sort_order: String(s.sort_order), is_active: true,
+                })} className="p-2 rounded-lg bg-surface-2 border border-border hover:border-primary/50">
+                  <Edit className="w-3.5 h-3.5"/>
+                </button>
+                <button onClick={() => remove(s.id, s.name)} className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive">
+                  <Trash2 className="w-3.5 h-3.5"/>
+                </button>
+              </div>
+            </div>))}
+        </div>)}
+      {editing && (<SocialEditor form={editing} adminCode={adminCode} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); onChange(); }}/>)}
     </div>);
 }
 function SocialEditor({ form, adminCode, onClose, onSaved }: {
@@ -1249,28 +1501,28 @@ function SocialEditor({ form, adminCode, onClose, onSaved }: {
         toast.success(t(f.id ? "تم التعديل" : "تمت الإضافة"));
         onSaved();
     };
-    return (<div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick=>
-      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto" onClick=>
-        <h3 className="font-black text-lg mb-4"></h3>
+    return (<div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-background border border-border rounded-2xl p-5 w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <h3 className="font-black text-lg mb-4">{f.id ? t("تعديل منصة") : t("إضافة منصة")}</h3>
         <div className="space-y-3">
           <Field label={t("الاسم (مثال: واتساب / تليجرام / إنستغرام)")}>
-            <input value= onChange= className=/>
+            <input value={t(f.name ?? "")} onChange={(e) => setF({ ...f, name: e.target.value })} className={inputCls}/>
           </Field>
           <Field label={t("الرابط")}>
-            <input value= onChange= className= dir="ltr" placeholder="https://..."/>
+            <input value={f.url} onChange={(e) => setF({ ...f, url: e.target.value })} className={inputCls} dir="ltr" placeholder="https://..."/>
           </Field>
           <Field label={t("صورة المنصة (شعار)")}>
-            <ImagePicker value= onChange= folder="socials"/>
+            <ImagePicker value={f.image_url} onChange={(url) => setF({ ...f, image_url: url })} folder="socials"/>
           </Field>
           <Field label={t("الترتيب")}>
-            <input type="number" value= onChange= className= dir="ltr"/>
+            <input type="number" value={f.sort_order} onChange={(e) => setF({ ...f, sort_order: e.target.value })} className={inputCls} dir="ltr"/>
           </Field>
         </div>
         <div className="flex gap-2 mt-5">
-          <button onClick= disabled= className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-            
+          <button onClick={save} disabled={busy} className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+            {busy ? t("جاري الحفظ…") : t("حفظ")}
           </button>
-          <button onClick= className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">{t("\u0625\u0644\u063A\u0627\u0621")}</button>
+          <button onClick={onClose} className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border font-bold">{t("\u0625\u0644\u063A\u0627\u0621")}</button>
         </div>
       </div>
     </div>);
@@ -1317,11 +1569,18 @@ function StoreImagesManager({ adminCode, images, onChange }: {
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-black text-lg flex items-center gap-2"><ImageIcon className="w-5 h-5"/>{t(" \u0635\u0648\u0631 \u0627\u0644\u0645\u062A\u062C\u0631")}</h2>
         <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-bold btn-glow cursor-pointer">
-          <Upload className="w-4 h-4"/> 
-          <input type="file" accept="image/*" multiple className="hidden" onChange=/>
+          <Upload className="w-4 h-4"/> {uploading ? t("جاري الرفع…") : t("رفع صور")}
+          <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => e.target.files && e.target.files.length > 0 && upload(e.target.files)}/>
         </label>
       </div>
-      
+      {images.length === 0 ? (<div className="text-center py-8 text-sm text-muted-foreground">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u0635\u0648\u0631 \u0628\u0639\u062F.")}</div>) : (<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {images.map((img) => (<div key={img.id} className="relative rounded-xl overflow-hidden border border-border">
+              <img loading="lazy" decoding="async" src={img.image_url} alt="" className="w-full h-32 object-cover"/>
+              <button onClick={() => remove(img.id)} className="absolute top-1 right-1 w-7 h-7 rounded-lg bg-destructive text-white flex items-center justify-center">
+                <Trash2 className="w-3.5 h-3.5"/>
+              </button>
+            </div>))}
+        </div>)}
     </div>);
 }
 /* -------------------- Reviews Manager -------------------- */
@@ -1345,14 +1604,49 @@ function ReviewsManager({ adminCode, reviews, onChange }: {
     };
     const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 3);
     return (<div className="card-neon rounded-2xl p-5 mb-6">
-      <button onClick= className="w-full flex items-center justify-between gap-2 text-right">
+      <button onClick={() => setOpen((v) => !v)} className="w-full flex items-center justify-between gap-2 text-right">
         <h2 className="font-black text-lg flex items-center gap-2">
-          <Star className="w-5 h-5 text-yellow-500"/>{t(" \u062A\u0642\u064A\u064A\u0645\u0627\u062A \u0627\u0644\u0632\u0628\u0627\u0626\u0646 ")}<span className="text-xs font-bold text-muted-foreground">()</span>
+          <Star className="w-5 h-5 text-yellow-500"/>{t(" \u062A\u0642\u064A\u064A\u0645\u0627\u062A \u0627\u0644\u0632\u0628\u0627\u0626\u0646 ")}<span className="text-xs font-bold text-muted-foreground">({reviews.length})</span>
         </h2>
-        
+        {open ? <ChevronUp className="w-5 h-5 text-primary"/> : <ChevronDown className="w-5 h-5 text-primary"/>}
       </button>
 
-      
+      {open && (<div className="mt-4">
+          {reviews.length === 0 ? (<div className="text-center py-8 text-sm text-muted-foreground">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u062A\u0642\u064A\u064A\u0645\u0627\u062A \u0628\u0639\u062F.")}</div>) : (<>
+              <div className="space-y-2">
+                {displayedReviews.map((r) => {
+                    useLanguage();
+                    const prod = products.find((p) => p.id === r.product_id);
+                    return (<div key={r.id} className="p-3 rounded-xl border border-border">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div>
+                          <div className="flex gap-0.5 mb-1">
+                            {Array.from({ length: r.rating }).map((_, j) => (<Star key={j} className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500"/>))}
+                          </div>
+                          <div className="font-bold text-sm">
+                            {r.customer_name}
+                            {r.product_name && (<span className="font-medium text-muted-foreground">{t(" \u2014 \u0642\u0627\u0645 \u0628\u0634\u0631\u0627\u0621: ")}<span className="text-primary">{t(r.product_name ?? "")}</span></span>)}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground">
+                            {new Date(r.created_at).toLocaleString(locale())}
+                            {prod && <> · <span className="text-primary">{t(prod.name ?? "")}</span></>}
+                          </div>
+                        </div>
+                        <button onClick={() => remove(r.id)} className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive shrink-0">
+                          <Trash2 className="w-3.5 h-3.5"/>
+                        </button>
+                      </div>
+                      {r.comment && <div className="text-sm text-muted-foreground">"{t(r.comment ?? "")}"</div>}
+                    </div>);
+                })}
+              </div>
+              {reviews.length > 3 && (<div className="text-center mt-4">
+                  <button onClick={() => setShowAllReviews((v) => !v)} className="px-6 py-2.5 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 rounded-xl font-medium">
+                    {showAllReviews ? t("طي التقييمات 🔼") : t("عرض باقي التقييمات في اللوحة 🔽")}
+                  </button>
+                </div>)}
+            </>)}
+        </div>)}
     </div>);
 }
 /* -------------------- Marquee Manager -------------------- */
@@ -1381,13 +1675,19 @@ function ThemeManager({ adminCode, onChange }: {
     return (<div className="card-neon rounded-2xl p-5 mb-6">
       <h2 className="font-black text-lg mb-4 flex items-center gap-2">{t("\uD83C\uDFA8 \u0623\u0644\u0648\u0627\u0646 \u0648\u062A\u0635\u0645\u064A\u0645 \u0627\u0644\u0645\u0648\u0642\u0639")}</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-4">
-        
+        {THEME_KEYS.map((k) => (<label key={k} className="flex items-center gap-3 rounded-lg bg-surface-2 border border-border p-3">
+            <input type="color" value={colors[k]} onChange={(e) => setColors({ ...colors, [k]: e.target.value })} className="h-9 w-12 shrink-0 cursor-pointer rounded border border-border bg-transparent" aria-label={THEME_LABELS[k]}/>
+            <span className="min-w-0">
+              <span className="block text-sm font-bold">{THEME_LABELS[k]}</span>
+              <span className="block text-[11px] text-muted-foreground uppercase">{colors[k]}</span>
+            </span>
+          </label>))}
       </div>
       <div className="flex flex-wrap gap-2">
-        <button onClick= disabled= className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-          
+        <button onClick={save} disabled={busy} className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? t("جاري الحفظ…") : t("حفظ التغييرات")}
         </button>
-        <button onClick= type="button" className="py-2.5 px-4 rounded-lg bg-surface-2 border border-border font-bold">{t(" \u0627\u0633\u062A\u0639\u0627\u062F\u0629 \u0627\u0644\u0627\u0641\u062A\u0631\u0627\u0636\u064A ")}</button>
+        <button onClick={reset} type="button" className="py-2.5 px-4 rounded-lg bg-surface-2 border border-border font-bold">{t(" \u0627\u0633\u062A\u0639\u0627\u062F\u0629 \u0627\u0644\u0627\u0641\u062A\u0631\u0627\u0636\u064A ")}</button>
       </div>
       <p className="mt-3 text-[11px] text-muted-foreground">{t(" \u062A\u064F\u0637\u0628\u064E\u0651\u0642 \u0627\u0644\u0623\u0644\u0648\u0627\u0646 \u0645\u0628\u0627\u0634\u0631\u0629 \u0639\u0644\u0649 \u0643\u0644 \u0635\u0641\u062D\u0627\u062A \u0627\u0644\u0645\u062A\u062C\u0631 \u0628\u0639\u062F \u0627\u0644\u062D\u0641\u0638 \u062F\u0648\u0646 \u0625\u0639\u0627\u062F\u0629 \u062A\u062D\u0645\u064A\u0644. ")}</p>
     </div>);
@@ -1445,10 +1745,21 @@ function NotificationsManager({ adminCode, onChange }: {
     return (<div className="card-neon rounded-2xl p-5 mb-6">
       <h2 className="font-black text-lg mb-4">{t("\uD83D\uDD14 \u0625\u0639\u062F\u0627\u062F\u0627\u062A \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A \u0648\u0627\u0644\u062A\u0646\u0628\u064A\u0647\u0627\u062A")}</h2>
       <div className="space-y-5">
-        
+        {NOTIFY_KEYS.map((g) => (<div key={g.group}>
+            <div className="text-sm font-bold text-primary mb-2">{g.group}</div>
+            <div className="space-y-2">
+              {g.items.map((it) => (<label key={it.key} className="flex items-start justify-between gap-3 rounded-xl bg-surface-2 border border-border p-3 cursor-pointer hover:border-primary/40 transition">
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold">{t(it.label ?? "")}</span>
+                    <span className="block text-[11px] text-muted-foreground mt-0.5">{it.hint}</span>
+                  </span>
+                  <input type="checkbox" className="accent-primary mt-1 w-4 h-4 shrink-0" checked={!!flags[it.key]} onChange={(e) => setFlags({ ...flags, [it.key]: e.target.checked })}/>
+                </label>))}
+            </div>
+          </div>))}
       </div>
-      <button onClick= disabled= className="mt-4 w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-        
+      <button onClick={save} disabled={busy} className="mt-4 w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+        {busy ? t("جاري الحفظ…") : t("حفظ إعدادات الإشعارات")}
       </button>
       <p className="mt-3 text-[11px] text-muted-foreground">{t(" \u064A\u0641\u062D\u0635 \u0627\u0644\u062E\u0627\u062F\u0645 \u0647\u0630\u0647 \u0627\u0644\u062D\u0627\u0644\u0627\u062A \u0642\u0628\u0644 \u0625\u0631\u0633\u0627\u0644 \u0623\u064A \u0625\u0634\u0639\u0627\u0631\u060C \u0641\u0644\u0627 \u062A\u064F\u0633\u062A\u062E\u062F\u0645 \u0625\u0644\u0627 \u0627\u0644\u0642\u0646\u0648\u0627\u062A \u0627\u0644\u0645\u0641\u0639\u0651\u0644\u0629. ")}</p>
     </div>);
@@ -1497,19 +1808,27 @@ function MarqueeManager({ adminCode, onChange }: {
     return (<div className="card-neon rounded-2xl p-5 mb-6">
       <h2 className="font-black text-lg mb-4 flex items-center gap-2">{t("\uD83D\uDCE3 \u0627\u0644\u0634\u0631\u064A\u0637 \u0627\u0644\u0645\u062A\u062D\u0631\u0643")}</h2>
       <label className="flex items-center gap-2 text-sm mb-3">
-        <input type="checkbox" checked= onChange= className="accent-primary"/>{t(" \u0625\u0638\u0647\u0627\u0631 \u0627\u0644\u0634\u0631\u064A\u0637 \u0644\u0644\u0632\u0628\u0627\u0626\u0646 ")}</label>
+        <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="accent-primary"/>{t(" \u0625\u0638\u0647\u0627\u0631 \u0627\u0644\u0634\u0631\u064A\u0637 \u0644\u0644\u0632\u0628\u0627\u0626\u0646 ")}</label>
       <div className="space-y-2 mb-3">
-        
-        
+        {items.length === 0 && <div className="text-xs text-muted-foreground">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u0631\u0633\u0627\u0626\u0644 \u2014 \u0623\u0636\u0641 \u0648\u0627\u062D\u062F\u0629 \u0623\u062F\u0646\u0627\u0647.")}</div>}
+        {items.map((t, i) => (<div key={i} className="flex items-center gap-2">
+            <input value={t} onChange={(e) => setItems(items.map((x, idx) => idx === i ? e.target.value : x))} className={inputCls}/>
+            <button onClick={() => setItems(items.filter((_, idx) => idx !== i))} className="p-2 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive shrink-0">
+              <Trash2 className="w-3.5 h-3.5"/>
+            </button>
+          </div>))}
       </div>
       <div className="flex items-center gap-2 mb-3">
-        <input value= onChange= placeholder={t("نص جديد للشريط…")} className=/>
-        <button onClick= className="p-2 rounded-lg bg-primary text-primary-foreground shrink-0">
+        <input value={newItem} onChange={(e) => setNewItem(e.target.value)} placeholder={t("نص جديد للشريط…")} className={inputCls}/>
+        <button onClick={() => { if (newItem.trim()) {
+        setItems([...items, newItem.trim()]);
+        setNewItem("");
+    } }} className="p-2 rounded-lg bg-primary text-primary-foreground shrink-0">
           <Plus className="w-4 h-4"/>
         </button>
       </div>
-      <button onClick= disabled= className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-        
+      <button onClick={save} disabled={busy} className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+        {busy ? t("جاري الحفظ…") : t("حفظ الشريط")}
       </button>
     </div>);
 }
@@ -1579,29 +1898,29 @@ function PromoManager({ adminCode, categories, onChange }: {
       <h2 className="font-black text-lg mb-4 flex items-center gap-2">{t("\uD83C\uDF81 \u0628\u0627\u0646\u0631 \u0627\u0644\u0639\u0631\u0648\u0636 (\u0627\u0644\u0635\u0641\u062D\u0629 \u0627\u0644\u0631\u0626\u064A\u0633\u064A\u0629)")}</h2>
       <div className="space-y-3">
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked= onChange= className="accent-primary"/>{t(" \u0625\u0638\u0647\u0627\u0631 \u0627\u0644\u0628\u0627\u0646\u0631 ")}</label>
+          <input type="checkbox" checked={enabled} onChange={(e) => setEnabled(e.target.checked)} className="accent-primary"/>{t(" \u0625\u0638\u0647\u0627\u0631 \u0627\u0644\u0628\u0627\u0646\u0631 ")}</label>
         <Field label={t("النص العلوي الصغير (مثال: عروض حصرية)")}>
-          <input value= onChange= className=/>
+          <input value={t(subtitle ?? "")} onChange={(e) => setSubtitle(e.target.value)} className={inputCls}/>
         </Field>
         <Field label={t("العنوان الرئيسي")}>
-          <input value= onChange= className=/>
+          <input value={t(title ?? "")} onChange={(e) => setTitle(e.target.value)} className={inputCls}/>
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label={t("نص الزر")}>
-            <input value= onChange= className=/>
+            <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} className={inputCls}/>
           </Field>
           <Field label={t("القسم عند الضغط")}>
-            <select value= onChange= className=>
+            <select value={ctaSlug} onChange={(e) => setCtaSlug(e.target.value)} className={inputCls}>
               <option value="">{t("\u2014 \u0628\u062F\u0648\u0646 \u2014")}</option>
-              
+              {categories.map((c) => <option key={c.slug} value={c.slug}>{t(c.name ?? "")}</option>)}
             </select>
           </Field>
         </div>
         <div className="flex gap-2">
-          <button onClick= disabled= className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-            
+          <button onClick={save} disabled={busy} className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+            {busy ? t("جاري الحفظ…") : t("حفظ")}
           </button>
-          <button onClick= disabled= className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive font-bold">{t(" \u062D\u0630\u0641 ")}</button>
+          <button onClick={remove} disabled={busy} className="px-4 py-2.5 rounded-lg bg-surface-2 border border-border hover:border-destructive/50 text-destructive font-bold">{t(" \u062D\u0630\u0641 ")}</button>
         </div>
       </div>
     </div>);
@@ -1694,19 +2013,19 @@ function WhatsAppManager({ adminCode }: {
       <p className="text-xs text-muted-foreground mb-4">{t(" \u0639\u0646\u062F \u0648\u0635\u0648\u0644 \u0623\u064A \u0637\u0644\u0628 \u062C\u062F\u064A\u062F\u060C \u062A\u064F\u0631\u0633\u0644 \u0631\u0633\u0627\u0644\u0629 \u0648\u0627\u062A\u0633\u0627\u0628 \u062A\u062D\u062A\u0648\u064A \u0631\u0642\u0645 \u0627\u0644\u0637\u0644\u0628 \u0648\u0627\u0633\u0645 \u0627\u0644\u0632\u0628\u0648\u0646 \u0648\u0627\u0644\u0645\u0646\u062A\u062C\u0627\u062A \u0648\u0627\u0644\u0645\u0628\u0644\u063A \u0648\u0648\u0633\u064A\u0644\u0629 \u0627\u0644\u062F\u0641\u0639. ")}</p>
       <div className="space-y-3">
         <Field label="Green API — idInstance">
-          <input value= onChange= className= dir="ltr" placeholder="1101234567" disabled=/>
+          <input value={idInstance} onChange={(e) => setIdInstance(e.target.value)} className={inputCls} dir="ltr" placeholder="1101234567" disabled={loading}/>
         </Field>
         <Field label="Green API — apiTokenInstance">
-          <input value= onChange= className= dir="ltr" placeholder="a1b2c3..." disabled=/>
+          <input value={apiToken} onChange={(e) => setApiToken(e.target.value)} className={inputCls} dir="ltr" placeholder="a1b2c3..." disabled={loading}/>
         </Field>
         <Field label={t("رقم واتساب المشرف (مع رمز الدولة بدون +)")}>
-          <input value= onChange= className= dir="ltr" placeholder="9647770586502" disabled=/>
+          <input value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} dir="ltr" placeholder="9647770586502" disabled={loading}/>
         </Field>
-        <button onClick= disabled= className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-          
+        <button onClick={save} disabled={busy || loading} className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? t("جاري الحفظ…") : t("حفظ الإعدادات")}
         </button>
-        <button type="button" onClick= disabled= className="w-full py-2.5 rounded-lg bg-surface-2 border border-primary/40 text-primary font-bold disabled:opacity-60">
-          
+        <button type="button" onClick={testSend} disabled={testing || loading} className="w-full py-2.5 rounded-lg bg-surface-2 border border-primary/40 text-primary font-bold disabled:opacity-60">
+          {testing ? t("جاري الإرسال…") : t("🧪 اختبار إرسال الواتساب")}
         </button>
       </div>
     </div>);
@@ -1806,16 +2125,16 @@ function TelegramManager({ adminCode }: {
       <p className="text-xs text-muted-foreground mb-4">{t(" \u0627\u062D\u0635\u0644 \u0639\u0644\u0649 \u0627\u0644\u062A\u0648\u0643\u0646 \u0645\u0646 @BotFather \u0648\u0645\u0639\u0631\u0651\u0641 \u0627\u0644\u0645\u062D\u0627\u062F\u062B\u0629 \u0645\u0646 @userinfobot. \u062D\u0641\u0638\u0647\u0627 \u0647\u0646\u0627 \u064A\u062C\u0639\u0644 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062A \u062A\u0639\u0645\u0644 \u0639\u0644\u0649 \u0623\u064A \u0627\u0633\u062A\u0636\u0627\u0641\u0629 (Vercel \u0623\u064A\u0636\u0627\u064B) \u062F\u0648\u0646 \u0645\u062A\u063A\u064A\u0631\u0627\u062A \u0628\u064A\u0626\u0629. ")}</p>
       <div className="space-y-3">
         <Field label="Telegram — Bot Token">
-          <input value= onChange= className= dir="ltr" placeholder="123456789:AA..." disabled=/>
+          <input value={botToken} onChange={(e) => setBotToken(e.target.value)} className={inputCls} dir="ltr" placeholder="123456789:AA..." disabled={loading}/>
         </Field>
         <Field label="Telegram — Chat ID">
-          <input value= onChange= className= dir="ltr" placeholder="7126623171" disabled=/>
+          <input value={chatId} onChange={(e) => setChatId(e.target.value)} className={inputCls} dir="ltr" placeholder="7126623171" disabled={loading}/>
         </Field>
-        <button onClick= disabled= className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-          
+        <button onClick={save} disabled={busy || loading} className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
+          {busy ? t("جاري الحفظ…") : t("حفظ الإعدادات")}
         </button>
-        <button type="button" onClick= disabled= className="w-full py-2.5 rounded-lg bg-surface-2 border border-primary/40 text-primary font-bold disabled:opacity-60">
-          
+        <button type="button" onClick={testSend} disabled={testing || loading} className="w-full py-2.5 rounded-lg bg-surface-2 border border-primary/40 text-primary font-bold disabled:opacity-60">
+          {testing ? t("جاري الإرسال…") : t("🧪 اختبار إرسال التليجرام")}
         </button>
       </div>
     </div>);
@@ -1915,19 +2234,86 @@ function AnalyticsPanel({ adminCode }: {
     };
     const deviceLabel = (k: string) => k === "mobile" ? "📱 موبايل" : k === "desktop" ? "💻 كمبيوتر" : k === "tablet" ? "📱 تابلت" : k === "bot" ? "🤖 بوت" : "❓ غير معروف";
     return (<div className="card-neon rounded-2xl p-5 mb-6">
-      <button type="button" onClick= aria-expanded= aria-controls="analytics-body" className="w-full flex items-center justify-between gap-2 text-right">
+      <button type="button" onClick={toggleOpen} aria-expanded={open} aria-controls="analytics-body" className="w-full flex items-center justify-between gap-2 text-right">
         <h2 className="font-black text-lg">{t("\u0625\u062D\u0635\u0627\u0626\u064A\u0627\u062A \u0627\u0644\u0632\u0648\u0627\u0631")}</h2>
         <span className="flex items-center gap-2 shrink-0">
-          
-          
+          {open && <span className="text-xs text-muted-foreground">{t("\u062A\u062D\u062F\u064A\u062B \u0643\u0644 15\u062B")}</span>}
+          {open ? <ChevronUp className="w-5 h-5 text-primary"/> : <ChevronDown className="w-5 h-5 text-primary"/>}
         </span>
       </button>
 
-      <div id="analytics-body" inert= className=>
+      <div id="analytics-body" inert={!open} className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
         <div className="overflow-hidden min-h-0">
           <div className="mt-4">
 
-      
+      {loading && !d ? (<div className="text-center py-8 text-sm text-muted-foreground">{t("\u062C\u0627\u0631\u064A \u0627\u0644\u062A\u062D\u0645\u064A\u0644\u2026")}</div>) : err ? (<div className="text-center py-4 text-sm text-destructive">{err}</div>) : d ? (<div className="space-y-5">
+          {/* Top cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <StatCard label={t("زوار الآن")} value={d.liveUsers} accent="text-green-400" pulse/>
+            <StatCard label={t("زوار اليوم")} value={d.visitors24h} sub={`${d.views24h} مشاهدة`} accent="text-primary"/>
+            <StatCard label={t("زوار الأسبوع")} value={d.visitors7d} sub={`${d.views7d} مشاهدة`} accent="text-blue-400"/>
+            <StatCard label={t("أجهزة")} value={d.devices.reduce((a, x) => a + x.n, 0)} sub={d.devices.map((x) => `${deviceLabel(x.k)}: ${x.n}`).join(" · ")} accent="text-yellow-400"/>
+          </div>
+
+          {/* Live pages */}
+          {d.livePages.length > 0 && (<Section title={t("الصفحات المفتوحة الآن")}>
+              <ul className="space-y-1.5">
+                {d.livePages.map((p) => (<li key={p.path} className="flex justify-between items-center text-sm bg-surface-2/60 rounded-lg px-3 py-2">
+                    <span className="truncate">{p.path}</span>
+                    <span className="text-green-400 font-bold">{p.n}</span>
+                  </li>))}
+              </ul>
+            </Section>)}
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <Section title={t("الصفحات الأكثر زيارة (7 أيام)")}>
+              {d.topPages.length === 0 ? <Empty /> : (<ul className="space-y-1.5">
+                  {d.topPages.map((p) => (<li key={p.path} className="flex justify-between items-center gap-3 text-sm bg-surface-2/60 rounded-lg px-3 py-2">
+                      <span className="truncate flex-1">{p.path}</span>
+                      <span className="text-xs text-muted-foreground">{fmtMs(p.avgMs)}</span>
+                      <span className="font-bold text-primary">{p.views}</span>
+                    </li>))}
+                </ul>)}
+            </Section>
+
+            <Section title={t("الأجهزة")}>
+              {d.devices.length === 0 ? <Empty /> : (<ul className="space-y-1.5">
+                  {d.devices.map((x) => (<li key={x.k} className="flex justify-between items-center text-sm bg-surface-2/60 rounded-lg px-3 py-2">
+                      <span>{deviceLabel(x.k)}</span>
+                      <span className="font-bold">{x.n}</span>
+                    </li>))}
+                </ul>)}
+            </Section>
+
+            <Section title={t("الدول")}>
+              {d.countries.length === 0 ? <Empty /> : (<ul className="space-y-1.5">
+                  {d.countries.map((x) => (<li key={x.k} className="flex justify-between items-center text-sm bg-surface-2/60 rounded-lg px-3 py-2">
+                      <span>{x.k}</span>
+                      <span className="font-bold">{x.n}</span>
+                    </li>))}
+                </ul>)}
+            </Section>
+
+            <Section title={t("المدن")}>
+              {d.cities.length === 0 ? <Empty /> : (<ul className="space-y-1.5">
+                  {d.cities.map((x) => (<li key={x.k} className="flex justify-between items-center text-sm bg-surface-2/60 rounded-lg px-3 py-2">
+                      <span>{x.k}</span>
+                      <span className="font-bold">{x.n}</span>
+                    </li>))}
+                </ul>)}
+            </Section>
+          </div>
+
+          <Section title={t("آخر الأحداث (نقرات وشراء)")}>
+            {d.recentEvents.length === 0 ? (<div className="text-xs text-muted-foreground">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u0623\u062D\u062F\u0627\u062B \u0628\u0639\u062F. \u0627\u0633\u062A\u062E\u062F\u0645 ")}<code className="px-1 rounded bg-surface-2">logEvent(name, data)</code>{t(" \u0644\u062A\u062A\u0628\u0639 \u0627\u0644\u0646\u0642\u0631\u0627\u062A.")}</div>) : (<ul className="space-y-1.5 max-h-64 overflow-y-auto">
+                {d.recentEvents.map((e: any, i: number) => (<li key={i} className="text-xs bg-surface-2/60 rounded-lg px-3 py-2 flex justify-between gap-2">
+                    <span className="font-bold text-primary">{t(e.name ?? "")}</span>
+                    <span className="truncate text-muted-foreground flex-1">{e.path || ""}</span>
+                    <span className="text-muted-foreground">{new Date(e.created_at).toLocaleTimeString("ar-IQ")}</span>
+                  </li>))}
+              </ul>)}
+          </Section>
+        </div>) : null}
           </div>
         </div>
       </div>
@@ -1943,11 +2329,11 @@ function StatCard({ label, value, sub, accent, pulse }: {
     useLanguage();
     return (<div className="rounded-xl bg-surface-2/70 border border-border p-3">
       <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-        
-        
+        {pulse && <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"/><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"/></span>}
+        {label}
       </div>
-      <div className=></div>
-      
+      <div className={`text-2xl font-black ${accent || ""}`}>{value}</div>
+      {sub && <div className="text-[10px] text-muted-foreground mt-1 truncate">{sub}</div>}
     </div>);
 }
 function Section({ title, children }: {
@@ -1956,8 +2342,8 @@ function Section({ title, children }: {
 }) {
     useLanguage();
     return (<div>
-      <div className="text-sm font-bold mb-2"></div>
-      
+      <div className="text-sm font-bold mb-2">{t(title ?? "")}</div>
+      {children}
     </div>);
 }
 function Empty() { useLanguage(); return <div className="text-xs text-muted-foreground py-4 text-center">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u0628\u064A\u0627\u0646\u0627\u062A")}</div>; }
@@ -2003,15 +2389,30 @@ function BlockCustomerModal({ order, adminCode, onClose }: {
         toast.success(t(`تم حظر ${chosen.length} عنصر`));
         onClose();
     };
-    return (<div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick=>
-      <div className="card-neon rounded-2xl p-5 w-full max-w-md space-y-4" onClick=>
+    return (<div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
+      <div className="card-neon rounded-2xl p-5 w-full max-w-md space-y-4" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between">
           <h3 className="font-black">{t("\u062D\u0638\u0631 \u0627\u0644\u0632\u0628\u0648\u0646")}</h3>
-          <button onClick= className="w-8 h-8 rounded-lg bg-surface-2 border border-border">
+          <button onClick={onClose} className="w-8 h-8 rounded-lg bg-surface-2 border border-border">
             <X className="w-4 h-4 mx-auto"/>
           </button>
         </div>
-        
+        {options.length === 0 ? (<div className="text-sm text-muted-foreground">{t("\u0644\u0627 \u062A\u0648\u062C\u062F \u0628\u064A\u0627\u0646\u0627\u062A \u0642\u0627\u0628\u0644\u0629 \u0644\u0644\u062D\u0638\u0631 \u0641\u064A \u0647\u0630\u0627 \u0627\u0644\u0637\u0644\u0628.")}</div>) : (<>
+            <div className="space-y-2">
+              {options.map((o) => (<label key={o.type} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer text-sm ${picked.includes(o.type) ? "border-destructive bg-destructive/10" : "border-border bg-surface-2"}`}>
+                  <input type="checkbox" checked={picked.includes(o.type)} onChange={() => toggle(o.type)} className="accent-primary"/>
+                  <span className="text-xs text-muted-foreground w-24">{BLOCK_TYPE_AR[o.type]}</span>
+                  <span className="font-bold" dir="ltr">{o.value}</span>
+                </label>))}
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">{t("\u0627\u0644\u0633\u0628\u0628 (\u0627\u062E\u062A\u064A\u0627\u0631\u064A)")}</label>
+              <input value={reason} onChange={(e) => setReason(e.target.value)} className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"/>
+            </div>
+            <button onClick={save} disabled={busy} className="w-full py-2.5 rounded-lg bg-destructive text-white font-bold text-sm disabled:opacity-60">
+              {busy ? t("جاري الحظر…") : t("🚫 تأكيد الحظر")}
+            </button>
+          </>)}
       </div>
     </div>);
 }
@@ -2058,18 +2459,29 @@ function BlockedManager({ adminCode }: {
       <h2 className="font-black text-lg mb-4">{t("\uD83D\uDEAB \u0642\u0627\u0626\u0645\u0629 \u0627\u0644\u0645\u062D\u0638\u0648\u0631\u064A\u0646")}</h2>
 
       <div className="grid sm:grid-cols-4 gap-2 mb-5">
-        <select value= onChange= className="bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none">
+        <select value={type} onChange={(e) => setType(e.target.value)} className="bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none">
           <option value="ip">{t("\u0639\u0646\u0648\u0627\u0646 IP")}</option>
           <option value="phone">{t("\u0631\u0642\u0645 \u0647\u0627\u062A\u0641")}</option>
           <option value="email">{t("\u0628\u0631\u064A\u062F \u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A")}</option>
         </select>
-        <input value= onChange= placeholder={t("القيمة")} dir="ltr" className="bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"/>
-        <input value= onChange= placeholder={t("السبب (اختياري)")} className="bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"/>
-        <button onClick= disabled= className="py-2 rounded-lg bg-primary text-primary-foreground font-bold text-sm disabled:opacity-60">
-          
+        <input value={value} onChange={(e) => setValue(e.target.value)} placeholder={t("القيمة")} dir="ltr" className="bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"/>
+        <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("السبب (اختياري)")} className="bg-surface-2 border border-border rounded-lg px-3 py-2 text-sm focus:border-primary outline-none"/>
+        <button onClick={add} disabled={busy} className="py-2 rounded-lg bg-primary text-primary-foreground font-bold text-sm disabled:opacity-60">
+          {busy ? "…" : t("إضافة للحظر")}
         </button>
       </div>
 
-      
+      {loading ? (<div className="text-sm text-muted-foreground">{t("\u062C\u0627\u0631\u064A \u0627\u0644\u062A\u062D\u0645\u064A\u0644\u2026")}</div>) : rows.length === 0 ? (<div className="text-sm text-muted-foreground">{t("\u0644\u0627 \u064A\u0648\u062C\u062F \u0645\u062D\u0638\u0648\u0631\u0648\u0646 \u062D\u0627\u0644\u064A\u0627\u064B.")}</div>) : (<div className="space-y-2">
+          {rows.map((r) => (<div key={r.id} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-2 border border-border">
+              <div className="min-w-0">
+                <div className="font-bold text-sm" dir="ltr">{r.value}</div>
+                <div className="text-[11px] text-muted-foreground">
+                  {BLOCK_TYPE_AR[r.type] || r.type}
+                  {r.reason ? ` · ${r.reason}` : ""} · {new Date(r.created_at).toLocaleString(locale())}
+                </div>
+              </div>
+              <button onClick={() => unblock(r.id)} className="shrink-0 px-3 py-1.5 rounded-lg bg-green-500/15 border border-green-500/30 text-green-400 font-bold text-xs">{t(" \u0625\u0644\u063A\u0627\u0621 \u0627\u0644\u062D\u0638\u0631 ")}</button>
+            </div>))}
+        </div>)}
     </div>);
 }

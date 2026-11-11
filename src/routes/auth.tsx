@@ -104,9 +104,9 @@ function AuthPage() {
           <h1 className="text-2xl font-black mb-2">{t("\u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u062F\u062E\u0648\u0644")}</h1>
           <p className="text-sm text-muted-foreground mb-6">{t(" \u0633\u062C\u0651\u0644 \u0627\u0644\u062F\u062E\u0648\u0644 \u0644\u0645\u062A\u0627\u0628\u0639\u0629 \u0637\u0644\u0628\u0627\u062A\u0643 \u0648\u062D\u0641\u0638 \u0628\u064A\u0627\u0646\u0627\u062A\u0643 \u0644\u0644\u0634\u0631\u0627\u0621 \u0627\u0644\u0633\u0631\u064A\u0639 ")}</p>
 
-          <button type="button" onClick= disabled= className="w-full py-3.5 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-3 hover:bg-white/90 active:scale-[0.98] transition disabled:opacity-60">
-            
-            <span></span>
+          <button type="button" onClick={handleGoogle} disabled={busy} className="w-full py-3.5 rounded-xl bg-white text-black font-bold flex items-center justify-center gap-3 hover:bg-white/90 active:scale-[0.98] transition disabled:opacity-60">
+            {busy ? (<Loader2 className="w-5 h-5 animate-spin"/>) : (<GoogleIcon className="w-5 h-5"/>)}
+            <span>{busy ? t("جاري الاتصال بجوجل…") : t("الدخول بحساب جوجل")}</span>
           </button>
 
           <div className="mt-6 pt-6 border-t border-border space-y-2 text-xs text-muted-foreground">

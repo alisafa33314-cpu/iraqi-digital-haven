@@ -39,10 +39,12 @@ function SearchPage() {
         <h1 className="text-3xl font-black mb-5">{t("\u0627\u0644\u0628\u062D\u062B \u0641\u064A \u0627\u0644\u0645\u062A\u062C\u0631")}</h1>
         <div className="relative mb-8">
           <SearchIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"/>
-          <input autoFocus value= onChange= placeholder={t("ابحث عن منتج، لعبة، اشتراك...")} className="w-full bg-surface border border-border rounded-2xl pr-12 pl-4 py-4 focus:border-primary outline-none text-base"/>
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("ابحث عن منتج، لعبة، اشتراك...")} className="w-full bg-surface border border-border rounded-2xl pr-12 pl-4 py-4 focus:border-primary outline-none text-base"/>
         </div>
-        <div className="text-sm text-muted-foreground mb-4">{t(" \u0646\u062A\u064A\u062C\u0629")}</div>
-        
+        <div className="text-sm text-muted-foreground mb-4">{results.length}{t(" \u0646\u062A\u064A\u062C\u0629")}</div>
+        {!ready ? (<SkeletonGrid count={8}/>) : (<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {results.map((p) => (<ProductCard key={p.id} product={p}/>))}
+          </div>)}
       </Container>
     </Layout>);
 }
