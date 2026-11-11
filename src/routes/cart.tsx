@@ -3,11 +3,16 @@ import { Layout, Container } from "@/components/Layout";
 import { useCart } from "@/lib/cart";
 import { formatIQD } from "@/lib/data";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { property: "og:title", content: "سلة المشتريات — FPI STOR" },
+      { property: "og:description", content: "سلة المشتريات في متجر FPI STOR للمنتجات الرقمية بالدينار العراقي." },
       { title: "السلة — FPI STOR" },
       { name: "description", content: "راجع منتجاتك واستكمل عملية الشراء." },
     ],
@@ -51,11 +56,11 @@ function CartPage() {
                   <div className="text-primary font-black mt-1">{formatIQD(i.product.price)}</div>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-1 bg-surface-2 rounded-lg p-1">
-                      <button onClick={() => setQty(i.product.id, i.qty - 1)} className="w-7 h-7 rounded-md hover:bg-surface flex items-center justify-center">
+                      <Button variant="ghost" size="icon" aria-label="تقليل الكمية" onClick={() => setQty(i.product.id, i.qty - 1)} className="w-7 h-7 rounded-md hover:bg-surface flex items-center justify-center">
                         <Minus className="w-3 h-3" />
-                      </button>
+                      </Button>
                       <span className="w-8 text-center font-bold text-sm">{i.qty}</span>
-                      <button
+                      <Button variant="ghost" size="icon" aria-label="زيادة الكمية"
                         onClick={() => {
                           const max = typeof i.product.stock === "number" ? i.product.stock : Infinity;
                           if (i.qty + 1 > max) { toast.error("لا يمكن إضافة أكثر من الكمية المتوفرة"); return; }
@@ -63,11 +68,11 @@ function CartPage() {
                         }}
                         className="w-7 h-7 rounded-md hover:bg-surface flex items-center justify-center">
                         <Plus className="w-3 h-3" />
-                      </button>
+                      </Button>
                     </div>
-                    <button onClick={() => remove(i.product.id)} className="text-destructive hover:opacity-80 p-2">
+                    <Button variant="ghost" size="icon" aria-label="حذف المنتج" onClick={() => remove(i.product.id)} className="text-destructive hover:opacity-80 p-2">
                       <Trash2 className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>

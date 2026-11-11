@@ -10,7 +10,15 @@ import { useCatalog } from "@/lib/catalog";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/orders")({
-  head: () => ({ meta: [{ title: "طلباتي — FPI STOR" }] }),
+  head: () => ({ meta: [
+    { title: "طلباتي — FPI STOR" },
+    { name: "description", content: "تابع حالة طلباتك الرقمية وبيانات التسليم في FPI STOR." },
+    { property: "og:title", content: "طلباتي — FPI STOR" },
+    { property: "og:description", content: "تابع حالة طلباتك الرقمية وبيانات التسليم في FPI STOR." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex, follow" },
+  ] }),
   component: OrdersPage,
 });
 

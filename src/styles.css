@@ -41,6 +41,9 @@
   --editorial-background: oklch(0.16 0 0);
   --editorial-foreground: oklch(0.98 0 0);
   --editorial-muted: oklch(0.78 0 0);
+  --google-background: #131314;
+  --google-foreground: #E3E3E3;
+  --google-border: #8E918F;
   --background: oklch(0.13 0.01 20);
   --foreground: oklch(0.98 0.01 20);
   --surface: oklch(0.17 0.015 20);
@@ -160,4 +163,14 @@
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+.google-sign-in { background: var(--google-background); color: var(--google-foreground); border-color: var(--google-border); }
+.google-sign-in:hover { background: var(--google-background); opacity: 0.9; }
+.storefront main .grid.lg\:grid-cols-3 > .lg\:col-span-2 > .card-neon {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding-inline: 0;
 }

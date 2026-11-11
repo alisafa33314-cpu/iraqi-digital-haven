@@ -16,7 +16,15 @@ import { GoogleIcon } from "@/components/GoogleIcon";
 
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({ meta: [{ title: "إتمام الطلب — FPI STOR" }] }),
+  head: () => ({ meta: [
+    { title: "إتمام الطلب — FPI STOR" },
+    { name: "description", content: "راجع طلبك واختر طريقة الدفع وأكمل الشراء في FPI STOR." },
+    { property: "og:title", content: "إتمام الطلب — FPI STOR" },
+    { property: "og:description", content: "راجع طلبك واختر طريقة الدفع وأكمل الشراء في FPI STOR." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex, follow" },
+  ] }),
   component: CheckoutPage,
 });
 
