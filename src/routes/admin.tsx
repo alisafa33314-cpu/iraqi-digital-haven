@@ -249,6 +249,7 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 
 
   const fetchOrders = async () => {
+    await supabase.rpc("auto_advance_pending_orders" as any).then(() => {}, () => {});
     const { data, error } = await supabase.rpc("admin_list_orders" as any, { _code: adminCode });
     if (error) {
       toast.error("انتهت الجلسة، الرجاء تسجيل الدخول مجدداً");

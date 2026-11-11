@@ -50,6 +50,13 @@
       "when": 1794389074317,
       "tag": "0006_order_received_email",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794389396991,
+      "tag": "0007_auto_processing_after_minute",
+      "breakpoints": true
     }
   ]
 }
