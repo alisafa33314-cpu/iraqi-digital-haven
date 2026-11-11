@@ -82,10 +82,16 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
-    background-image: var(--gradient-radial-red);
-    background-attachment: fixed;
     min-height: 100vh;
   }
+  /* Fixed glow on its own GPU layer: avoids full-page repaint on every scroll */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background-image: var(--gradient-radial-red);
+    transform: translateZ(0);
+  }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.01em; }
 }
 
@@ -95,14 +101,14 @@
 
 @utility btn-glow {
   box-shadow: var(--shadow-glow);
-  transition: all 250ms ease;
+  transition: box-shadow 250ms ease, transform 250ms ease;
   &:hover { box-shadow: var(--shadow-glow-lg); transform: translateY(-1px); }
 }
 
 @utility card-neon {
   background: linear-gradient(180deg, oklch(0.18 0.015 20) 0%, oklch(0.14 0.01 20) 100%);
   border: 1px solid oklch(0.28 0.05 20 / 0.5);
-  transition: all 300ms ease;
+  transition: border-color 300ms ease, box-shadow 300ms ease, transform 300ms ease;
   &:hover {
     border-color: oklch(0.62 0.24 22 / 0.6);
     box-shadow: 0 0 30px -10px oklch(0.62 0.24 22 / 0.5);
