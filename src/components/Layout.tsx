@@ -207,8 +207,8 @@ function AuthMenu() {
         return <div className="w-10 h-10 rounded-lg bg-surface skeleton" aria-hidden="true"/>;
     }
     if (!user) {
-        return (<Link to="/auth" className="hidden sm:inline-flex items-center gap-2 px-3 h-10 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:btn-glow transition" aria-label={t("تسجيل الدخول")}>
-        <GoogleIcon className="w-4 h-4"/>{t(" \u062F\u062E\u0648\u0644 ")}</Link>);
+        return (<Link to="/auth" className="inline-flex items-center justify-center sm:justify-start gap-2 h-10 w-10 sm:w-auto px-0 sm:px-3 shrink-0 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:btn-glow transition" aria-label={t("تسجيل الدخول")}>
+        <GoogleIcon className="w-4 h-4 shrink-0"/><span className="hidden sm:inline">{t(" \u062F\u062E\u0648\u0644 ")}</span></Link>);
     }
     const logout = async () => {
         setOpen(false);
