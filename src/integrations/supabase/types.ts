@@ -995,6 +995,7 @@ export type Database = {
       }
       claim_first_admin: { Args: { _code: string }; Returns: string }
       claim_my_orders: { Args: { _ids: string[] }; Returns: number }
+      claim_my_orders_by_contact: { Args: never; Returns: number }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

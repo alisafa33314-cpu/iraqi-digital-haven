@@ -57,6 +57,13 @@
       "when": 1794389396991,
       "tag": "0007_auto_processing_after_minute",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794402363907,
+      "tag": "0008_claim_orders_by_contact",
+      "breakpoints": true
     }
   ]
 }
