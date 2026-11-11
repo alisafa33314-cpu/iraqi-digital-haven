@@ -33,6 +33,7 @@ type AdminOrder = {
   subscription_image_urls: string[] | null;
   payment_proof_url: string | null;
   payment_method_name: string | null;
+  rejection_reason: string | null;
   created_at: string;
   items: { product_name: string; quantity: number; unit_price: number }[];
 };
@@ -728,6 +729,17 @@ function OrderRow({ order, adminCode, onChange }: { order: AdminOrder; adminCode
 
       {open && (
         <div className="p-4 border-t border-border bg-surface-2/30 space-y-4">
+          {order.status === "cancelled" && (
+            <div className="rounded-xl border-2 border-destructive/60 bg-destructive/10 p-3 flex items-start gap-3">
+              <XCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <div className="text-xs font-black text-destructive">طلب مرفوض — السبب المرسل للزبون</div>
+                <div className="text-sm font-bold text-destructive mt-1 break-words">
+                  {(order.rejection_reason || "").trim() || "لم يُذكر سبب للرفض"}
+                </div>
+              </div>
+            </div>
+          )}
           <div className="text-xs space-y-1">
             <div>الهاتف: <span dir="ltr" className="font-bold">{order.customer_phone}</span></div>
             {order.customer_email && (
