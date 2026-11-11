@@ -103,7 +103,7 @@ function Home() {
       </section>
 
       {/* Promo banner */}
-      {t(settings["promo_enabled"] !== "false" && (settings["promo_title"] || settings["promo_subtitle"]) && (<section className="py-6">
+      {settings["promo_enabled"] !== "false" && (settings["promo_title"] || settings["promo_subtitle"]) && (<section className="py-6">
           <Container>
             <div className="relative overflow-hidden rounded-3xl p-8 md:p-12 bg-gradient-to-l from-primary via-red-700 to-red-900">
               <div className="absolute inset-0 bg-grid opacity-20"/>
