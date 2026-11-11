@@ -1,11 +1,13 @@
 import { t, useLanguage, locale, pageMeta } from "@/lib/i18n";
 import { useCatalog } from "@/lib/catalog";
 import { parseHowToBuy } from "@/lib/how-to-buy";
-export function HowToBuySection() {
+export function HowToBuySection({ ignoreHomeToggle = false }: {
+    ignoreHomeToggle?: boolean;
+}) {
     useLanguage();
     const settings = useCatalog((s) => s.settings);
     const steps = parseHowToBuy(settings["how_to_buy_steps"]);
-    if (settings["how_to_buy_enabled"] === "false" || steps.length === 0)
+    if ((!ignoreHomeToggle && settings["how_to_buy_enabled"] === "false") || steps.length === 0)
         return null;
     const title = settings["how_to_buy_title"] || "كيفية الشراء";
     const subtitle = settings["how_to_buy_subtitle"] || "خطوات بسيطة للحصول على طلبك";

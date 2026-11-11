@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as HowToBuyRouteImport } from './routes/how-to-buy'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -63,6 +64,11 @@ const CategoriesRoute = CategoriesRouteImport.update({
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowToBuyRoute = HowToBuyRouteImport.update({
+  id: '/how-to-buy',
+  path: '/how-to-buy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OrdersRoute = OrdersRouteImport.update({
@@ -174,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
+  '/how-to-buy': typeof HowToBuyRoute
   '/orders': typeof OrdersRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -201,6 +208,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
+  '/how-to-buy': typeof HowToBuyRoute
   '/orders': typeof OrdersRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/categories': typeof CategoriesRoute
   '/checkout': typeof CheckoutRoute
+  '/how-to-buy': typeof HowToBuyRoute
   '/orders': typeof OrdersRoute
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/categories'
     | '/checkout'
+    | '/how-to-buy'
     | '/orders'
     | '/search'
     | '/sitemap.xml'
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/categories'
     | '/checkout'
+    | '/how-to-buy'
     | '/orders'
     | '/search'
     | '/sitemap.xml'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/categories'
     | '/checkout'
+    | '/how-to-buy'
     | '/orders'
     | '/search'
     | '/sitemap.xml'
@@ -340,6 +352,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CategoriesRoute: typeof CategoriesRoute
   CheckoutRoute: typeof CheckoutRoute
+  HowToBuyRoute: typeof HowToBuyRoute
   OrdersRoute: typeof OrdersRoute
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -402,6 +415,13 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-to-buy': {
+      id: '/how-to-buy'
+      path: '/how-to-buy'
+      fullPath: '/how-to-buy'
+      preLoaderRoute: typeof HowToBuyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/orders': {
@@ -557,6 +577,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CategoriesRoute: CategoriesRoute,
   CheckoutRoute: CheckoutRoute,
+  HowToBuyRoute: HowToBuyRoute,
   OrdersRoute: OrdersRoute,
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
