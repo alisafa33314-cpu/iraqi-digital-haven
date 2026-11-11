@@ -8,7 +8,7 @@ export function HowToBuySection() {
   const title = settings["how_to_buy_title"] || "كيفية الشراء";
   const subtitle = settings["how_to_buy_subtitle"] || "خطوات بسيطة للحصول على طلبك";
   return (
-    <section className="py-12 border-t border-border">
+    <section id="how-to-buy" className="py-12 border-t border-border scroll-mt-24">
       <div className="mx-auto max-w-7xl px-4">
         <div className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-black">{title}</h2>

@@ -6,6 +6,7 @@ import { SkeletonGrid, SkeletonCards } from "@/components/Skeleton";
 import { reviews as staticReviews, listableProducts } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ArrowLeft, Star, Zap, Shield, Clock, Search } from "lucide-react";
+import { ListChecks } from "lucide-react";
 import { HowToBuySection } from "@/components/HowToBuySection";
 import heroImg from "@/assets/hero-gaming.jpg";
 
@@ -78,12 +79,13 @@ function Home() {
               >
                 تصفح المتجر <ArrowLeft className="w-4 h-4" />
               </Link>
-              <Link
-                to="/search"
+              <a
+                href="#how-to-buy"
+                onClick={(e) => { const el = document.getElementById("how-to-buy"); if (el) { e.preventDefault(); el.scrollIntoView({ behavior: "smooth", block: "start" }); } }}
                 className="px-6 py-3 rounded-xl bg-surface border border-border font-bold inline-flex items-center gap-2 hover:border-primary/50 transition"
               >
-                <Search className="w-4 h-4" /> بحث سريع
-              </Link>
+                <ListChecks className="w-4 h-4" /> دليل الشراء
+              </a>
             </div>
 
             {/* Trust badges */}
@@ -102,7 +104,6 @@ function Home() {
           </div>
         </Container>
       </section>
-      <HowToBuySection />
 
       {/* Categories */}
       <section className="py-12">
