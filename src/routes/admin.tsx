@@ -8,6 +8,7 @@ import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound,
 import { cloud as supabase } from "@/lib/cloud-client";
 import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
 import { uploadImage, resolveAssetUrl } from "@/lib/upload";
+import { HowToBuyManager } from "@/components/admin/HowToBuyManager";
 import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
 import { readTheme, applyTheme, THEME_KEYS, THEME_LABELS, THEME_DEFAULTS, themeSettingKey } from "@/lib/theme";
 import { telegramTestSend } from "@/lib/telegram-test.functions";
@@ -347,6 +348,10 @@ function AdminDashboard({ adminCode, onLogout }: { adminCode: string; onLogout: 
 
         <AdminSection title="📢 الشريط المتحرك">
           <MarqueeManager adminCode={adminCode} onChange={refreshCatalog} />
+        </AdminSection>
+
+        <AdminSection title="🛒 كيفية الشراء (الصفحة الرئيسية)">
+          <HowToBuyManager adminCode={adminCode} onChange={refreshCatalog} />
         </AdminSection>
 
         <AdminSection title="🏷️ بانر العرض">
