@@ -6,6 +6,7 @@ import { SkeletonGrid, SkeletonCards } from "@/components/Skeleton";
 import { reviews as staticReviews, listableProducts } from "@/lib/data";
 import { useCatalog } from "@/lib/catalog";
 import { ArrowLeft, Star, Zap, Shield, Clock, Search } from "lucide-react";
+import { HowToBuySection } from "@/components/HowToBuySection";
 import heroImg from "@/assets/hero-gaming.jpg";
 
 export const Route = createFileRoute("/")({
@@ -204,6 +205,8 @@ function Home() {
           )}
         </Container>
       </section>
+
+      <HowToBuySection />
 
       {/* Reviews */}
       <section className="py-14 border-t border-border bg-surface/40">
