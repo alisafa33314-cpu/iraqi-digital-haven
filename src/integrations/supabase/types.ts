@@ -986,6 +986,7 @@ export type Database = {
         }
         Returns: string
       }
+      auto_advance_pending_orders: { Args: never; Returns: undefined }
       auto_deliver_order: { Args: { _order_id: string }; Returns: boolean }
       can_add_order_items: { Args: { _order_id: string }; Returns: boolean }
       can_review_order: {
