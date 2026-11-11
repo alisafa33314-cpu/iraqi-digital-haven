@@ -24,7 +24,7 @@ function HowToBuyPage() {
     useLanguage();
     const settings = useCatalog((s) => s.settings);
     const steps = parseHowToBuy(settings["how_to_buy_steps"]);
-    const hidden = settings["how_to_buy_enabled"] === "false" || steps.length === 0;
+    const hidden = steps.length === 0;
     return (<Layout>
       <Container className="py-10">
         <h1 className="text-3xl md:text-4xl font-black mb-2">{t("دليل الشراء")}</h1>
@@ -33,7 +33,7 @@ function HowToBuyPage() {
             <a href="https://wa.me/9647770586502" target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground font-bold hover:btn-glow transition">
               <MessageCircle className="w-4 h-4"/>{t("تواصل عبر واتساب")}
             </a>
-          </div>) : (<HowToBuySection />)}
+          </div>) : (<HowToBuySection ignoreHomeToggle />)}
         <div className="mt-8">
           <Link to="/categories" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow">
             {t("تصفح المتجر")}<ArrowLeft className="w-4 h-4"/>
