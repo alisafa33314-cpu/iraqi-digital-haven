@@ -122,6 +122,13 @@
 }
 @utility animate-pulse-red { animation: pulse-red 2s infinite; }
 
+/* Order status stepper: gentle pulse on the current step */
+@keyframes step-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 55%, transparent); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+@utility animate-step-pulse { animation: step-pulse 1.8s ease-in-out infinite; }
+
 @keyframes marquee {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }

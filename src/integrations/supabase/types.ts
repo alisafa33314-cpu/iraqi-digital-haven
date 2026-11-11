@@ -216,6 +216,7 @@ export type Database = {
           id: string
           payment_method_name: string | null
           payment_proof_url: string | null
+          rejection_reason: string | null
           status: Database["public"]["Enums"]["order_status"]
           subscription_image_url: string | null
           subscription_image_urls: string[]
@@ -236,6 +237,7 @@ export type Database = {
           id?: string
           payment_method_name?: string | null
           payment_proof_url?: string | null
+          rejection_reason?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subscription_image_url?: string | null
           subscription_image_urls?: string[]
@@ -256,6 +258,7 @@ export type Database = {
           id?: string
           payment_method_name?: string | null
           payment_proof_url?: string | null
+          rejection_reason?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subscription_image_url?: string | null
           subscription_image_urls?: string[]
@@ -865,6 +868,7 @@ export type Database = {
           items: Json
           payment_method_name: string
           payment_proof_url: string
+          rejection_reason: string
           status: Database["public"]["Enums"]["order_status"]
           subscription_image_url: string
           subscription_image_urls: string[]
@@ -905,6 +909,7 @@ export type Database = {
         Args: {
           _code: string
           _order_id: string
+          _reason?: string
           _status: Database["public"]["Enums"]["order_status"]
         }
         Returns: undefined
@@ -1007,6 +1012,7 @@ export type Database = {
           customer_phone: string
           id: string
           items: Json
+          rejection_reason: string
           status: Database["public"]["Enums"]["order_status"]
           subscription_image_url: string
           subscription_image_urls: string[]
