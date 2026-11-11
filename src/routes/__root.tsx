@@ -1,3 +1,4 @@
+import { LANGUAGE_KEY, languageDirection, resolveLanguage, useLanguage, t } from "@/lib/i18n";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -7,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
@@ -83,8 +84,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "FPI STOR | متجر اف بي اي - متجر رقمي عراقي" },
       { name: "twitter:description", content: "متجر FPI STOR (متجر اف بي اي) لبيع الاشتراكات الرقمية والحسابات والألعاب بأفضل الأسعار في العراق." },
-      { property: "og:image", content: "https://iraqi-digital-haven.lovable.app/__l5e/assets-v1/51bf0f38-abc1-4134-90f5-25e16673c9be/fpi-store-logo.png" },
-      { name: "twitter:image", content: "https://iraqi-digital-haven.lovable.app/__l5e/assets-v1/51bf0f38-abc1-4134-90f5-25e16673c9be/fpi-store-logo.png" },
       { property: "og:site_name", content: "FPI STOR" },
       { property: "og:locale", content: "ar_IQ" },
       { name: "robots", content: "index, follow" },
@@ -128,8 +127,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  const language = useLanguage((s) => s.language);
   return (
-    <html lang="ar" dir="rtl">
+    <html lang={language} dir={languageDirection(language)}>
       <head>
         <HeadContent />
       </head>
@@ -142,6 +142,16 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
+  const language = useLanguage((s) => s.language);
+  const [languageReady, setLanguageReady] = useState(false);
+  useEffect(() => {
+    try { useLanguage.getState().setLanguage(resolveLanguage(localStorage.getItem(LANGUAGE_KEY))); } catch { /* Storage is optional. */ }
+    setLanguageReady(true);
+  }, []);
+  useEffect(() => {
+    document.documentElement.lang = language;
+    document.documentElement.dir = languageDirection(language);
+  }, [language]);
   const { queryClient } = Route.useRouteContext();
   const refreshCatalog = useCatalog((s) => s.refresh);
   useEffect(() => { refreshCatalog(); }, [refreshCatalog]);
@@ -150,8 +160,8 @@ function RootComponent() {
   useSiteTheme();
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
-      <Toaster position="top-center" theme="dark" richColors dir="rtl" duration={3000} />
+      {languageReady ? <Outlet /> : <div className="min-h-screen bg-background" />}
+      <Toaster position="top-center" theme="dark" richColors dir={languageDirection(language)} duration={3000} />
     </QueryClientProvider>
   );
 }

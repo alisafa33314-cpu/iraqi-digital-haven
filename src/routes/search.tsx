@@ -1,3 +1,4 @@
+import { t, useLanguage, locale, pageMeta } from "@/lib/i18n";
 import { createFileRoute } from "@tanstack/react-router";
 import { Layout, Container } from "@/components/Layout";
 import { ProductCard } from "@/components/ProductCard";
@@ -6,63 +7,45 @@ import { useCatalog } from "@/lib/catalog";
 import { listableProducts } from "@/lib/data";
 import { Search as SearchIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-
 export const Route = createFileRoute("/search")({
-  head: () => ({
-    meta: [
-      { title: "بحث — FPI STOR" },
-      { name: "description", content: "ابحث عن اشتراكات، ألعاب، حسابات وكفت كارد في متجر FPI STOR." },
-      { name: "robots", content: "noindex, follow" },
-      { property: "og:url", content: "https://fpistor.com/search" },
-    ],
-    links: [{ rel: "canonical", href: "https://fpistor.com/search" }],
-  }),
-  component: SearchPage,
+    head: () => ({
+        meta: [
+            { title: "بحث — FPI STOR" },
+            { name: "description", content: "ابحث عن اشتراكات، ألعاب، حسابات وكفت كارد في متجر FPI STOR." },
+            { name: "robots", content: "noindex, follow" },
+            { property: "og:url", content: "https://fpistor.com/search" },
+        {property:"og:title", content:"بحث — FPI STOR"},{property:"og:description", content:"ابحث عن اشتراكات، ألعاب، حسابات وكفت كارد في متجر FPI STOR."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}],
+        links: [{ rel: "canonical", href: "https://fpistor.com/search" }],
+    }),
+    component: SearchPage,
 });
-
-
 function SearchPage() {
-  const [q, setQ] = useState("");
-  const products = useCatalog((s) => s.products);
-  const categories = useCatalog((s) => s.categories);
-  const ready = useCatalog((s) => s.ready);
-  const results = useMemo(() => {
-    const list = listableProducts(products);
-    const query = q.trim().toLowerCase();
-    if (!query) return list;
-    return list.filter(
-      (p) =>
-        p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        categories.find((c) => c.slug === p.categorySlug)?.name.includes(query),
-    );
-  }, [q, products, categories]);
-
-  return (
-    <Layout>
+    const language = useLanguage((s) => s.language);
+    const [q, setQ] = useState("");
+    const products = useCatalog((s) => s.products);
+    const categories = useCatalog((s) => s.categories);
+    const ready = useCatalog((s) => s.ready);
+    const results = useMemo(() => {
+        const list = listableProducts(products);
+        const query = q.trim().toLowerCase();
+        if (!query)
+            return list;
+        return list.filter((p) => p.name.toLowerCase().includes(query) ||
+            p.description.toLowerCase().includes(query) ||
+            t(p.name).toLowerCase().includes(query) || t(p.description).toLowerCase().includes(query) ||
+            categories.find((c) => c.slug === p.categorySlug)?.name.includes(query));
+    }, [q, products, categories, language]);
+    return (<Layout>
       <Container className="py-10">
-        <h1 className="text-3xl font-black mb-5">البحث في المتجر</h1>
+        <h1 className="text-3xl font-black mb-5">{t("\u0627\u0644\u0628\u062D\u062B \u0641\u064A \u0627\u0644\u0645\u062A\u062C\u0631")}</h1>
         <div className="relative mb-8">
-          <SearchIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <input
-            autoFocus
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="ابحث عن منتج، لعبة، اشتراك..."
-            className="w-full bg-surface border border-border rounded-2xl pr-12 pl-4 py-4 focus:border-primary outline-none text-base"
-          />
+          <SearchIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground"/>
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("ابحث عن منتج، لعبة، اشتراك...")} className="w-full bg-surface border border-border rounded-2xl pr-12 pl-4 py-4 focus:border-primary outline-none text-base"/>
         </div>
-        <div className="text-sm text-muted-foreground mb-4">{results.length} نتيجة</div>
-        {!ready ? (
-          <SkeletonGrid count={8} />
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {results.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
-        )}
+        <div className="text-sm text-muted-foreground mb-4">{results.length}{t(" \u0646\u062A\u064A\u062C\u0629")}</div>
+        {!ready ? (<SkeletonGrid count={8}/>) : (<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {results.map((p) => (<ProductCard key={p.id} product={p}/>))}
+          </div>)}
       </Container>
-    </Layout>
-  );
+    </Layout>);
 }

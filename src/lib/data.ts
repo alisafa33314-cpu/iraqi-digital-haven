@@ -1,3 +1,4 @@
+import { locale, useLanguage } from "./i18n";
 // Shared types + helpers. Products/categories/payment methods now live in the
 // database and are exposed via `useCatalog` (see ./catalog.ts).
 
@@ -51,7 +52,7 @@ export const reviews = [
 ];
 
 export const formatIQD = (n: number) =>
-  new Intl.NumberFormat("ar-IQ").format(Math.round(n)) + " د.ع";
+  new Intl.NumberFormat(locale()).format(Math.round(n)) + (useLanguage.getState().language === "en" ? " IQD" : " د.ع");
 
 // Base name of a product that belongs to a duration-variant group
 export const baseProductName = (p: Product) =>
