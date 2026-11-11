@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2, ChevronDown, ChevronUp, Search, XCircle } from "lucide-react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
+import { filterOrdersByNumber } from "@/lib/order-search";
 import { uploadImage, resolveAssetUrl } from "@/lib/upload";
 import { HowToBuyManager } from "@/components/admin/HowToBuyManager";
 import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
