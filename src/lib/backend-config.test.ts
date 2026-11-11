@@ -14,7 +14,7 @@ describe("Vercel backend configuration", () => {
   });
   test("returns Google sign-in to the requested store domain", () => {
     assert.equal(googleOAuthRedirect("https://fpistor.com"), "https://fpistor.com");
-    assert.equal(googleOAuthRedirect("https://www.fpistor.com"), "https://fpistor.com");
+    assert.equal(googleOAuthRedirect("https://www.fpistor.com"), "https://www.fpistor.com");
   });
   test("rejects an incomplete connection instead of mixing project keys", () => {
     assert.throws(() => resolvePublicBackend({ VITE_SUPABASE_URL: "https://maeniuozqrionnhmssli.supabase.co" }));
