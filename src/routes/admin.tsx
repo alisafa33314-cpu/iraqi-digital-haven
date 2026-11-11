@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ShieldCheck, Package, ShoppingBag, DollarSign, Users, LogOut, KeyRound, Plus, Edit, Trash2, CreditCard, Upload, Eye, X, Star, Image as ImageIcon, Share2, ChevronDown, ChevronUp, Search, XCircle } from "lucide-react";
 import { cloud as supabase } from "@/lib/cloud-client";
 import { STATUS_AR, STATUS_STYLES } from "@/lib/cart";
+import { filterOrdersByNumber } from "@/lib/order-search";
 import { uploadImage, resolveAssetUrl } from "@/lib/upload";
 import { HowToBuyManager } from "@/components/admin/HowToBuyManager";
 import type { SocialLink, StoreImage, ReviewRow } from "@/lib/catalog";
@@ -546,17 +547,43 @@ function OrdersPanel({ orders, loading, adminCode, onChange }: { orders: AdminOr
   const [perPage, setPerPage] = useState(5);
   const [page, setPage] = useState(1);
   const [collapsed, setCollapsed] = useState(false);
+  const [q, setQ] = useState("");
 
-  const totalPages = Math.max(1, Math.ceil(orders.length / perPage));
+  // بحث فوري برقم الطلب: يقبل مع # أو بدونه، وبسطور كبيرة أو صغيرة،
+  // وحتى لو كتب الزبون الرقم بدون شرطَات.
+  const filtered = filterOrdersByNumber(orders, q);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
   const current = Math.min(page, totalPages);
-  const slice = orders.slice((current - 1) * perPage, current * perPage);
+  const slice = filtered.slice((current - 1) * perPage, current * perPage);
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
     <div className="card-neon rounded-2xl p-5 mb-6">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h2 className="font-black text-lg">الطلبات <span className="text-xs text-muted-foreground font-bold">({orders.length})</span></h2>
-        <div className="flex items-center gap-2">
+        <h2 className="font-black text-lg">الطلبات <span className="text-xs text-muted-foreground font-bold">({filtered.length})</span></h2>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative w-full sm:w-60">
+            <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+            <input
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value);
+                setPage(1);
+                if (e.target.value.trim()) setCollapsed(false);
+              }}
+              placeholder="ابحث برقم الطلب…"
+              dir="ltr"
+              className="w-full bg-surface-2 border border-border rounded-lg pr-9 pl-8 py-2 text-sm focus:border-primary outline-none"
+            />
+            {q && (
+              <button type="button" onClick={() => { setQ(""); setPage(1); }}
+                aria-label="مسح البحث"
+                className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
           <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
             className="bg-surface-2 border border-border rounded-lg px-2 py-1.5 text-xs font-bold">
             <option value={5}>5 لكل صفحة</option>
@@ -574,6 +601,10 @@ function OrdersPanel({ orders, loading, adminCode, onChange }: { orders: AdminOr
         <div className="text-center py-8 text-sm text-muted-foreground">جاري التحميل…</div>
       ) : orders.length === 0 ? (
         <div className="text-center py-8 text-sm text-muted-foreground">لا توجد طلبات بعد.</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-8 text-sm text-muted-foreground">
+          لا يوجد طلب برقم «<span dir="ltr" className="font-bold text-foreground">{q.trim()}</span>».
+        </div>
       ) : collapsed ? (
         <div className="text-center py-4 text-xs text-muted-foreground">الطلبات مطوية — اضغط «إظهار الطلبات» لعرضها.</div>
       ) : (
