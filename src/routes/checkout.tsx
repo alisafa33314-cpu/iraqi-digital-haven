@@ -284,7 +284,7 @@ function CheckoutPage() {
                       </div>
                     </div>
                   </div>
-                  {selected.note && (<div className="text-xs text-yellow-400">📌 {selected.note}</div>)}
+                  {selected.note && (<div className="text-xs text-yellow-400">📌 {t(selected.note)}</div>)}
                 </div>)}
             </div>
 

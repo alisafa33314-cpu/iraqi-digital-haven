@@ -22,7 +22,10 @@ const phrases = Object.keys(dictionary).filter((key) => key.length > 1).sort((a,
 export function translate(text: string, language: Language): string {
   if (language === "ar" || !/[\u0600-\u06ff]/.test(text)) return text;
   const key = normalize(text);
-  if (dictionary[key]) return dictionary[key];
+  if (dictionary[key]) {
+    const value = dictionary[key];
+    return text.startsWith(" ") || text.endsWith(" ") ? ` ${value} ` : value;
+  }
   let result = key;
   for (const phrase of phrases) {
     if (result.includes(phrase)) result = result.split(phrase).join(dictionary[phrase]);

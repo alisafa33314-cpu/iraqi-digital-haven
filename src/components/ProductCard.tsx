@@ -54,9 +54,9 @@ function ProductCardBase({ product }: {
                 if (!product.inStock)
                     return;
                 if (add(product))
-                    toast.success(t(t("تمت الإضافة إلى السلة")));
+                    toast.success(t("تمت الإضافة إلى السلة"));
                 else
-                    toast.error(t(t("لا يمكن إضافة أكثر من الكمية المتوفرة")));
+                    toast.error(t("لا يمكن إضافة أكثر من الكمية المتوفرة"));
             }} disabled={!product.inStock} className="w-full py-2 rounded-lg bg-surface-2 border border-border text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:border-primary/50 transition">
             <ShoppingCart className="w-4 h-4"/>{t(" \u0623\u0636\u0641 \u0644\u0644\u0633\u0644\u0629 ")}</button>
           <button onClick={() => {
@@ -66,7 +66,7 @@ function ProductCardBase({ product }: {
                 if (add(product))
                     navigate({ to: "/checkout" });
                 else
-                    toast.error(t(t("لا يمكن إضافة أكثر من الكمية المتوفرة")));
+                    toast.error(t("لا يمكن إضافة أكثر من الكمية المتوفرة"));
             }} disabled={!product.inStock} className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed hover:btn-glow transition">
             <Zap className="w-4 h-4"/>{t(" \u0634\u0631\u0627\u0621 \u0627\u0644\u0622\u0646 ")}</button>
         </div>)}

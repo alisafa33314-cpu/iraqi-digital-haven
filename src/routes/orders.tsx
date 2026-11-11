@@ -229,12 +229,12 @@ const OrderCard = memo(function OrderCard({ o, onReview }: {
               <pre dir="ltr" className="text-xs whitespace-pre-wrap break-words bg-surface-2 rounded-lg p-3 font-mono">
                 {o.subscription_info}
               </pre>
-              <button onClick={() => { navigator.clipboard.writeText(o.subscription_info || ""); toast.success(t(t("تم النسخ"))); }} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-primary/15 text-primary border border-primary/30 font-bold">
+              <button onClick={() => { navigator.clipboard.writeText(o.subscription_info || ""); toast.success(t("تم النسخ")); }} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-primary/15 text-primary border border-primary/30 font-bold">
                 <Copy className="w-3 h-3"/>{t(" \u0646\u0633\u062E ")}</button>
             </>)}
           {images.length > 0 && (<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {images.map((u, i) => (<a key={i} href={u} target="_blank" rel="noreferrer" className="block">
-                  <img loading="lazy" decoding="async" src={u} alt={`مرفق ${i + 1}`} className="w-full h-32 rounded-lg border border-border object-cover bg-surface-2"/>
+                  <img loading="lazy" decoding="async" src={u} alt={t(`مرفق ${i + 1}`)} className="w-full h-32 rounded-lg border border-border object-cover bg-surface-2"/>
                 </a>))}
             </div>)}
           {!alreadyReviewed && (<div className="mt-3 p-3 rounded-xl border border-yellow-500/40 bg-yellow-500/5">
@@ -253,7 +253,7 @@ const OrderCard = memo(function OrderCard({ o, onReview }: {
               {a.steps && (<div className="text-xs leading-6 whitespace-pre-wrap bg-surface-2 rounded-lg p-3">{t(a.steps ?? "")}</div>)}
               {a.imgs.length > 0 && (<div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {a.imgs.map((u, i) => (<a key={i} href={u} target="_blank" rel="noreferrer" className="block">
-                      <img loading="lazy" decoding="async" src={u} alt={`خطوة ${i + 1}`} className="w-full h-32 rounded-lg border border-border object-cover bg-surface-2"/>
+                      <img loading="lazy" decoding="async" src={u} alt={t(`خطوة ${i + 1}`)} className="w-full h-32 rounded-lg border border-border object-cover bg-surface-2"/>
                     </a>))}
                 </div>)}
             </div>))}

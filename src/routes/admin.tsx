@@ -694,7 +694,7 @@ function OrderRow({ order, adminCode, onChange }: {
             <div className="flex items-center gap-2">
               <span>{t("\u0639\u0646\u0648\u0627\u0646 IP:")}</span>
               <span dir="ltr" className="font-mono font-bold text-primary">{order.customer_ip || "—"}</span>
-              {order.customer_ip && (<button type="button" onClick={() => navigator.clipboard?.writeText(order.customer_ip!).then(() => toast.success(t(t("تم نسخ IP"))), () => { })} className="px-2 py-0.5 rounded-md bg-surface-2 border border-border text-[10px] font-bold">{t("\u0646\u0633\u062E")}</button>)}
+              {order.customer_ip && (<button type="button" onClick={() => navigator.clipboard?.writeText(order.customer_ip!).then(() => toast.success(t("تم نسخ IP")), () => { })} className="px-2 py-0.5 rounded-md bg-surface-2 border border-border text-[10px] font-bold">{t("\u0646\u0633\u062E")}</button>)}
             </div>
 
             {order.payment_method_name && (<div>{t("\u0648\u0633\u064A\u0644\u0629 \u0627\u0644\u062F\u0641\u0639: ")}<span className="font-bold text-primary">{order.payment_method_name}</span></div>)}
@@ -1676,9 +1676,9 @@ function ThemeManager({ adminCode, onChange }: {
       <h2 className="font-black text-lg mb-4 flex items-center gap-2">{t("\uD83C\uDFA8 \u0623\u0644\u0648\u0627\u0646 \u0648\u062A\u0635\u0645\u064A\u0645 \u0627\u0644\u0645\u0648\u0642\u0639")}</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 mb-4">
         {THEME_KEYS.map((k) => (<label key={k} className="flex items-center gap-3 rounded-lg bg-surface-2 border border-border p-3">
-            <input type="color" value={colors[k]} onChange={(e) => setColors({ ...colors, [k]: e.target.value })} className="h-9 w-12 shrink-0 cursor-pointer rounded border border-border bg-transparent" aria-label={THEME_LABELS[k]}/>
+            <input type="color" value={colors[k]} onChange={(e) => setColors({ ...colors, [k]: e.target.value })} className="h-9 w-12 shrink-0 cursor-pointer rounded border border-border bg-transparent" aria-label={t(THEME_LABELS[k])}/>
             <span className="min-w-0">
-              <span className="block text-sm font-bold">{THEME_LABELS[k]}</span>
+              <span className="block text-sm font-bold">{t(THEME_LABELS[k])}</span>
               <span className="block text-[11px] text-muted-foreground uppercase">{colors[k]}</span>
             </span>
           </label>))}
@@ -2250,8 +2250,8 @@ function AnalyticsPanel({ adminCode }: {
           {/* Top cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <StatCard label={t("زوار الآن")} value={d.liveUsers} accent="text-green-400" pulse/>
-            <StatCard label={t("زوار اليوم")} value={d.visitors24h} sub={`${d.views24h} مشاهدة`} accent="text-primary"/>
-            <StatCard label={t("زوار الأسبوع")} value={d.visitors7d} sub={`${d.views7d} مشاهدة`} accent="text-blue-400"/>
+            <StatCard label={t("زوار اليوم")} value={d.visitors24h} sub={t(`${d.views24h} مشاهدة`)} accent="text-primary"/>
+            <StatCard label={t("زوار الأسبوع")} value={d.visitors7d} sub={t(`${d.views7d} مشاهدة`)} accent="text-blue-400"/>
             <StatCard label={t("أجهزة")} value={d.devices.reduce((a, x) => a + x.n, 0)} sub={d.devices.map((x) => `${deviceLabel(x.k)}: ${x.n}`).join(" · ")} accent="text-yellow-400"/>
           </div>
 

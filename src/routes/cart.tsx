@@ -50,7 +50,7 @@ function CartPage() {
                       <button onClick={() => {
                 const max = typeof i.product.stock === "number" ? i.product.stock : Infinity;
                 if (i.qty + 1 > max) {
-                    toast.error(t(t("لا يمكن إضافة أكثر من الكمية المتوفرة")));
+                    toast.error(t("لا يمكن إضافة أكثر من الكمية المتوفرة"));
                     return;
                 }
                 setQty(i.product.id, i.qty + 1);
