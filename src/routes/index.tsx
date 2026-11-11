@@ -120,7 +120,7 @@ function Home() {
               </div>
             </div>
           </Container>
-        </section>))tion>)}
+        </section>)}
 
 
 

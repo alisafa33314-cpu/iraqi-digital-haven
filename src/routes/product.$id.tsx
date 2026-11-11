@@ -136,7 +136,7 @@ function ProductPage() {
               {product.oldPrice && (<span className="text-lg text-muted-foreground line-through">{formatIQD(product.oldPrice)}</span>)}
             </div>
             {product.inStock && typeof product.stock === "number" && (<div className={`text-sm font-bold mb-6 ${product.stock === 0 ? "text-destructive" : product.stock <= 5 ? "text-orange-500" : "text-emerald-500"}`}>
-                {product.stock === 0 ? t("نفذت الكمية") : `الكمية المتوفرة: ${product.stock}`}
+                {product.stock === 0 ? t("نفذت الكمية") : t(`الكمية المتوفرة: ${product.stock}`)}
               </div>)}
 
             <p className="text-muted-foreground leading-relaxed mb-6 whitespace-pre-wrap">{t(product.description ?? "")}</p>
