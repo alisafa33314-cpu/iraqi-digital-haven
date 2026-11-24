@@ -45,28 +45,27 @@ function Home() {
     return (<Layout>
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid opacity-40"/>
-        <div className="absolute inset-0 opacity-30 bg-cover bg-center" style={{ backgroundImage: `url(${heroImg})` }}/>
+                <div className="absolute inset-0 opacity-20 bg-cover bg-center" style={{ backgroundImage: `url(${heroImg})` }}/>
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/70 to-background"/>
-        <Container className="relative py-16 md:py-24">
+        <Container className="relative py-10 md:py-16">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/15 border border-primary/30 text-xs text-primary font-bold mb-5">
               <Zap className="w-3.5 h-3.5"/>{t(" \u062A\u0633\u0644\u064A\u0645 \u0641\u0648\u0631\u064A \u2022 \u062E\u062F\u0645\u0629 24/7 ")}</div>
-            <h1 className="text-4xl md:text-6xl font-black leading-tight mb-4">{t(" \u0645\u062A\u062C\u0631\u0643 \u0627\u0644\u0631\u0642\u0645\u064A ")}<br />
+            <h1 className="text-3xl md:text-5xl font-black leading-tight mb-3">{t(" \u0645\u062A\u062C\u0631\u0643 \u0627\u0644\u0631\u0642\u0645\u064A ")}<br />
               <span className="text-primary text-glow">{t("\u0641\u064A \u0627\u0644\u0639\u0631\u0627\u0642")}</span>
             </h1>
-            <p className="text-muted-foreground text-lg mb-6 leading-relaxed">{t(" \u0627\u0634\u062A\u0631\u0627\u0643\u0627\u062A\u060C \u062D\u0633\u0627\u0628\u0627\u062A\u060C \u0623\u0644\u0639\u0627\u0628\u060C \u0643\u0641\u062A \u0643\u0627\u0631\u062F \u0648\u062E\u062F\u0645\u0627\u062A \u0630\u0643\u0627\u0621 \u0627\u0635\u0637\u0646\u0627\u0639\u064A \u2014 \u0628\u0627\u0644\u062F\u064A\u0646\u0627\u0631 \u0627\u0644\u0639\u0631\u0627\u0642\u064A \u0648\u0628\u0623\u0641\u0636\u0644 \u0627\u0644\u0623\u0633\u0639\u0627\u0631. ")}</p>
+            <p className="text-muted-foreground text-base md:text-lg mb-6 leading-relaxed">{t(" \u0627\u0634\u062A\u0631\u0627\u0643\u0627\u062A\u060C \u062D\u0633\u0627\u0628\u0627\u062A\u060C \u0623\u0644\u0639\u0627\u0628\u060C \u0643\u0641\u062A \u0643\u0627\u0631\u062F \u0648\u062E\u062F\u0645\u0627\u062A \u0630\u0643\u0627\u0621 \u0627\u0635\u0637\u0646\u0627\u0639\u064A \u2014 \u0628\u0627\u0644\u062F\u064A\u0646\u0627\u0631 \u0627\u0644\u0639\u0631\u0627\u0642\u064A \u0648\u0628\u0623\u0641\u0636\u0644 \u0627\u0644\u0623\u0633\u0639\u0627\u0631. ")}</p>
             <div className="flex flex-wrap gap-3">
-              <Link to="/categories" className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold btn-glow inline-flex items-center gap-2">{t(" \u062A\u0635\u0641\u062D \u0627\u0644\u0645\u062A\u062C\u0631 ")}<ArrowLeft className="w-4 h-4"/>
+              <Link to="/categories" className="min-h-12 px-5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow inline-flex items-center gap-2">{t(" \u062A\u0635\u0641\u062D \u0627\u0644\u0645\u062A\u062C\u0631 ")}<ArrowLeft className="w-4 h-4"/>
               </Link>
-              <Link to="/search" className="px-6 py-3 rounded-xl bg-surface border border-border font-bold inline-flex items-center gap-2 hover:border-primary/50 transition">
+              <Link to="/search" className="min-h-12 px-5 rounded-xl bg-surface border border-border font-bold inline-flex items-center gap-2 hover:border-primary/50 transition">
                 <Search className="w-4 h-4"/>{t(" \u0628\u062D\u062B ")}</Link>
-              <Link to="/how-to-buy" className="px-6 py-3 rounded-xl bg-surface border border-border font-bold inline-flex items-center gap-2 hover:border-primary/50 transition">
+              <Link to="/how-to-buy" className="min-h-12 px-5 rounded-xl bg-surface border border-border font-bold inline-flex items-center gap-2 hover:border-primary/50 transition">
                 <ListChecks className="w-4 h-4"/>{t(" \u062F\u0644\u064A\u0644 \u0627\u0644\u0634\u0631\u0627\u0621 ")}</Link>
             </div>
 
             {/* Trust badges */}
-            <div className="mt-10 grid grid-cols-3 gap-3 max-w-lg">
+            <div className="mt-8 grid grid-cols-3 gap-2 sm:gap-3 max-w-lg">
               {[
             { icon: Clock, label: t("تسليم فوري") },
             { icon: Shield, label: t("دفع آمن") },
@@ -81,7 +80,7 @@ function Home() {
       </section>
 
       {/* Categories */}
-      <section className="py-12">
+      <section className="py-8 md:py-12">
         <Container>
           {catalogError && (<div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
               <span>{t(catalogError ?? "")}</span>
@@ -110,7 +109,7 @@ function Home() {
                     {t(settings["promo_title"] || "")}
                   </div>
                 </div>
-                {settings["promo_cta_slug"] && (<Link to="/category/$slug" params={{ slug: settings["promo_cta_slug"] }} className="px-6 py-3 rounded-xl bg-white text-primary font-black shrink-0">
+                {settings["promo_cta_slug"] && (<Link to="/category/$slug" params={{ slug: settings["promo_cta_slug"] }} className="min-h-12 px-5 rounded-xl bg-white text-primary font-black shrink-0 inline-flex items-center">
                     {t(settings["promo_cta_label"] || "اطلب الآن")}
                   </Link>)}
               </div>
@@ -123,20 +122,20 @@ function Home() {
 
 
       {/* Bestsellers */}
-      <section className="py-10">
+      <section className="py-6 md:py-10">
         <Container>
           <SectionHeader title={t("الأكثر مبيعاً")} subtitle={t("المنتجات المفضلة لدى عملائنا")}/>
-          {!ready ? (<SkeletonGrid count={8}/>) : (<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {!ready ? (<SkeletonGrid count={8}/>) : (<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
               {bestsellers.map((p) => (<ProductCard key={p.id} product={p}/>))}
             </div>)}
         </Container>
       </section>
 
       {/* New arrivals */}
-      <section className="py-10">
+      <section className="py-6 md:py-10">
         <Container>
           <SectionHeader title={t("وصل حديثاً")} subtitle={t("أحدث المنتجات في المتجر")}/>
-          {!ready ? (<SkeletonGrid count={8}/>) : (<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {!ready ? (<SkeletonGrid count={8}/>) : (<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
               {newArrivals.map((p) => (<ProductCard key={p.id} product={p}/>))}
             </div>)}
         </Container>
@@ -187,7 +186,7 @@ function SectionHeader({ title, subtitle }: {
           <h2 className="text-2xl md:text-3xl font-black">{t(title ?? "")}</h2>
           {subtitle && <p className="text-sm text-muted-foreground mt-1">{t(subtitle ?? "")}</p>}
         </div>
-        <div className="h-1 flex-1 max-w-40 bg-gradient-to-l from-primary to-transparent rounded-full hidden md:block"/>
+        
       </div>
     </div>);
 }

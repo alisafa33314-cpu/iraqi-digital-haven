@@ -30,46 +30,56 @@ export function Layout({ children }: {
 
 
       {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-background/90 border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center font-black text-lg shadow-glow btn-glow">
-              F
-            </div>
-            <div className="leading-tight">
-              <div className="font-black text-lg text-glow">FPI STOR</div>
-              <div className="text-[10px] text-muted-foreground">{t("\u0645\u062A\u062C\u0631 \u0631\u0642\u0645\u064A \u0639\u0631\u0627\u0642\u064A")}</div>
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="container mx-auto px-4 h-16 flex items-center gap-3 sm:gap-5">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black text-lg">F</div>
+            <div className="leading-tight hidden sm:block">
+              <div className="font-black text-lg">FPI STOR</div>
+              <div className="text-[10px] text-muted-foreground">{t("متجر رقمي عراقي")}</div>
             </div>
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-1">
-            {nav.map((n) => (<Link key={n.to} to={n.to} className={`px-4 py-2 rounded-lg text-sm font-medium transition ${pathname === n.to
-                ? "bg-primary/15 text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-surface"}`}>
+          <HeaderSearch />
+
+          <nav className="hidden xl:flex items-center gap-1">
+            {nav.map((n) => (<Link key={n.to} to={n.to} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${pathname === n.to ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}>
                 {t(n.label ?? "")}
               </Link>))}
           </nav>
 
-          <div className="flex items-center gap-2">
-            <AuthMenu />
-            <Link to="/search" className="w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center transition" aria-label={t("بحث")}>
-              <Search className="w-4 h-4"/>
+          <div className="flex items-center gap-2 ms-auto md:ms-0 shrink-0">
+            <Link to="/search" className="md:hidden w-11 h-11 rounded-xl bg-surface flex items-center justify-center" aria-label={t("بحث")}>
+              <Search className="w-5 h-5"/>
             </Link>
-            <Link to="/cart" className="relative w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center transition" aria-label={t("السلة")}>
-              <ShoppingCart className="w-4 h-4"/>
+            <AuthMenu />
+            <Link to="/cart" className="relative w-11 h-11 rounded-xl bg-surface hover:bg-surface-2 flex items-center justify-center transition-colors" aria-label={t("السلة")}>
+              <ShoppingCart className="w-5 h-5"/>
               {count > 0 && (<span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
                   {count}
                 </span>)}
             </Link>
-            <button onClick={() => setOpen(true)} className="lg:hidden w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center" aria-label={t("القائمة")}>
-              <Menu className="w-4 h-4"/>
+            <button onClick={() => setOpen(true)} className="xl:hidden w-11 h-11 rounded-xl bg-surface hover:bg-surface-2 flex items-center justify-center" aria-label={t("القائمة")}>
+              <Menu className="w-5 h-5"/>
             </button>
           </div>
         </div>
+        {categories.length > 0 && (<div className="container mx-auto px-4 pb-3">
+            <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+              <Link to="/categories" className={`shrink-0 min-h-9 px-4 rounded-full text-sm font-bold flex items-center border transition-colors ${pathname === "/categories" ? "bg-primary text-primary-foreground border-primary" : "bg-surface border-border text-muted-foreground hover:text-foreground"}`}>{t("الكل")}</Link>
+              {categories.map((c) => {
+                const active = pathname === `/category/${c.slug}`;
+                return (<Link key={c.slug} to="/category/$slug" params={{ slug: c.slug }} className={`shrink-0 min-h-9 px-4 rounded-full text-sm font-bold flex items-center gap-1.5 border transition-colors ${active ? "bg-primary text-primary-foreground border-primary" : "bg-surface border-border text-muted-foreground hover:text-foreground"}`}>
+                    {c.image_url ? <img src={c.image_url} alt="" className="w-5 h-5 rounded-full object-cover"/> : c.icon ? <span>{c.icon}</span> : null}
+                    {t(c.name ?? "")}
+                  </Link>);
+            })}
+            </div>
+          </div>)}
       </header>
 
       {/* Mobile drawer */}
-      {open && (<div className="fixed inset-0 z-50 lg:hidden">
+      {open && (<div className="fixed inset-0 z-50 xl:hidden">
           <div className="absolute inset-0 bg-black/70" onClick={() => setOpen(false)}/>
           <div className="absolute right-0 top-0 bottom-0 w-80 max-w-[85%] bg-background border-l border-border p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
@@ -189,8 +199,8 @@ function SocialsFloating() {
         { id: "wa", name: "واتساب", url: "https://wa.me/9647770586502", image_url: null as string | null },
         { id: "tg", name: "تليجرام", url: "https://t.me/FPI101", image_url: null as string | null },
     ];
-    return (<div className="fixed bottom-5 left-5 z-30 flex flex-col gap-3">
-      {list.map((s) => (<a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={t(s.name ?? "")} className="w-14 h-14 rounded-full bg-primary shadow-lg flex items-center justify-center overflow-hidden border-2 border-white/20">
+    return (<div className="fixed bottom-4 md:bottom-5 left-2 md:left-5 z-30 flex flex-col gap-2 md:gap-3">
+      {list.map((s) => (<a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={t(s.name ?? "")} className="w-11 h-11 md:w-14 md:h-14 rounded-full bg-primary shadow-lg flex items-center justify-center overflow-hidden border-2 border-white/20">
           {s.image_url ? (<img loading="lazy" decoding="async" src={s.image_url} alt={t(s.name ?? "")} className="w-full h-full object-cover"/>) : s.name.includes(t("تليجرام")) || /telegram/i.test(s.url) ? (<Send className="w-6 h-6 text-white"/>) : (<MessageCircle className="w-6 h-6 text-white"/>)}
         </a>))}
     </div>);
@@ -207,7 +217,7 @@ function AuthMenu() {
         return <div className="w-10 h-10 rounded-lg bg-surface skeleton" aria-hidden="true"/>;
     }
     if (!user) {
-        return (<Link to="/auth" className="inline-flex items-center justify-center sm:justify-start gap-2 h-10 w-10 sm:w-auto px-0 sm:px-3 shrink-0 rounded-lg bg-primary text-primary-foreground text-xs font-bold hover:btn-glow transition" aria-label={t("تسجيل الدخول")}>
+        return (<Link to="/auth" className="inline-flex items-center justify-center sm:justify-start gap-2 h-11 w-11 sm:w-auto px-0 sm:px-3 shrink-0 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:btn-glow transition" aria-label={t("تسجيل الدخول")}>
         <span className="w-6 h-6 rounded-full bg-white flex items-center justify-center shrink-0"><GoogleIcon className="w-4 h-4"/></span><span className="hidden sm:inline">{t(" \u062F\u062E\u0648\u0644 ")}</span></Link>);
     }
     const logout = async () => {
@@ -217,7 +227,7 @@ function AuthMenu() {
         navigate({ to: "/" });
     };
     return (<div className="relative">
-      <button type="button" onClick={() => setOpen((v) => !v)} className="w-10 h-10 rounded-lg bg-surface hover:bg-surface-2 flex items-center justify-center overflow-hidden border border-border transition" aria-label={t("حسابي")}>
+      <button type="button" onClick={() => setOpen((v) => !v)} className="w-11 h-11 rounded-xl bg-surface hover:bg-surface-2 flex items-center justify-center overflow-hidden border border-border transition" aria-label={t("حسابي")}>
         {user.avatarUrl ? (<img loading="lazy" decoding="async" src={user.avatarUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer"/>) : (<span className="font-bold text-sm">{(user.name || user.email || t("؟")).charAt(0)}</span>)}
       </button>
       {open && (<>
@@ -257,4 +267,14 @@ export function Container({ children, className = "" }: {
 }) {
     useLanguage();
     return <div className={`container mx-auto px-4 ${className}`}>{children}</div>;
+}
+
+function HeaderSearch() {
+    useLanguage();
+    const navigate = useNavigate();
+    const [q, setQ] = useState("");
+    return (<form role="search" onSubmit={(e) => { e.preventDefault(); navigate({ to: "/search", search: q.trim() ? { q: q.trim() } : {} }); }} className="hidden md:flex flex-1 min-w-0 max-w-xl relative">
+      <Search className="w-4 h-4 absolute top-1/2 -translate-y-1/2 start-3 text-muted-foreground pointer-events-none"/>
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("ابحث عن اشتراك، لعبة، بطاقة…")} className="w-full h-11 rounded-xl bg-surface border border-border ps-10 pe-3 text-sm outline-none focus:border-primary transition-colors"/>
+    </form>);
 }

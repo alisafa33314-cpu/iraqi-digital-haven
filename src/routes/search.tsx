@@ -6,7 +6,7 @@ import { SkeletonGrid } from "@/components/Skeleton";
 import { useCatalog } from "@/lib/catalog";
 import { listableProducts } from "@/lib/data";
 import { Search as SearchIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 export const Route = createFileRoute("/search")({
     head: () => ({
         meta: [
@@ -17,11 +17,14 @@ export const Route = createFileRoute("/search")({
         {property:"og:title", content:"بحث — FPI STOR"},{property:"og:description", content:"ابحث عن اشتراكات، ألعاب، حسابات وكفت كارد في متجر FPI STOR."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}],
         links: [{ rel: "canonical", href: "https://fpistor.com/search" }],
     }),
+    validateSearch: (s: Record<string, unknown>): { q?: string } => (typeof s["q"] === "string" && s["q"] ? { q: s["q"] } : {}),
     component: SearchPage,
 });
 function SearchPage() {
     const language = useLanguage((s) => s.language);
-    const [q, setQ] = useState("");
+    const initialQ = Route.useSearch().q ?? "";
+    const [q, setQ] = useState(initialQ);
+    useEffect(() => { setQ(initialQ); }, [initialQ]);
     const products = useCatalog((s) => s.products);
     const categories = useCatalog((s) => s.categories);
     const ready = useCatalog((s) => s.ready);
@@ -43,7 +46,7 @@ function SearchPage() {
           <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("ابحث عن منتج، لعبة، اشتراك...")} className="w-full bg-surface border border-border rounded-2xl pr-12 pl-4 py-4 focus:border-primary outline-none text-base"/>
         </div>
         <div className="text-sm text-muted-foreground mb-4">{results.length}{t(" \u0646\u062A\u064A\u062C\u0629")}</div>
-        {!ready ? (<SkeletonGrid count={8}/>) : (<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {!ready ? (<SkeletonGrid count={8}/>) : (<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
             {results.map((p) => (<ProductCard key={p.id} product={p}/>))}
           </div>)}
       </Container>

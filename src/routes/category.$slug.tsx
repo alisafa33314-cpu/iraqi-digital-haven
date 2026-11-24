@@ -44,7 +44,7 @@ function CategoryPage() {
             <div className="text-sm text-muted-foreground">{items.length}{t(" \u0645\u0646\u062A\u062C")}</div>
           </div>
         </div>
-        {!ready ? (<SkeletonGrid count={8}/>) : items.length === 0 ? (<div className="text-center py-20 text-muted-foreground">{t(" \u0644\u0627 \u062A\u0648\u062C\u062F \u0645\u0646\u062A\u062C\u0627\u062A \u0641\u064A \u0647\u0630\u0627 \u0627\u0644\u0642\u0633\u0645 \u062D\u0627\u0644\u064A\u0627\u064B. ")}</div>) : (<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {!ready ? (<SkeletonGrid count={8}/>) : items.length === 0 ? (<div className="text-center py-20 text-muted-foreground">{t(" \u0644\u0627 \u062A\u0648\u062C\u062F \u0645\u0646\u062A\u062C\u0627\u062A \u0641\u064A \u0647\u0630\u0627 \u0627\u0644\u0642\u0633\u0645 \u062D\u0627\u0644\u064A\u0627\u064B. ")}</div>) : (<div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
             {items.map((p) => (<ProductCard key={p.id} product={p}/>))}
           </div>)}
       </Container>

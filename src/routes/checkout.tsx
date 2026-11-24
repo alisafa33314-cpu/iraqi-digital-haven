@@ -218,13 +218,13 @@ function CheckoutPage() {
         }
     };
     return (<Layout>
-      <Container className="py-10">
-        <h1 className="text-3xl font-black mb-6">{t("\u0625\u062A\u0645\u0627\u0645 \u0627\u0644\u0637\u0644\u0628")}</h1>
+      <Container className="py-6 md:py-10 pb-28 md:pb-10">
+        <h1 className="text-2xl md:text-3xl font-black mb-5">{t("\u0625\u062A\u0645\u0627\u0645 \u0627\u0644\u0637\u0644\u0628")}</h1>
         <form onSubmit={submit} className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-5">
             <div className="card-neon rounded-2xl p-5">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-                <h2 className="font-black">{t("\u0645\u0639\u0644\u0648\u0645\u0627\u062A \u0627\u0644\u0632\u0628\u0648\u0646")}</h2>
+                <h2 className="font-black flex items-center gap-2"><span className="inline-flex w-7 h-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-black">1</span>{t("معلومات التواصل")}</h2>
                 {user ? (<span className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-green-500/10 border border-green-500/30 text-green-400 font-bold">
                     <GoogleIcon className="w-3.5 h-3.5"/>{t(" \u0645\u0633\u062C\u0644 \u0627\u0644\u062F\u062E\u0648\u0644: ")}{user.email}
                   </span>) : (<button type="button" onClick={handleGoogle} disabled={googleBusy} className="inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-white text-black font-bold hover:opacity-90 transition disabled:opacity-60">
@@ -234,16 +234,16 @@ function CheckoutPage() {
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">{t("\u0627\u0644\u0627\u0633\u0645 \u0627\u0644\u0643\u0627\u0645\u0644")}</label>
-                  <input value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus:border-primary outline-none" placeholder={t("اسمك الكامل")}/>
+                  <input value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-surface-2 border border-border rounded-lg px-3 h-12 text-base focus:border-primary outline-none" placeholder={t("اسمك الكامل")}/>
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">{t("\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062A\u0641")}</label>
-                  <input value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ""))} inputMode="numeric" pattern="[0-9]*" type="tel" autoComplete="tel" className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus:border-primary outline-none" placeholder="07XXXXXXXXX" dir="ltr"/>
+                  <input value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d+]/g, ""))} inputMode="numeric" pattern="[0-9]*" type="tel" autoComplete="tel" className="w-full bg-surface-2 border border-border rounded-lg px-3 h-12 text-base focus:border-primary outline-none" placeholder="07XXXXXXXXX" dir="ltr"/>
                 </div>
                 <div className="sm:col-span-2">
                   <label className="text-xs text-muted-foreground mb-1 block">{t(" \u0627\u0644\u0628\u0631\u064A\u062F \u0627\u0644\u0625\u0644\u0643\u062A\u0631\u0648\u0646\u064A ")}<span className="opacity-60">{t("(\u0627\u062E\u062A\u064A\u0627\u0631\u064A)")}</span>
                   </label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-surface-2 border border-border rounded-lg px-3 py-2.5 focus:border-primary outline-none" placeholder="you@example.com" dir="ltr"/>
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-surface-2 border border-border rounded-lg px-3 h-12 text-base focus:border-primary outline-none" placeholder="you@example.com" dir="ltr"/>
                 </div>
               </div>
               {autofilled && (<div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-green-400">
@@ -255,7 +255,7 @@ function CheckoutPage() {
 
 
             <div className="card-neon rounded-2xl p-5">
-              <h2 className="font-black mb-4">{t("\u0627\u062E\u062A\u0631 \u0637\u0631\u064A\u0642\u0629 \u0627\u0644\u062F\u0641\u0639")}</h2>
+              <h2 className="font-black mb-4 flex items-center gap-2"><span className="inline-flex w-7 h-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-black">2</span>{t("اختر طريقة الدفع")}</h2>
               <div className="space-y-2">
                 {paymentMethods.map((m) => (<label key={m.id} className={`flex items-center justify-between gap-3 p-4 rounded-xl cursor-pointer border transition ${methodId === m.id ? "border-primary bg-primary/10" : "border-border bg-surface-2 hover:border-primary/50"}`}>
                     <div className="flex items-center gap-3">
@@ -279,8 +279,8 @@ function CheckoutPage() {
                       <div className="font-black text-primary">{t(selected.name ?? "")}</div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-base font-black tracking-wide" dir="ltr">{selected.number}</span>
-                        <button type="button" onClick={() => copyNumber(selected.number)} className="inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-md bg-primary text-primary-foreground font-bold">
-                          <Copy className="w-3 h-3"/>{t(" \u0646\u0633\u062E ")}</button>
+                        <button type="button" onClick={() => copyNumber(selected.number)} className="inline-flex items-center gap-1.5 text-sm min-h-10 px-3 rounded-lg bg-primary text-primary-foreground font-bold">
+                          <Copy className="w-4 h-4"/>{t("نسخ الرقم")}</button>
                       </div>
                     </div>
                   </div>
@@ -289,7 +289,7 @@ function CheckoutPage() {
             </div>
 
             <div className="card-neon rounded-2xl p-5">
-              <h2 className="font-black mb-1">{t("\u0635\u0648\u0631\u0629 \u0625\u062B\u0628\u0627\u062A \u0627\u0644\u062F\u0641\u0639")}</h2>
+              <h2 className="font-black mb-1 flex items-center gap-2"><span className="inline-flex w-7 h-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-black">3</span>{t("أرفق إيصال الدفع")}</h2>
               <p className="text-xs text-muted-foreground mb-3">{t(" \u0645\u0637\u0644\u0648\u0628\u0629 \u0644\u0625\u0643\u0645\u0627\u0644 \u0627\u0644\u0637\u0644\u0628 \u2014 \u0645\u0646 \u0627\u0644\u0627\u0633\u062A\u0648\u062F\u064A\u0648 \u0623\u0648 \u0627\u0644\u0645\u0644\u0641\u0627\u062A. ")}</p>
               <label className="block cursor-pointer">
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => setProof(e.target.files?.[0] || null)}/>
@@ -330,8 +330,8 @@ function CheckoutPage() {
               <span>{t("\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A")}</span>
               <span className="text-primary text-glow">{formatIQD(total)}</span>
             </div>
-            <button type="submit" disabled={submitting} className="mt-5 w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold btn-glow disabled:opacity-60">
-              {submitting ? t("جاري الإرسال…") : t("إرسال الطلب")}
+            <button type="submit" disabled={submitting} className="mt-5 w-full py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-base btn-glow disabled:opacity-60">
+              {submitting ? t("جاري الإرسال…") : t("إتمام الطلب")}
             </button>
           </aside>
         </form>

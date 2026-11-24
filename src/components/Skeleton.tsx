@@ -1,7 +1,7 @@
 // Lightweight skeleton placeholders shown while data loads
 export function SkeletonGrid({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" aria-hidden="true">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5" aria-hidden="true">
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="card-neon rounded-2xl overflow-hidden">
           <div className="aspect-square skeleton" />
