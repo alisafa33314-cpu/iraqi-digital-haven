@@ -1,3 +1,4 @@
+import logoAsset from "@/assets/fpi-store-logo.png.asset.json";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { t, useLanguage, locale, pageMeta } from "@/lib/i18n";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
@@ -32,12 +33,8 @@ export function Layout({ children }: {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center gap-3 sm:gap-5">
-          <Link to="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black text-lg">F</div>
-            <div className="leading-tight hidden sm:block">
-              <div className="font-black text-lg">FPI STOR</div>
-              <div className="text-[10px] text-muted-foreground">{t("متجر رقمي عراقي")}</div>
-            </div>
+          <Link to="/" aria-label="FPI STORE" className="shrink-0 h-11 px-2 rounded-xl bg-white flex items-center">
+            <img src={logoAsset.url} alt="FPI STORE" className="h-8 sm:h-9 w-auto max-w-[110px] sm:max-w-[140px] object-contain"/>
           </Link>
 
           <HeaderSearch />
